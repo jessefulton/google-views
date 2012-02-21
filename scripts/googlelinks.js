@@ -18,7 +18,8 @@ casper.thenOpen("https://accounts.google.com/Login", function() {
     }, true);
 });
 
-casper.wait(1000);
+
+//casper.wait(1000);
 
 casper.then(function() {
     this.capture('afterlogin.png');
@@ -31,11 +32,14 @@ casper.thenOpen('https://www.google.com/search?q=' + query, function() {
 
 	//TODO: should we just replace the body with only the results?
     this.echo(this.evaluate(function() {
+    	//var main = "<div id='center_col'>" + document.getElementById("center_col").innerHTML + "</div>";
+    	var main = "<div class='personalized_results'>" + document.getElementById("center_col").innerHTML + "</div>";
     	var dt = document.doctype;
     	var doctype = '<!DOCTYPE '+ 
 			dt.name+' PUBLIC "'+ //maybe you should check for publicId first
 			dt.publicId+'" "'+
 			dt.systemId+'">';
+		document.body.innerHTML = main;
         return doctype + "<html>" + document.documentElement.innerHTML + "</html>";
     }));
 
