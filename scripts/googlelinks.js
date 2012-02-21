@@ -28,6 +28,8 @@ casper.then(function() {
 casper.thenOpen('https://www.google.com/search?q=' + query, function() {
     this.capture('searchpage.png');
 
+
+	//TODO: should we just replace the body with only the results?
     this.echo(this.evaluate(function() {
     	var dt = document.doctype;
     	var doctype = '<!DOCTYPE '+ 
