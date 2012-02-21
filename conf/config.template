@@ -1,0 +1,8 @@
+module.exports = {
+	users: [
+		{
+			email: "foo@gmail.com"
+			, password: "bar"
+		}
+	]
+};
