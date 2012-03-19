@@ -1,3 +1,5 @@
+//see https://groups.google.com/forum/#!msg/casperjs/3t8R10N6zPo/CKi6yScMILEJ
+
 var casper = require('casper').create({
 	pageSettings: {
 		loadImages: true
@@ -7,6 +9,7 @@ var casper = require('casper').create({
 });
 var config = require('../conf/config.js');
 
+
 /*
 var fantomas = Object.create(casper);
 fantomas.renderJSON = function(what) {
@@ -14,11 +17,25 @@ fantomas.renderJSON = function(what) {
 };
 */
 
+
+function guidGenerator() {
+    var S4 = function() {
+       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    };
+    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+}
+
+Array.prototype.unique = function(){
+  return Object.keys(this.reduce(function(r,v){
+    return r[v]=1,r;
+  },{}));
+}
+
 casper.renderJSON = function(what) {
     return this.echo(JSON.stringify(what, null, '  '));
 };
 
-function getLinksToFollow(theSelector) {
+function getLinksToFollow(theSelector, baseUrl) {
 	var mainDiv = document.querySelector(theSelector);
 	var foundLinks = mainDiv.querySelectorAll("a[href]:not([href^='javascript:']):not([href*=doubleclick]):not([href^='itpc://']):not([href^='zune://']):not([href^='#'])");
 	foundLinks = foundLinks ? foundLinks : [];
@@ -27,10 +44,16 @@ function getLinksToFollow(theSelector) {
 		if (s) {
 			var n = s.indexOf('#');
 			s = s.substring(0, n != -1 ? n : s.length);
-			return s;
+			
+			//this will create fully qualified URLs
+			var a = document.createElement('a');
+	        a.href = s;
+    	    return a.href;
+			
+			//return s;
 		}
 		else {
-			return e.outerHTML;
+			return null;
 		}
 	});
 	
@@ -43,7 +66,6 @@ function getLinksToFollow(theSelector) {
 // Just opens the page and prints the title
 var start = function(self, user) {
 
-	var links = [];
 	var seedUrl = user.seed.url;
 	var selector = user.seed.selector;
     self.start("https://accounts.google.com/Logout", function(self) {
@@ -70,15 +92,17 @@ var start = function(self, user) {
 		if (loginSuccess) {
 			this.log("Logged in " + user.email + " successfully", "info");
 			this.thenOpen(seedUrl, function() {
-				var found = this.evaluate(getLinksToFollow, {"theSelector" : selector});
+				var links = [];
+				var found = this.evaluate(getLinksToFollow, {"theSelector" : selector, "baseUrl" : this.getCurrentUrl()});
 				this.echo(found.length + " links found on " + selector);
 				links = links.concat(found);
-			}).then(function() {
-				this.renderJSON(links);    
-			}).thenOpen('https://www.google.com/search?q=' + "foo", function() {
-				var fn = (user.email).replace("@", '').replace('.', '');
-				this.capture(fn + '.png');
+				links = links.unique();
+				//links.sort();
+				visitLinks(this, links);
 			});
+			
+
+			
 		}
 		else {
 			this.log("Could not log in " + user.email, "error");
@@ -86,8 +110,31 @@ var start = function(self, user) {
 		}        	
     	
 	});
-
 };
+
+var visitLinks = function(self, links) {
+	self.echo("=================");	
+	self.renderJSON(links);
+	self.echo("=================");
+	
+	for (var i=0; i<links.length; i++) {
+		self.thenOpen(links[i], function() {
+			this.log("\tFollowed link to " + this.getCurrentUrl() + " ("+this.getTitle()+")", "INFO");	
+			var fn = guidGenerator();
+			this.capture(fn + '.png');
+		});		
+	}
+
+	/*
+	self.then(function() {
+		this.renderJSON(links);    
+	}).thenOpen('https://www.google.com/search?q=' + "foo", function() {
+		var fn = guidGenerator(); //(user.email).replace("@", '').replace('.', '');
+		this.capture(fn + '.png');
+	});
+	*/
+};
+
 
 // Get the links, and add them to the links array
 // (It could be done all in one step, but it is intentionally splitted)
@@ -100,15 +147,15 @@ casper.start().then(function(self) {
 });
 
 
-var currentLink = 0;
+var currentUserIdx = 0;
 
 // As long as it has a next link, and is under the maximum limit, will keep running
 function check(self) {
-    if (config.users[currentLink]) {
-        self.echo('--- User ' + currentLink + ' (' + config.users[currentLink].email + ') ---');
-        start(self, config.users[currentLink]);
-        //addLinks.call(self, config.users[currentLink].seed);
-        currentLink++;
+    if (config.users[currentUserIdx]) {
+        self.echo('--- User ' + currentUserIdx + ' (' + config.users[currentUserIdx].email + ') ---');
+        start(self, config.users[currentUserIdx]);
+        //addLinks.call(self, config.users[currentUserIdx].seed);
+        currentUserIdx++;
         self.run(check);
     } else {
         self.echo('All done.').exit();
