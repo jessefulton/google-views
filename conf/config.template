@@ -3,6 +3,11 @@ module.exports = {
 		{
 			email: "foo@gmail.com"
 			, password: "bar"
+			, seed: {
+				"url": "http://www.npr.org/sections/politics/"
+				, "selector": "#main_content"
+				
+			}
 		}
 	]
 };
