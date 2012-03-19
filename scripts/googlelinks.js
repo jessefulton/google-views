@@ -14,18 +14,9 @@ fantomas.renderJSON = function(what) {
 };
 */
 
-var seedPages = [ 
-	{
-		"selector": "#main_content"
-		, "url": "http://www.npr.org/sections/politics/"
-	}/*,
-	{
-		"selector": "#content"
-		, "url": "http://www.foxnews.com/politics/index.html"
-	}
-	*/
-];
-
+casper.renderJSON = function(what) {
+    return this.echo(JSON.stringify(what, null, '  '));
+};
 
 function getLinksToFollow(theSelector) {
 	var mainDiv = document.querySelector(theSelector);
@@ -45,49 +36,154 @@ function getLinksToFollow(theSelector) {
 	
 }
 
-//http://news.cnet.com/8301-17939_109-10151227-2.html
-casper.start().each(config.users, function(self, user) {
 
-	self.log("Logging out", "debug");
-	self.thenOpen("https://accounts.google.com/Logout");
-	self.log("Logging in user " + user.email, "debug");
-	self.thenOpen("https://accounts.google.com/Login", function() {
+
+
+
+// Just opens the page and prints the title
+var start = function(self, user) {
+
+	var links = [];
+	var seedUrl = user.seed.url;
+	var selector = user.seed.selector;
+    self.start("https://accounts.google.com/Logout", function(self) {
+        self.echo('Page title: ' + self.getTitle());
+    }).thenOpen("https://accounts.google.com/Login", function() {
 		this.fill('form#gaia_loginform', {
 			'Email': user.email
 			, 'Passwd': user.password
 		}, true);
 	});
-	
-	var loginSuccess =  self.thenEvaluate(function(eml) {
-		return document.querySelector("#gbgs4dn").innerText == eml;
-	}, {"eml": user.email});
-	
-	if (loginSuccess) {
-		self.log("Logged in " + user.email + " successfully", "info");
-	}
-	else {
-		self.log("Could not log in " + user.email, "error");
-	}
-	
-	
 
-	var seedPage = user.seed;
-	self.thenOpen(seedPage.url, function() {
-		var links = [];
-		this.log("Beginning for " + this.getCurrentUrl() + " ("+this.getTitle()+")", "info");
-		links = casper.evaluate(getLinksToFollow, {"theSelector": seedPage.selector});
+	
+	self.then(function() {
+		var loginSuccess = this.evaluate(function(eml) {
+	    	var el = document.querySelector("#gbgs4dn");
+	    	var ret = false;
+	    	//if (el && (el.innerText == eml)) { ret = true; }
+	    	if (el) { ret = true; }
+	    	return ret;
+    	}, {"eml": user.email});
+    	
+    	loginSuccess = (this.getTitle() == "Account overview - Account Settings");
+    	
+		if (loginSuccess) {
+			this.log("Logged in " + user.email + " successfully", "info");
+			this.thenOpen(seedUrl, function() {
+				var found = this.evaluate(getLinksToFollow, {"theSelector" : selector});
+				this.echo(found.length + " links found on " + selector);
+				links = links.concat(found);
+			}).then(function() {
+				this.renderJSON(links);    
+			}).thenOpen('https://www.google.com/search?q=' + "foo", function() {
+				var fn = (user.email).replace("@", '').replace('.', '');
+				this.capture(fn + '.png');
+			});
+		}
+		else {
+			this.log("Could not log in " + user.email, "error");
+			this.log(this.getTitle() + " " + this.getCurrentUrl(), "error");
+		}        	
+    	
+	});
 
-		for (var i=0; i<links.length; i++) {
-			/*
-			casper.thenOpen(links[i], function() {
-				this.log("\tFollowed link to " + this.getCurrentUrl() + " ("+this.getTitle()+")", "INFO");				
-			});		
-			*/
-			//this.log("\t" + links[i], "debug");
+};
+
+// Get the links, and add them to the links array
+// (It could be done all in one step, but it is intentionally splitted)
+var addLinks = function(seed) {
+
+};
+
+casper.start().then(function(self) {
+    self.echo('Starting');
+});
+
+
+var currentLink = 0;
+
+// As long as it has a next link, and is under the maximum limit, will keep running
+function check(self) {
+    if (config.users[currentLink]) {
+        self.echo('--- User ' + currentLink + ' (' + config.users[currentLink].email + ') ---');
+        start(self, config.users[currentLink]);
+        //addLinks.call(self, config.users[currentLink].seed);
+        currentLink++;
+        self.run(check);
+    } else {
+        self.echo('All done.').exit();
+    }
+}
+
+casper.run(check);
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+
+//http://news.cnet.com/8301-17939_109-10151227-2.html
+//casper.start("https://accounts.google.com/Logout");
+
+casper.start("about:blank", function() {
+
+	this.each(config.users, function(self, user) {
+		
+		self.log("Logging out", "debug");
+		self.thenOpen("https://accounts.google.com/Logout");
+		self.log("Logging in user " + user.email, "debug");
+		
+		self.thenOpen("https://accounts.google.com/Login", function() {
+			this.fill('form#gaia_loginform', {
+				'Email': user.email
+				, 'Passwd': user.password
+			}, true);
+		});
+		
+		var loginSuccess =  self.thenEvaluate(function(eml) {
+			return document.querySelector("#gbgs4dn").innerText == eml;
+		}, {"eml": user.email});
+		
+		if (loginSuccess) {
+			self.log("Logged in " + user.email + " successfully", "info");
+		}
+		else {
+			self.log("Could not log in " + user.email, "error");
 		}
 		
-	});
+		
 	
+		var seedPage = user.seed;
+		self.thenOpen(seedPage.url, function() {
+			var links = [];
+			this.log("Beginning for " + this.getCurrentUrl() + " ("+this.getTitle()+")", "info");
+			links = casper.evaluate(getLinksToFollow, {"theSelector": seedPage.selector});
+	
+			for (var i=0; i<links.length; i++) {
+				//casper.thenOpen(links[i], function() {
+				//	this.log("\tFollowed link to " + this.getCurrentUrl() + " ("+this.getTitle()+")", "INFO");				
+				//});		
+				
+				//this.log("\t" + links[i], "debug");
+			}
+			
+		});
+		
+		self.thenOpen('https://www.google.com/search?q=' + "foo", function() {
+			var fn = (user.email).replace("@", '').replace('.', '');
+			this.capture(fn + '.png');
+		});
+	});
 });
 
 
@@ -97,8 +193,9 @@ casper.start().each(config.users, function(self, user) {
 casper.run(function() {
 	this.echo("done", "INFO").exit();
 });
+*/
 
-
+//===================================================
 
 /*
 //casper.echo(JSON.stringify(config.users));
