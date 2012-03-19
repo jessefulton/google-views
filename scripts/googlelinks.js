@@ -10,14 +10,11 @@ var casper = require('casper').create({
 var config = require('../conf/config.js');
 
 
-/*
-var fantomas = Object.create(casper);
-fantomas.renderJSON = function(what) {
-    return this.echo(JSON.stringify(what, null, '  '));
-};
-*/
 
-
+/**
+ *
+ * via http://stackoverflow.com/a/105074/1150652
+ */
 function guidGenerator() {
     var S4 = function() {
        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
@@ -25,16 +22,31 @@ function guidGenerator() {
     return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
 }
 
+
+/**
+ *
+ * via http://stackoverflow.com/a/7928115/1150652
+ */
 Array.prototype.unique = function(){
   return Object.keys(this.reduce(function(r,v){
     return r[v]=1,r;
   },{}));
 }
 
+
+/**
+ *
+ * via http://casperjs.org/#extending
+ */
 casper.renderJSON = function(what) {
     return this.echo(JSON.stringify(what, null, '  '));
 };
 
+
+/**
+ *
+ *
+ */
 function getLinksToFollow(theSelector, baseUrl) {
 	var mainDiv = document.querySelector(theSelector);
 	var foundLinks = mainDiv.querySelectorAll("a[href]:not([href^='javascript:']):not([href*=doubleclick]):not([href^='itpc://']):not([href^='zune://']):not([href^='#'])");
@@ -62,8 +74,6 @@ function getLinksToFollow(theSelector, baseUrl) {
 
 
 
-
-// Just opens the page and prints the title
 var start = function(self, user) {
 
 	var seedUrl = user.seed.url;
@@ -136,11 +146,6 @@ var visitLinks = function(self, links) {
 };
 
 
-// Get the links, and add them to the links array
-// (It could be done all in one step, but it is intentionally splitted)
-var addLinks = function(seed) {
-
-};
 
 casper.start().then(function(self) {
     self.echo('Starting');
@@ -154,7 +159,6 @@ function check(self) {
     if (config.users[currentUserIdx]) {
         self.echo('--- User ' + currentUserIdx + ' (' + config.users[currentUserIdx].email + ') ---');
         start(self, config.users[currentUserIdx]);
-        //addLinks.call(self, config.users[currentUserIdx].seed);
         currentUserIdx++;
         self.run(check);
     } else {
