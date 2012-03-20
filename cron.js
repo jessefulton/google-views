@@ -1,7 +1,7 @@
 var	spawn = require('child_process').spawn;
 
 var bin = "casperjs"
-var args = ['scripts/crawl.js', './conf/config.js'];
+var args = ['scripts/crawl.js', './conf/config.js', './screenshots/'];
 var cspr = spawn(bin, args);
   
 cspr.stdout.setEncoding('utf8');
@@ -36,6 +36,7 @@ cspr.stderr.on('data', function (data) {
 	var str = data.toString(), regex = /(\r?\n)/g;
 	console.log("ERR: " + str.replace(regex, '$1ERR: '));
 });
+
 
 cspr.on('exit', function (code) {
 	console.log('child process exited with code ' + code);

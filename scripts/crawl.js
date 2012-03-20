@@ -9,6 +9,7 @@ var casper = require('casper').create({
 });
 
 var confFile = casper.cli.args[0];
+var renderFolder = casper.cli.args[1];
 
 var config = require(confFile);
 
@@ -133,7 +134,7 @@ var visitLinks = function(self, links) {
 	for (var i=0; i<links.length; i++) {
 		self.thenOpen(links[i], function() {
 			this.log("\tFollowed link to " + this.getCurrentUrl() + " ("+this.getTitle()+")", "INFO");	
-			var fn = guidGenerator() + '.png';
+			var fn = renderFolder + guidGenerator() + '.png';
 			this.capture(fn);
 			this.echo("CMD" + "\t" + this.getCurrentUrl() + "\t" + this.getTitle() + "\t" + fn);
 		});		
