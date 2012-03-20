@@ -1,7 +1,7 @@
 var	spawn = require('child_process').spawn;
 
 var bin = "casperjs"
-var args = ['scripts/googlelinks.js'];
+var args = ['scripts/crawl.js', './conf/config.js'];
 var cspr = spawn(bin, args);
   
 cspr.stdout.setEncoding('utf8');
@@ -10,10 +10,24 @@ cspr.stdout.on('data', function (data) {
 	var lines = str.split(regex);
 	for (var i=0; i<lines.length; i++) {
   		var parts = lines[i].split(/\t/g);
-		console.log("OUT " + i + ": "); // + lines[i]);  	
-  		for (var j=0; j<parts.length; j++) {
-			console.log("\t" + parts[j]);
-  		}
+		//console.log("OUT " + i + ": " + lines[i]);  	
+		
+		
+		if (parts.length > 1) {
+			if (parts[0] == "USR") { 
+				var email = parts[1];
+				console.log("NEW USER: " + email);
+			}
+			if (parts[0] ==  "CMD" ) {
+				var url = parts[1];
+				var title = parts[2];
+				var imageName = parts[3];
+				console.log("\turl: " + url);
+				console.log("\ttitle: " + title);
+				console.log("\timage: " + imageName);
+			}
+		}
+		
 	}
 });
 

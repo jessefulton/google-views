@@ -3,11 +3,14 @@
 var casper = require('casper').create({
 	pageSettings: {
 		loadImages: true
-	},
-    verbose: true,
-    logLevel: 'debug'
+	}
+    //, verbose: true
+    //, logLevel: 'debug'
 });
-var config = require('../conf/config.js');
+
+var confFile = casper.cli.args[0];
+
+var config = require(confFile);
 
 
 
@@ -39,7 +42,7 @@ Array.prototype.unique = function(){
  * via http://casperjs.org/#extending
  */
 casper.renderJSON = function(what) {
-    return this.echo(JSON.stringify(what, null, '  '));
+    return this.log(JSON.stringify(what, null, '  '));
 };
 
 
@@ -79,7 +82,7 @@ var start = function(self, user) {
 	var seedUrl = user.seed.url;
 	var selector = user.seed.selector;
     self.start("https://accounts.google.com/Logout", function(self) {
-        self.echo('Page title: ' + self.getTitle());
+        //self.echo('Page title: ' + self.getTitle());
     }).thenOpen("https://accounts.google.com/Login", function() {
 		this.fill('form#gaia_loginform', {
 			'Email': user.email
@@ -130,8 +133,9 @@ var visitLinks = function(self, links) {
 	for (var i=0; i<links.length; i++) {
 		self.thenOpen(links[i], function() {
 			this.log("\tFollowed link to " + this.getCurrentUrl() + " ("+this.getTitle()+")", "INFO");	
-			var fn = guidGenerator();
-			this.capture(fn + '.png');
+			var fn = guidGenerator() + '.png';
+			this.capture(fn);
+			this.echo("CMD" + "\t" + this.getCurrentUrl() + "\t" + this.getTitle() + "\t" + fn);
 		});		
 	}
 
@@ -158,6 +162,7 @@ var currentUserIdx = 0;
 function check(self) {
     if (config.users[currentUserIdx]) {
         self.echo('--- User ' + currentUserIdx + ' (' + config.users[currentUserIdx].email + ') ---');
+		self.echo("USR" + "\t" + config.users[currentUserIdx].email);
         start(self, config.users[currentUserIdx]);
         currentUserIdx++;
         self.run(check);
