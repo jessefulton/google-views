@@ -1,11 +1,13 @@
 //see https://groups.google.com/forum/#!msg/casperjs/3t8R10N6zPo/CKi6yScMILEJ
 
+var fs = require('fs');
+
 var casper = require('casper').create({
 	pageSettings: {
 		loadImages: true
 	}
-    //, verbose: true
-    //, logLevel: 'debug'
+    , verbose: true
+    , logLevel: 'debug'
 });
 
 var confFile = casper.cli.args[0];
@@ -131,12 +133,50 @@ var visitLinks = function(self, links) {
 	self.renderJSON(links);
 	self.echo("=================");
 	
+	var theUserEmail = config.users[currentUserIdx].email;
+	
 	for (var i=0; i<links.length; i++) {
 		self.thenOpen(links[i], function() {
 			this.log("\tFollowed link to " + this.getCurrentUrl() + " ("+this.getTitle()+")", "INFO");	
-			var fn = renderFolder + guidGenerator() + '.png';
-			this.capture(fn);
-			this.echo("CMD" + "\t" + this.getCurrentUrl() + "\t" + this.getTitle() + "\t" + fn);
+			var filenameRoot = renderFolder + guidGenerator();
+			var screenshotNamePng = filenameRoot + '.png';
+			this.capture(screenshotNamePng);
+			var screenshotNamePdf = filenameRoot + '.pdf';
+			this.capture(screenshotNamePdf);
+			
+			//TODO: CREATE OBJECT, WRITE JSON INFO TO FILE (date, url, image location, html, body text, userid, seed url
+			
+			this.log("Writing JSON file...");
+			var theUrl = this.getCurrentUrl();
+			var theTitle = this.getTitle();
+			var theHtml = this.evaluate(function() {
+				var dt = document.doctype;
+				var doctype = '<!DOCTYPE '+ 
+					dt.name+' PUBLIC "'+ //maybe you should check for publicId first
+					dt.publicId+'" "'+
+					dt.systemId+'">';
+				return doctype + document.documentElement.outerHTML;
+			});
+			this.log("Got the HTML! \n" + theHtml);
+			var theText = this.evaluate(function() { return document.body.innerText; });
+			this.log("Got the text! \n" + theText);
+
+			//fs - see http://code.google.com/p/phantomjs/wiki/Interface#Filesystem_Module
+			fs.write(filenameRoot + ".json"
+				, JSON.stringify({
+					"user": theUserEmail
+					, "url" : theUrl
+					, "title": theTitle
+					, "date": Date.now()
+					, "html" : theHtml
+					, "text" : theText
+					, "png" : screenshotNamePng
+					, "pdf" : screenshotNamePdf
+				})
+				, "w"
+			); 
+			
+			this.echo("CMD" + "\t" + this.getCurrentUrl() + "\t" + this.getTitle() + "\t" + screenshotNamePng);
 		});		
 	}
 

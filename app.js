@@ -6,8 +6,15 @@ if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
  */
 var express = require('express')
 	, stylus = require('stylus')
-	, http = require('http')
-	, redis = require('redis');
+	, http = require('http');
+	
+var models = require('./models');
+
+var mongoose = require('mongoose')
+	, Schema = mongoose.Schema
+	, ObjectId = mongoose.SchemaTypes.ObjectId;
+
+
 
 
 var config = require('./conf/config.js');
@@ -37,11 +44,81 @@ app.configure('development', function(){
 
 
 
+models.defineModels(mongoose, function() {
+	app.CrawledPage = mongoose.model('crawledpage');
+	mongoose.connect('mongodb://' + "localhost/google-views"); //config.MONGODB_URI);
+    mongoose.connection.on("open", function() {
+        console.log("opened connection to database!");
+    });
+});
+
+
+
 /**
  * App routes.
  */
 app.get('/', function (req, res) {
 	res.render('index', { layout: true });
+});
+
+app.get('/crawled/:pageId', function (req, res, next) {
+	app.CrawledPage.findById(req.params.pageId, function(err, result) {
+		if (!err) {
+			//TODO: if games empty, display message
+			res.render('crawled-view', {
+				layout: true
+				, locals: { 
+					"bodyClasses": "history"
+					, "result": result
+				}
+			});
+		}
+		else {
+			console.log(err);
+			res.send('couldn\'t find anthying', 404);
+		}
+	});
+});
+
+app.get('/crawled/:userId', function (req, res, next) {
+
+});
+
+app.get('/crawled', function (req, res, next) {
+	var pgNum = 1; //req.params.pageNumber ? req.params.pageNumber : 1;
+	var nPerPage = 100;
+	var query = {};
+	var fields = {};
+	//var opts = {sort: [['date', "ascending"]], limit:100};
+	var opts = {limit:100};
+	console.log("looking for crawled pages");
+
+ 	app.CrawledPage.find(query, fields).skip((pgNum-1)*nPerPage).limit(nPerPage).execFind(function(err, results) {
+		if (!err) {
+			app.CrawledPage.count(function(err2, cnt) {
+				if (err2) {
+					console.log(err2);
+					res.send('error finding count', 500);
+				} else {
+					pageCount = Math.ceil(cnt / nPerPage);
+					//TODO: if games empty, display message
+					res.render('crawled-list', {
+						layout: true
+						, locals: { 
+							"bodyClasses": "history"
+							, "results": results
+							, "pageCount": pageCount
+						}
+					});
+
+				}
+			});
+		}
+		else {
+			console.log(err);
+			res.send('couldn\'t find anthying', 404);
+		}
+	});
 });
 
 
