@@ -1,0 +1,284 @@
+@import 'nib'
+//see https://github.com/visionmedia/nib/tree/master/lib/nib
+
+@import 'mymixins'
+
+
+body
+	min-height 800px
+
+h2
+	margin-bottom 20px
+
+#wrapper
+	overflow visible
+	position relative
+	background-color transparent
+	
+#connecting, #game, #queue, #round-ready, #round-end
+	position absolute
+	height 410px
+	z-index 100
+	left 0
+	top 0
+	background transparent //$softBeige
+	text-align center
+	width 720px
+	color BLACK
+	display block
+	.wrap
+		padding-top 150px
+
+#game, #queue, #round-ready, #round-end, #game-end
+	display none
+
+#queue
+	.loading
+		font-size 24px
+		
+#round-ready
+	padding-top 150px
+	
+
+#game-end
+	h2, h3
+		text-align center
+
+.summary
+	margin 50 0
+	table
+		margin: 20px 0 0 285px
+		width: 150px
+
+	
+#game
+	height auto
+	.meta
+		position relative
+		height auto
+		border-bottom 1px solid darken(PRIMARY_COLOR, SHADOW_AMT)
+		clearfix()
+		h3
+			float left
+			color BLACK
+			font-size 15px
+		#imagenumber
+			float right
+			font-weight bold
+	#toolbar 
+		position relative
+		height auto
+		clearfix()
+		ul#guesses
+			display block
+			height 80px
+			margin 0 5px 0 -5px
+			overflow visible
+			padding 0px
+			width 560px
+			float left
+			//&.expanded
+			li
+				display block
+				float left
+				position relative
+				margin 5px
+				padding 0
+				width 60px
+				height 60px
+				overflow visible
+				&.grouping
+					background-image url('icons/tracks-export2.png')
+					ul
+						display none
+						position absolute
+						background-color lighten(PRIMARY_COLOR, HIGHLIGHT_AMT)
+						border 5px double SECONDARY_COLOR
+						height 100px
+						width 210px
+						z-index 999999
+						top -95px
+						left -70px
+						margin 0
+						padding 0
+						li
+							background-image url('icons/icons-export2.png')
+							&#guess-puma
+								background-position -60px
+							&#guess-bobcat
+								background-position -120px
+							&#guess-coyote
+								background-position -300px
+							&#guess-fox
+								background-position -240px
+							&#guess-raccoon 
+								background-position -660px
+							&#guess-rabbit 
+								background-position -540px
+							&#guess-squirrel
+								background-position -360px
+							&#guess-wild-turkey
+								background-position -900px
+							&#guess-turkey-vulture
+								background-position -960px
+							&#guess-bird
+								background-position -1020px
+							&#guess-opossum, &#guess-skunk
+								background-image url('icons/tracks-export2.png')
+								background-position -120px
+							&#guess-mouse, &#guess-woodrat
+								background-image url('icons/tracks-export2.png')
+								background-position -240px
+							&#guess-deer, &#guess-boar
+								background-image url('icons/tracks-export2.png')
+								background-position -180px
+							&#guess-domestic-dog
+								background-image url('icons/tracks-export2.png')
+								background-position 0
+							&#guess-domestic-cat
+								background-image url('icons/tracks-export2.png')
+								background-position -60px
+							&.expanded
+								background-color $burlap
+					&#group-hooved ul 
+						width 140px
+						left -35px
+					&#group-small-mammals ul
+						width 280px
+						left -110px
+					&.expanded
+						ul
+							display block
+				&#group-canines
+					background-position 0 0
+				&#group-felines
+					background-position -60px
+				&#group-hooved
+					background-position -180px
+				&#group-omnivores
+					background-position -120px
+				&#group-small-mammals
+					background-position -240px
+				&#group-birds
+					background-position -300px
+				&#guess-unknown
+					background-image url('icons/unknown.png')
+				&#guess-skip
+					bad-button()
+					width 45px
+					height 40px
+					span
+						display block
+						z-index 1
+						position absolute
+						top 10px
+						left 10px
+						width 40px
+						height 45px
+						line-height 40px
+						background transparent
+						color WHITE
+						font-weight bold
+						font-size 14px
+						border none
+				&.expanded
+					cursor pointer
+					span
+						display block
+				span
+					display none
+					position absolute
+					top 60px
+					left -5px
+					width 70px
+					z-index 999998
+					background transparent //lighten(SECONDARY_COLOR, HIGHLIGHT_AMT)
+					color BLACK
+					font-weight bold
+					border none // 1px solid darken(SECONDARY_COLOR, SHADOW_AMT)
+					text-align center
+
+
+
+#game-summary
+	display block
+	float left
+	position relative
+	width 160px
+	height auto
+	#quit-game
+		cursor pointer
+		color PRIMARY_COLOR
+		font-weight bold
+		float right
+	table
+		float left
+		width 100%
+
+
+
+		
+button
+	default-button()
+
+button.start-round
+	good-button()
+	padding 10px 20px
+	height 55px
+	width 200px
+	font-size 30px
+
+button.exit
+	margin 20px 0 0 250px
+	padding 10px 20px
+	height 55px
+	width 220px
+	font-size 25px
+	
+#disconnect-backout, #leave-queue button
+	bad-button()
+
+#partner-status
+	margin-left 1em
+	&.guessed
+		color GOOD_PRIMARY
+	&.skipped
+		color BAD_PRIMARY
+	
+#correct, #incorrect, #matched, #unmatched, #multiplier
+	display none
+	position absolute
+	top 0
+	height 600px
+	width 720px
+	z-index 1000
+	background-repeat: no-repeat
+	background-position 50% 50%
+
+#multiplier
+	text-align center
+	font-weight bold
+	font 200px "Impact", Helvetica, Arial, sans-serif
+	color MUSTARD
+	height 200px
+	top 200px
+	z-index 1001
+
+#matched
+	background-image url('icons/check.png')
+
+#unmatched
+	background-image url('icons/x.png')
+
+#correct
+	color #00FF00
+
+#incorrect
+	color: #FF0000
+
+.waiting
+	display none
+	
+#sb-body
+	color #FFF
+	font 12px "HelveticaNeue-Light", "Helvetica Neue", Helvetica, Arial, sans-serif

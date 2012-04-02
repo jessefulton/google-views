@@ -6,6 +6,7 @@ if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
  */
 var express = require('express')
 	, stylus = require('stylus')
+	, nib = require('nib')
 	, http = require('http');
 	
 var models = require('./models');
@@ -29,18 +30,25 @@ console.log(JSON.stringify(config));
 var app = express.createServer();
 
 app.configure(function(){
-  //app.db = redis.createClient();
-  app.set('views', __dirname + '/views');
-  app.set('view engine', 'jade');
-  app.set('case sensitive routes', true);
-  //let's change this to a local dir? then rsync to media server or use nginx?
-  app.set('screenshots', '/tmp');
-  app.set('root', __dirname);
-  app.set('outputdir', __dirname + "/public/_generated");
-  app.use(express.favicon());
-  app.use(stylus.middleware({ src: __dirname + '/public' }));
-  app.use(express.static(__dirname + '/public'));
-  app.use(app.router);
+	//app.db = redis.createClient();
+	app.set('views', __dirname + '/views');
+	app.set('view engine', 'jade');
+	app.set('case sensitive routes', true);
+	//let's change this to a local dir? then rsync to media server or use nginx?
+	app.set('screenshots', '/tmp');
+	app.set('root', __dirname);
+	app.set('outputdir', __dirname + "/public/_generated");
+	app.use(express.favicon());
+	app.use(stylus.middleware({ src: __dirname + '/public', compile: compile }))
+	app.use(express.static(__dirname + '/public'));
+	app.use(app.router);
+  
+	function compile (str, path) {
+		return stylus(str)
+			.set('filename', path)
+			.use(nib());
+	};
+  
 });
 
 
