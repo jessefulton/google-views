@@ -17,7 +17,14 @@ var mongoose = require('mongoose')
 
 
 
-var config = require('./conf/config.js');
+var config = {};
+config.site = require('./config').init(["MONGODB_URI","LOGGLY_SUBDOMAIN","LOGGLY_INPUT_KEY"], "./conf/site.js");
+
+
+config.users = require("./conf/users.js").users;
+
+console.log(JSON.stringify(config));
+
 
 var app = express.createServer();
 
@@ -46,7 +53,7 @@ app.configure('development', function(){
 
 models.defineModels(mongoose, function() {
 	app.CrawledPage = mongoose.model('crawledpage');
-	mongoose.connect('mongodb://' + "localhost/google-views"); //config.MONGODB_URI);
+	mongoose.connect(config.site.MONGODB_URI);
     mongoose.connection.on("open", function() {
         console.log("opened connection to database!");
     });
@@ -75,13 +82,32 @@ app.get('/crawled/:pageId', function (req, res, next) {
 		}
 		else {
 			console.log(err);
-			res.send('couldn\'t find anthying', 404);
+			next();
+
 		}
 	});
 });
 
 app.get('/crawled/:userId', function (req, res, next) {
 
+	//db.crawledpages.find({"user": "jesseinla2@gmail.com"}, {"title":1});
+	console.log("looking for user: " + req.params.userId);
+	app.CrawledPage.find({"user": req.params.userId}, {}).execFind(function(err, results) {
+		if (!err) {
+			res.render('crawled-list', {
+				layout: true
+				, locals: { 
+					"bodyClasses": "history"
+					, "results": results
+				}
+			});
+		}
+		else {
+			console.log(err);
+			next();
+
+		}
+	});
 });
 
 app.get('/crawled', function (req, res, next) {
@@ -92,6 +118,16 @@ app.get('/crawled', function (req, res, next) {
 	//var opts = {sort: [['date', "ascending"]], limit:100};
 	var opts = {limit:100};
 	console.log("looking for crawled pages");
+
+	var userEmails = (function() {
+		var ret = [];
+		config.users.forEach(function(el, idx, arr) {
+			ret.push(el.email);
+		});
+		return ret;
+	})();
+
+	console.log(userEmails);
 
  	app.CrawledPage.find(query, fields).skip((pgNum-1)*nPerPage).limit(nPerPage).execFind(function(err, results) {
 		if (!err) {
@@ -108,6 +144,7 @@ app.get('/crawled', function (req, res, next) {
 							"bodyClasses": "history"
 							, "results": results
 							, "pageCount": pageCount
+							, "users": userEmails
 						}
 					});
 

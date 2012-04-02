@@ -5,3 +5,9 @@ h1 #{result.title}
 	img(href="#{result.png}")
 	h2 #{result.title}
 	p Read by #{result.user}
+
+	img(src=".#{result.png}")
+
+	#pageText
+		pre #{result.text}
+	//iframe#preview(src="#{result.url}", width="100%", height="500px")

@@ -1,7 +1,7 @@
 var	spawn = require('child_process').spawn;
 
 var bin = "casperjs"
-var args = ['scripts/crawl.js', './conf/config.js', './screenshots/'];
+var args = ['scripts/crawl.js', './conf/users.js', './screenshots/'];
 var cspr = spawn(bin, args);
   
 cspr.stdout.setEncoding('utf8');

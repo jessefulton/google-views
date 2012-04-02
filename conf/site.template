@@ -1,0 +1,6 @@
+//TO USE THIS FILE, ADD YOUR OPTIONS BELOW AND RENAME TO site.js
+module.exports = {
+	MONGODB_URI: ""
+	, LOGGLY_SUBDOMAIN: ""
+	, LOGGLY_INPUT_KEY: ""
+};

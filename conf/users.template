@@ -1,0 +1,20 @@
+module.exports = {
+	users: [
+		{
+			email: "foo@bar.com"
+			, password: "baz"
+			, seed: {
+				"url": "http://www.mysite.com/some_page
+				, "selector": "#main_content"				
+			}
+		}
+		, {
+			email: "asdf@1234.com"
+			, password: "password"
+			, seed: {
+				"url": "http://www.myothersite.com/another_page"
+				, "selector": "#content"
+			}
+		}
+	]
+};
