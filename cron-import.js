@@ -14,12 +14,12 @@ models.defineModels(mongoose, function() {
         console.log("opened connection to database!");
 
 
-		fs.readdir('screenshots', function(err, files) {
+		fs.readdir('./data', function(err, files) {
 			files.forEach(function(el, idx, arr) {
 				if (/\.json$/.test(el)) {
 				
 					//TODO: readFileSync, closeSync, unlinkFileSync
-					fs.readFile('screenshots' + "/" + el, function(err, data) {
+					fs.readFile('./data' + "/" + el, function(err, data) {
 						if (err) throw err;
 						var theObj = JSON.parse(data);
 						var cp = new CrawledPage(theObj);

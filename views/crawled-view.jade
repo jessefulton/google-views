@@ -1,11 +1,14 @@
 .meta
 	h2 #{result.title}
-	p Read by #{result.user}
+	p Read by #{result.user} on #{dateTimeFormat(result.date)}
+	p
+		| View original at
+		a(href="#{result.url}") #{hostname(result.url)}
 
 
 
 .crawled-page
-	img(src=".#{result.png}", width="100%")
+	img(src="/screenshots/#{result.png}", width="100%")
 
 	//
 		#pageText

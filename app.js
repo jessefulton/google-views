@@ -211,6 +211,32 @@ app.get('/search/:query', function (req, res) {
 });
 
 
+
+app.helpers({
+		"dateFormat": function(dateObj){ 
+			return dateObj.getMonth() + "/" + dateObj.getDate() + "/" + dateObj.getFullYear();
+		}
+		, "dateTimeFormat": function(dateObj){ 
+			//TODO: clean up time to 12 hour clock?
+			return dateObj.getMonth() + "/" + dateObj.getDate() + "/" + dateObj.getFullYear() + " " + dateObj.getHours() + ":" + dateObj.getMinutes();
+		}
+		, "percentage": function(num) {
+			return Math.round(num * 100) + "%";
+		}
+		, "isNumber": function(num) {
+			return (typeof(num) == "number") && !isNaN(num);
+		}
+		//via http://beardscratchers.com/journal/using-javascript-to-get-the-hostname-of-a-url
+		, "hostname": function(str) {
+			var re = new RegExp('^(?:f|ht)tp(?:s)?\://([^/]+)', 'im');
+			return str.match(re)[1].toString();
+		}
+});
+
+
+
+
+
 /**
  * Start it.
  */

@@ -12,6 +12,7 @@ var casper = require('casper').create({
 
 var confFile = casper.cli.args[0];
 var renderFolder = casper.cli.args[1];
+var jsonFolder = casper.cli.args[2];
 
 var config = require(confFile);
 
@@ -114,7 +115,7 @@ var start = function(self, user) {
 				links = links.concat(found);
 				links = links.unique();
 				//links.sort();
-				visitLinks(this, links);
+				visitLinks(this, user, links);
 			});
 			
 
@@ -128,27 +129,27 @@ var start = function(self, user) {
 	});
 };
 
-var visitLinks = function(self, links) {
+var visitLinks = function(self, user, links) {
+	/*
 	self.echo("=================");	
 	self.renderJSON(links);
 	self.echo("=================");
-	
-	var theUserEmail = config.users[currentUserIdx].email;
+	self.log(JSON.stringify(user));
+	self.echo("=================");
+	self.log(links[0]);
+	self.echo("=================");
+	*/
+	var theUserEmail = user.email;
+	var seedUrl = user.seed.url;
 	
 	for (var i=0; i<links.length; i++) {
 		self.thenOpen(links[i], function() {
-			this.log("\tFollowed link to " + this.getCurrentUrl() + " ("+this.getTitle()+")", "INFO");	
-			var filenameRoot = renderFolder + guidGenerator();
-			var screenshotNamePng = filenameRoot + '.png';
-			this.capture(screenshotNamePng);
-			var screenshotNamePdf = filenameRoot + '.pdf';
-			this.capture(screenshotNamePdf);
-			
-			//TODO: CREATE OBJECT, WRITE JSON INFO TO FILE (date, url, image location, html, body text, userid, seed url
-			
-			this.log("Writing JSON file...");
+			this.log("Opened Page! \n");
+		
 			var theUrl = this.getCurrentUrl();
 			var theTitle = this.getTitle();
+			this.log("\tFollowed link to " + theUrl + " (" + theTitle + ")", "INFO");	
+
 			var theHtml = this.evaluate(function() {
 				var dt = document.doctype;
 				var doctype = '<!DOCTYPE '+ 
@@ -160,18 +161,30 @@ var visitLinks = function(self, links) {
 			this.log("Got the HTML! \n" + theHtml);
 			var theText = this.evaluate(function() { return document.body.innerText; });
 			this.log("Got the text! \n" + theText);
+			
+			var filenameRoot = guidGenerator();
+			var screenshotNamePng = filenameRoot + '.png';
+			this.capture(renderFolder + screenshotNamePng);
+			
+			//var screenshotNamePdf = filenameRoot + '.pdf';
+			//this.capture(renderFolder + screenshotNamePdf);
+			
+			//TODO: CREATE OBJECT, WRITE JSON INFO TO FILE (date, url, image location, html, body text, userid, seed url
+			
+			this.log("Writing JSON file...");
 
 			//fs - see http://code.google.com/p/phantomjs/wiki/Interface#Filesystem_Module
-			fs.write(filenameRoot + ".json"
+			fs.write(jsonFolder + filenameRoot + ".json"
 				, JSON.stringify({
 					"user": theUserEmail
 					, "url" : theUrl
+					, "seed" : seedUrl
 					, "title": theTitle
 					, "date": Date.now()
 					, "html" : theHtml
 					, "text" : theText
 					, "png" : screenshotNamePng
-					, "pdf" : screenshotNamePdf
+					//, "pdf" : screenshotNamePdf
 				})
 				, "w"
 			); 
