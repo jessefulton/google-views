@@ -1,0 +1,13 @@
+{
+    "name": "Google Views"
+  , "description": "DANM MFA thesis project"
+  , "version": "0.0.1"
+  , "dependencies": {
+        "express": "2.5.8"
+      , "jade": "0.20.3"
+      , "stylus": "0.24.0"
+      , "nib": "0.3.2"
+      , "mongoose": "2.5.13"
+      , "optimist": "0.3.1"
+    }
+}
