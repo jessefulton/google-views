@@ -7,7 +7,8 @@ if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
 var express = require('express')
 	, stylus = require('stylus')
 	, nib = require('nib')
-	, http = require('http');
+	, http = require('http')
+	, spawn = require('child_process').spawn;
 	
 var models = require('./models');
 
@@ -166,47 +167,72 @@ app.get('/crawled', function (req, res, next) {
 	});
 });
 
-
+app.get('/search/:query', function (req, res) {
+	var u = [];
+	config.users.forEach(function(el, idx, arr) {
+		u.push(el.email.toLowerCase());
+	});
+	res.render('search-view', { layout: true, "users":u, "query": req.params.query });
+});
 
 /**
  * App routes.
  */
-app.get('/search/:query', function (req, res) {
-	var exec = require('child_process').exec;
-	var script = __dirname + '/scripts/googlelinks.js';
+app.get('/screenshots/searches/:username/:query', function (req, res) {
 	var query = req.params.query;
 	
-	var userEmail = config.users[0].email;
-	var userPass = config.users[0].password;
+	console.log(query + " " + query.indexOf(".png", query.length -4));
 	
-	var cookies = ""; //--cookies-file=./cookies.txt
-	
-	
-	var cmd = ["casperjs", script];
-	cmd.push("--email=" + userEmail);
-	cmd.push("--password=" + userPass);
-	cmd.push("--query=\"" + query +"\"");
-	//cmd.push("--cookies-file=./cookies.txt");
-	cmd = cmd.join(' ');
-	exec(cmd, function(error, stdout, stderr) {
-		console.log(error);
-		console.log(stderr);
-		res.writeHead(200, {"Content-Type": "text/html"});
-		res.write(stdout);
-		res.end();
+	if (query.indexOf(".png", query.length - 4) === -1) {
+		res.send("invalid request", 500);
+		return;
+	}
+	else {
+		query = query.slice(0, -4);
+	}
+	var userEmail = req.params.username;
+	var userPass = "";
+	config.users.forEach(function(el, idx, arr) {
+		if (el.email.toLowerCase() == userEmail.toLowerCase()) {
+			userPass = el.password;
+		}
 	});
-
-/*
 	
-	exec("casperjs " + script + " --email=" + userEmail + " --password=" + userPass + " --query=" + query + " " + cookies, function (error, stdout, stderr) {
-		console.log(error);
-		console.log(stderr);
-		res.writeHead(200, {"Content-Type": "text/html"});
-		res.write(stdout);
-		res.end();
+	if (!userPass) {
+		res.send("Invalid user", 500);
+		return;
+	}
+	
+
+	var filename = "public/screenshots/searches/" + userEmail + "/" + query + ".png";
+	
+	var bin = "casperjs";
+	var args = ["./scripts/search.js", "--email=" + userEmail, "--password=" + userPass, "--query=\"" + query + "\"", "--filename=" + filename];
+	
+
+	console.log("About to run casperjs");
+	console.log(args);
+
+	var cspr = spawn(bin, args);
+  
+	cspr.stdout.on('data', function (data) {
+		console.log('stdout: ' + data);
+	});
+	
+	cspr.stderr.on('data', function (data) {
+		console.log('stderr: ' + data);
+	});
+	
+	cspr.on('exit', function (err) {
+		console.log('child process exited with code ' + err);
+		if (err) res.send(err, 500);
+		//console.log('screenshot - rasterized %s', url);
+		//magic!
+		//app.emit('screenshot', url, options.path, id);
+		res.sendfile(filename);
 	});
   
-*/
+
 
 });
 
