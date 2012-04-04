@@ -1,5 +1,3 @@
 .DS_Store
 node_modules
 conf/*.js
-screenshots/
-public/stylesheets/*.css
