@@ -1,11 +1,19 @@
 var	spawn = require('child_process').spawn;
 
-var bin = "casperjs"
-var args = ['scripts/crawl.js', './conf/users.js', './public/screenshots/', './data/'];
-var cspr = spawn(bin, args);
+var users = require('./conf/users.js').users;
+
+var user = users[0];
+
+var cmd = "casperjs";
+var casperArgs = user.tor ? ["--proxy=127.0.0.1:54597", "--proxy-type=socks5"] : [];
+var script = ['scripts/crawl.js'];
+var scriptArgs = ["--email=" + user.email, "--password=" + user.password, "--seed=" + user.seed.url, "--selector=" + user.seed.selector, '--image-output=./public/screenshots/', '--json-output=./data/'];
+var cspr = spawn(cmd, casperArgs.concat(script, scriptArgs));
   
 cspr.stdout.setEncoding('utf8');
 cspr.stdout.on('data', function (data) {
+	console.log(data);
+	return;
 	var str = data.toString(), regex = /\r?\n/g;
 	var lines = str.split(regex);
 	for (var i=0; i<lines.length; i++) {
