@@ -198,6 +198,13 @@ var visitLinks = function(self, user, links) {
 			var filenameRoot = guidGenerator();
 			var screenshotNamePng = filenameRoot + '.png';
 			this.capture(renderFolder + screenshotNamePng);
+			this.capture(renderFolder + "textures/" + screenshotNamePng, {
+				top: 0,
+				left: 0,
+				width: 1024,
+				height: 1024
+			});
+
 			
 			//var screenshotNamePdf = filenameRoot + '.pdf';
 			//this.capture(renderFolder + screenshotNamePdf);
