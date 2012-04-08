@@ -106,40 +106,71 @@
 					floorCanvasContext.fillRect( 0, 0, 64, 64);
 					floorCanvasContext.fillRect( 64, 64, 64, 64 );
 	
-	
-					var floorTexture = new THREE.Texture( floorCanvas, THREE.UVMapping, THREE.RepeatWrapping, THREE.RepeatWrapping );
-						floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
+					var floorTexture = THREE.ImageUtils.loadTexture( '/screenshots/textures/google-search.png', THREE.UVMapping, function(image) {
+						console.log(image.width);
+					});
+					//var floorTexture = new THREE.Texture( floorCanvas, THREE.UVMapping, THREE.RepeatWrapping, THREE.RepeatWrapping );
+					
+					var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
 	
 					floorTexture.needsUpdate = true;
-					floorTexture.repeat.set( 1000, 1000 );
-	
+					floorTexture.repeat.set( 10000, 10000 );
+				    floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+
 					var geometry = new THREE.PlaneGeometry( 100, 100 );
 	
 					var floorMesh = new THREE.Mesh( geometry, floorMaterial );
-					floorMesh.rotation.x = Math.PI / 2;
+					floorMesh.rotation.x = -Math.PI / 2;
 					floorMesh.scale.set( 1000, 1000, 1000 );
 					floorMesh.doubleSided = true;
 	
-					floorMesh.position.y = -50;
+					floorMesh.position.y = -10;
+					floorMesh.position.x = -500;
 					scene.add( floorMesh );
 				};
 					
 					
 				addFloor();
 				
-				var addBlockingPlane = function() {
-					var mat = new THREE.MeshBasicMaterial( { color: 0xffffff} );				
-					var geometry = new THREE.PlaneGeometry( 1, 1 );
-					blockingPlane = new THREE.Mesh( geometry, mat );
-					blockingPlane.rotation.y = Math.PI / 2;
-					blockingPlane.scale.set( 10, 20, 1 );
-					blockingPlane.doubleSided = true;
-					blockingPlane.position.set(0,0,0);
-					scene.add(blockingPlane);
+				var addBlockingPlane = function(flip) {
+					// GROUND
+					var floorCanvas = document.createElement( "canvas" ),
+						floorCanvasContext = floorCanvas.getContext( "2d" );
+	
+					floorCanvas.width = floorCanvas.height = 128;
+	
+					floorCanvasContext.fillStyle = "#444";
+					floorCanvasContext.fillRect( 0, 0, 128, 128 );
+	
+					floorCanvasContext.fillStyle = "#fff";
+					floorCanvasContext.fillRect( 0, 0, 64, 64);
+					floorCanvasContext.fillRect( 64, 64, 64, 64 );
+	
+					var floorTexture = THREE.ImageUtils.loadTexture( '/screenshots/textures/google-search.png', THREE.UVMapping, function(image) {
+						console.log(image.width);
+					});
+					//var floorTexture = new THREE.Texture( floorCanvas, THREE.UVMapping, THREE.RepeatWrapping, THREE.RepeatWrapping );
+					
+					var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
+	
+					floorTexture.needsUpdate = true;
+					floorTexture.repeat.set( 100, 100 );
+				    floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+
+					var geometry = new THREE.PlaneGeometry( 100, 200 );
+	
+					var floorMesh = new THREE.Mesh( geometry, floorMaterial );
+					floorMesh.rotation.y = Math.PI / 2 * (flip ? -1 : 1);
+					floorMesh.position.x = .01 * (flip ? -1 : 1);
+					//floorMesh.scale.set( 1000, 1000, 1000 );
+					floorMesh.doubleSided = true;
+	
+					floorMesh.position.y = -50;
+					scene.add( floorMesh );
 				}
 				
-				addBlockingPlane();
-				
+				addBlockingPlane(true);
+				addBlockingPlane(false);				
 				
 				var addImgTex = function(url, x, y, z, cb) {
 					var imgTex = THREE.ImageUtils.loadTexture( url, THREE.UVMapping, function( image ) {
