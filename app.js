@@ -8,7 +8,8 @@ var express = require('express')
 	, stylus = require('stylus')
 	, nib = require('nib')
 	, http = require('http')
-	, spawn = require('child_process').spawn;
+	, spawn = require('child_process').spawn
+	, fs = require('fs');
 	
 var models = require('./models');
 
@@ -235,6 +236,60 @@ app.get('/screenshots/searches/:username/:query', function (req, res) {
 
 
 });
+
+
+
+
+
+/**
+ * GET serve when already rasterized.
+ */
+
+app.get('/screenshots/textures/:filename', function(req, res, next){
+	//if file exists: public/screenshots/id
+	//convert to 1024x512
+	
+	try {
+		var fStats = fs.lstatSync("./public/screenshots/" + req.params.filename);
+	
+		if (fStats.isFile()) {
+			//TODO: imagemagick - convert -crop to 1024x1024
+			res.send("found source image - next to create thumbnail...", 200);
+			return;
+		}
+	}
+	catch(e) {
+	
+	}
+	finally {
+			res.send("There was an error processing your request", 500);
+			return;	
+	}
+	
+	var cspr = spawn(bin, args);
+  
+	cspr.stdout.on('data', function (data) {
+		console.log('stdout: ' + data);
+	});
+	
+	cspr.stderr.on('data', function (data) {
+		console.log('stderr: ' + data);
+	});
+	
+	cspr.on('exit', function (err) {
+		console.log('child process exited with code ' + err);
+		if (err) res.send(err, 500);
+		//console.log('screenshot - rasterized %s', url);
+		//magic!
+		//app.emit('screenshot', url, options.path, id);
+		res.sendfile(filename);
+	});
+  
+});
+
+
+
+
 
 
 
