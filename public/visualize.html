@@ -184,6 +184,7 @@
 						//THE_MESH.scale.x = image.width / 100;
 						//THE_MESH.scale.y = image.height / 100;
 						THE_MESH.position.set(x,y,z);
+						THE_MESH.doubleSided = true;
 						scene.add( THE_MESH );
 						cb(THE_MESH);
 					});
@@ -238,14 +239,17 @@
 	
 				function render() {
 					var seconds = Date.now() / 1000;
-					var radius = 5;
+					var radius = 10;
 					var period = 10;
 
 					//angle	= (seconds*Math.PI)/4;
 					
 					camera.position.x	= Math.cos((seconds/period) * Math.PI) * radius;
+					camera.position.z	= (Math.sin((seconds/period) * Math.PI) * 40);
+					
 					for (var i=0; i<meshes.length; i++) {
 						meshes[i].position.y = Math.sin((seconds/period) * i*(Math.PI/meshes.length)) * 1;
+						meshes[i].position.z = Math.cos((seconds/period) * i*(Math.PI/meshes.length)) * 1;
 					}
 					
 					//console.log(camera.position.x);
