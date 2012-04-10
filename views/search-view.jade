@@ -1,4 +1,6 @@
 .results
 	each user in users
 		.result
-			img(src="/screenshots/searches/#{user}/#{query}.png", width="100%")
+			h3 #{user}
+			.img
+				img(src="/screenshots/searches/#{user}/#{query}.png", width="100%")

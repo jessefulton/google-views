@@ -77,6 +77,10 @@ models.defineModels(mongoose, function() {
 app.get('/', function (req, res) {
 	res.render('index', { layout: true });
 });
+app.get('/about', function (req, res) {
+	res.render('about', { layout: true });
+});
+
 
 app.get('/crawled/:pageId', function (req, res, next) {
 	app.CrawledPage.findById(req.params.pageId, function(err, result) {
