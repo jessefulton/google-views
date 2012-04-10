@@ -11,10 +11,12 @@ if (!user) {
 }
 
 
+//TODO: crawl multiple seeds...
+
 var cmd = "casperjs";
 var casperArgs = user.tor ? user.tor : [];
 var script = ['scripts/crawl.js'];
-var scriptArgs = ["--email=" + user.email, "--password=" + user.password, "--seed=" + user.seed.url, "--selector=" + user.seed.selector, '--image-output=./public/screenshots/', '--json-output=./data/'];
+var scriptArgs = ["--email=" + user.email, "--password=" + user.password, "--seed=" + user.seeds[0].url, "--selector=" + user.seed.selector, '--image-output=./public/screenshots/', '--json-output=./data/'];
 var cspr = spawn(cmd, casperArgs.concat(script, scriptArgs));
   
 cspr.stdout.setEncoding('utf8');

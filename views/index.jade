@@ -14,7 +14,6 @@ script(src="three.js/examples/js/Detector.js")
 script(src="three.js/examples/js/Stats.js")
 
 script
-	if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 	var SCREEN_WIDTH = window.innerWidth;
 	var SCREEN_HEIGHT = window.innerHeight;
@@ -35,9 +34,12 @@ script
 
 	var meshes = [];
 
-
-	init();
-
+	if ( ! Detector.webgl ) {
+		Detector.addGetWebGLMessage({parent: document.getElementById("webgl")});
+	}
+	else {
+		init();
+	}
 
 	function init() {
 
