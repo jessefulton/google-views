@@ -18,24 +18,29 @@ models.defineModels(mongoose, function() {
 			files.forEach(function(el, idx, arr) {
 				if (/\.json$/.test(el)) {
 				
+					var filename = './data' + "/" + el;
+				
 					//TODO: readFileSync, closeSync, unlinkFileSync
-					fs.readFile('./data' + "/" + el, function(err, data) {
-						if (err) throw err;
-						var theObj = JSON.parse(data);
-						var cp = new CrawledPage(theObj);
-						cp.save(function(err, newObj) {
-							if (!err) {
-								console.log("SAVED OBJ: " + newObj.title);
-							}
-							else {
-								console.log(err);
-							}
-							
-							//TODO: check if last file in forEach and call process.exit();
-							
-						});
+					var theObj = JSON.parse(fs.readFileSync(filename));
+					//fs.closeSync(filename);
+					
+					var cp = new CrawledPage(theObj);
+					cp.save(function(err, newObj) {
+						fs.unlinkSync(filename);
+						console.log(idx + ", " + arr.length);
+						if (!err) {
+							console.log("SAVED OBJ: " + newObj.title);
+						}
+						else {
+							console.log(err);
+						}
 						
+						if (idx == arr.length -1) {
+							process.exit();
+						}
+
 					});
+					
 				
 
 				}

@@ -3,6 +3,9 @@ var users = require('./conf/users.js').users;
 var argv = require('optimist').argv;
 
 var user = users[(typeof(argv._[0]) === "undefined" ? 0 : argv._[0])];
+var seed = user.seeds[(typeof(argv._[1]) === "undefined" ? 0 : argv._[1])];
+
+
 
 if (!user) {
 	console.log("Error getting user at index %d", argv._[0]);
@@ -15,8 +18,8 @@ if (!user) {
 
 var cmd = "casperjs";
 var casperArgs = user.tor ? user.tor : [];
-var script = ['scripts/crawl.js'];
-var scriptArgs = ["--email=" + user.email, "--password=" + user.password, "--seed=" + user.seeds[0].url, "--selector=" + user.seed.selector, '--image-output=./public/screenshots/', '--json-output=./data/'];
+var script = [__dirname + '/scripts/crawl.js'];
+var scriptArgs = ["--email=" + user.email, "--password=" + user.password, "--seed=" + seed.url, "--selector=" + seed.selector, '--image-output=./public/screenshots/', '--json-output=./data/'];
 var cspr = spawn(cmd, casperArgs.concat(script, scriptArgs));
   
 cspr.stdout.setEncoding('utf8');
