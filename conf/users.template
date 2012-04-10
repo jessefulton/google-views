@@ -7,6 +7,7 @@ module.exports = {
 				"url": "http://www.mysite.com/some_page
 				, "selector": "#main_content"				
 			}
+			, tor : ["--proxy=127.0.0.1:54597", "--proxy-type=socks5"]
 		}
 		, {
 			email: "asdf@1234.com"
@@ -15,6 +16,7 @@ module.exports = {
 				"url": "http://www.myothersite.com/another_page"
 				, "selector": "#content"
 			}
+			, tor : []
 		}
 	]
 };
