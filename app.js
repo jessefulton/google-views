@@ -396,7 +396,7 @@ app.on('crontick', function(el) {
 	}
 	app.set('datastream', datastream);
 	
-	console.log(datastream);
+	//console.log(datastream);
 	
 	app.emit('datastream', el, datastream);
 });
