@@ -1,16 +1,14 @@
-//TODO: Combine/replace this with generic "view.js"
-
 var fs = require('fs');
 var casper = require('casper').create();
 
 
-if (!(casper.cli.has("email")) || !(casper.cli.has("password")) || !(casper.cli.has("query")) || !(casper.cli.has("filename"))) {
-	casper.echo("Requires arguments --email=% --password=% --query=% --filename=%").exit();
+if (!(casper.cli.has("email")) || !(casper.cli.has("password")) || !(casper.cli.has("url")) || !(casper.cli.has("filename"))) {
+	casper.echo("Requires arguments --email=% --password=% --url=% --filename=%").exit();
 }
 
 var email = casper.cli.get("email");
 var password = casper.cli.get("password");
-var query = casper.cli.get("query");
+var theUrl = casper.cli.get("url");
 var filename = casper.cli.get("filename");
 
 
@@ -21,7 +19,7 @@ if (!fs.exists(dir)) {
 	fs.makeDirectory(dir);
 }
 
-casper.echo ("Beginning script: " + query + " --> " + filename);
+casper.echo ("Beginning script: " + theUrl + " --> " + filename);
 casper.start("https://accounts.google.com/Logout");
 
 casper.thenOpen("https://accounts.google.com/Login", function() {
@@ -35,8 +33,10 @@ casper.thenOpen("https://accounts.google.com/Login", function() {
 
 
 
-casper.thenOpen('https://www.google.com/search?q=' + query, function() {
-	this.echo("searched");
+casper.thenOpen(theUrl, function() {
+	this.echo("Opened: " + theUrl);
+	this.echo(this.getTitle());
+	this.echo(this.getCurrentUrl());
     this.capture(filename);
 });
 

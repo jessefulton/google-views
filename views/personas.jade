@@ -1,0 +1,14 @@
+.row
+	.span12
+		h1 Personas
+		- if (personas.length > 0)
+			.thumbnails
+				- each persona in personas
+						.span3.offset1
+							h2 #{persona.email}
+							.descripiton #{persona.description}
+							h3 Explore
+							.meta
+								ul
+									li news
+									li youtube

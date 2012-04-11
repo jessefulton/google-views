@@ -80,7 +80,9 @@ app.get('/', function (req, res) {
 app.get('/about', function (req, res) {
 	res.render('about', { layout: true });
 });
-
+app.get('/personas', function (req, res) {
+	res.render('personas', { layout: true, personas: config.users });
+});
 
 app.get('/crawled/:pageId', function (req, res, next) {
 	app.CrawledPage.findById(req.params.pageId, function(err, result) {
@@ -292,6 +294,66 @@ app.get('/screenshots/textures/:filename', function(req, res, next){
 });
 
 
+
+/**
+ * App routes.
+ */
+app.get('/screenshots/view/:username/:site', function (req, res) {
+	var site = req.params.site;
+	
+	if ( !(site == "news" || site == "youtube")) {
+		res.send("invalid request", 500);
+		return;
+	}
+
+
+	var userEmail = req.params.username;
+	var userPass = "";
+	config.users.forEach(function(el, idx, arr) {
+		if (el.email.toLowerCase() == userEmail.toLowerCase()) {
+			userPass = el.password;
+		}
+	});
+	
+	if (!userPass) {
+		res.send("Invalid user", 500);
+		return;
+	}
+	
+	var theUrl = (site == "news") ? "http://news.google.com/" : "http://www.youtube.com/";
+	
+
+	var filename = "public/screenshots/" + userEmail + "/sites/" + site + ".png";
+	
+	var bin = "casperjs";
+	var args = ["./scripts/view.js", "--email=" + userEmail, "--password=" + userPass, "--url=" + theUrl + "", "--filename=" + filename];
+	
+
+	console.log("About to run casperjs");
+	console.log(args);
+
+	var cspr = spawn(bin, args);
+  
+	cspr.stdout.on('data', function (data) {
+		console.log('stdout: ' + data);
+	});
+	
+	cspr.stderr.on('data', function (data) {
+		console.log('stderr: ' + data);
+	});
+	
+	cspr.on('exit', function (err) {
+		console.log('child process exited with code ' + err);
+		if (err) res.send(err, 500);
+		//console.log('screenshot - rasterized %s', url);
+		//magic!
+		//app.emit('screenshot', url, options.path, id);
+		res.sendfile(filename);
+	});
+  
+
+
+});
 
 
 
