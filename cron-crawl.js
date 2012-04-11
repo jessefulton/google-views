@@ -24,8 +24,6 @@ var cspr = spawn(cmd, casperArgs.concat(script, scriptArgs));
   
 cspr.stdout.setEncoding('utf8');
 cspr.stdout.on('data', function (data) {
-	console.log(data);
-	return;
 	var str = data.toString(), regex = /\r?\n/g;
 	var lines = str.split(regex);
 	for (var i=0; i<lines.length; i++) {

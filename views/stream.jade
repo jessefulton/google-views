@@ -1,0 +1,39 @@
+.row
+	.container
+		.span12
+			#webgl(style="min-height:400px;")
+
+
+script(src="http://jeromeetienne.github.com/tquery/build/tquery-all.js")
+
+script(src="/socket.io/socket.io.js")
+script
+
+	var world = tQuery.createWorld().appendTo(document.getElementById("webgl")).start();
+
+	world.loop().hook(function(delta){
+		for (var i=0; i< lines.length; i++) {
+			var line = lines[i];
+			line.translateZ(delta * -1);
+			//console.log(line.position);
+		}
+	});
+	
+	
+	var lines = [];
+	
+	//var object = tQuery.createTorus().addTo(world);
+	//var txt = tQuery.createText("tQuery is Fun!").scaleBy(1/4).addTo(world);
+	//world.setCameraControls(new THREEx.DragPanControls(world.camera));
+
+	var socket = io.connect(window.location.protocol + "//" + window.location.hostname);
+	socket.on('news', function (data) {
+		//console.log(data.content);
+		lines.push(tQuery.createText(data.content).scaleBy(1/4).addTo(world));
+		//socket.emit('my other event', { my: 'data' });
+		if (lines.length > 10) {
+			var removed = lines.shift();
+			removed.removeFrom(world);
+			console.log("unshifted");
+		}
+	});

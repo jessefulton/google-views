@@ -7,11 +7,13 @@ if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
 var express = require('express')
 	, stylus = require('stylus')
 	, nib = require('nib')
+	, sio = require('socket.io')
 	, http = require('http')
 	, spawn = require('child_process').spawn
 	, fs = require('fs');
 	
 var models = require('./models');
+var cronjobs = require('./cronjobs');
 
 var mongoose = require('mongoose')
 	, Schema = mongoose.Schema
@@ -30,7 +32,7 @@ console.log(JSON.stringify(config));
 
 
 var app = express.createServer();
-
+cronjobs.init(app);
 app.configure(function(){
 	//app.db = redis.createClient();
 	app.set('views', __dirname + '/views');
@@ -83,7 +85,9 @@ app.get('/about', function (req, res) {
 app.get('/personas', function (req, res) {
 	res.render('personas', { layout: true, personas: config.users });
 });
-
+app.get('/stream', function (req, res) {
+	res.render('stream', { layout: true});
+});
 app.get('/crawled/:pageId', function (req, res, next) {
 	app.CrawledPage.findById(req.params.pageId, function(err, result) {
 		if (!err) {
@@ -381,6 +385,35 @@ app.helpers({
 });
 
 
+
+
+
+/**
+ * Socket.IO server (single process only)
+ */
+var io = sio.listen(app);
+io.set('log level', 1);
+
+
+io.set('transports', [
+	'websocket'
+	, 'flashsocket'
+	, 'htmlfile'
+	, 'xhr-polling'
+	, 'jsonp-polling'
+]);
+
+
+io.sockets.on('connection', function (socket) {
+	socket.emit('news', { hello: 'world' });
+	socket.on('my other event', function (data) {
+		console.log(data);
+	});
+  
+		app.on('crontick', function(el) {
+			socket.emit('news', {"content": "app.on " + el});
+		});
+});
 
 
 
