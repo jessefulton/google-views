@@ -42,6 +42,7 @@ app.configure(function(){
 	app.set('screenshots', '/tmp');
 	app.set('root', __dirname);
 	app.set('outputdir', __dirname + "/public/_generated");
+	app.set('datastream', []);
 	app.use(express.favicon());
 	app.use(stylus.middleware({ src: __dirname + '/public', compile: compile }))
 	app.use(express.static(__dirname + '/public'));
@@ -386,7 +387,19 @@ app.helpers({
 
 
 
-
+  
+app.on('crontick', function(el) {
+	var datastream = app.set('datastream');
+	datastream.push(el);
+	if(datastream.length > 10) {
+		datastream.shift();
+	}
+	app.set('datastream', datastream);
+	
+	console.log(datastream);
+	
+	app.emit('datastream', el, datastream);
+});
 
 /**
  * Socket.IO server (single process only)
@@ -405,14 +418,11 @@ io.set('transports', [
 
 
 io.sockets.on('connection', function (socket) {
-	socket.emit('news', { hello: 'world' });
-	socket.on('my other event', function (data) {
-		console.log(data);
+	socket.emit('datastream', null, app.set('datastream'));
+	app.on('datastream', function(el, stream) {
+		socket.emit('datastream', el, stream);
 	});
   
-		app.on('crontick', function(el) {
-			socket.emit('news', {"content": "app.on " + el});
-		});
 });
 
 

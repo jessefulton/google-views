@@ -27,13 +27,25 @@ script
 	//world.setCameraControls(new THREEx.DragPanControls(world.camera));
 
 	var socket = io.connect(window.location.protocol + "//" + window.location.hostname);
-	socket.on('news', function (data) {
-		//console.log(data.content);
-		lines.push(tQuery.createText(data.content).scaleBy(1/4).addTo(world));
-		//socket.emit('my other event', { my: 'data' });
-		if (lines.length > 10) {
-			var removed = lines.shift();
-			removed.removeFrom(world);
-			console.log("unshifted");
+	socket.on('datastream', function (newLine, dataStream) {
+		if (newLine) {
+			lines.push(tQuery.createText(newLine).scaleBy(1/4).addTo(world));
+			if (lines.length > 10) {
+				var removed = lines.shift();
+				removed.removeFrom(world);
+			}		
 		}
+		else {
+			for (var i=0; i< dataStream.length; i++) {
+				var l = tQuery.createText(dataStream[i]).scaleBy(1/4).addTo(world);
+				l.translateZ(-1 * i);
+				lines.push(l);
+			}
+			if (lines.length > 10) {
+				var removed = lines.shift();
+				removed.removeFrom(world);
+			}		
+		}
+		
+
 	});
