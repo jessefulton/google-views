@@ -418,11 +418,12 @@ io.set('transports', [
 
 
 io.sockets.on('connection', function (socket) {
+
 	socket.emit('datastream', null, app.set('datastream'));
 	app.on('datastream', function(el, stream) {
-		socket.emit('datastream', el, stream);
+		socket.volatile.emit('datastream', el, stream);
 	});
-  
+	socket.on('disconnect', function() {});
 });
 
 

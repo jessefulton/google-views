@@ -5,39 +5,86 @@
 
 
 script(src="http://jeromeetienne.github.com/tquery/build/tquery-all.js")
+script
+	/**
+	* tQuery.createText('foobar')
+	*/
+	define(function(){
+		tQuery.register('createText2', function(text, options){
+			// handle parameters
+			options	= tQuery.extend(options, {
+				size		: 1,
+				height		: 0.4,
+				curveSegments	: 4,
+		
+				weight		: "bold",
+				font		: "droid serif"
+			});
+			// create the geometry
+			var geometry	= new THREE.TextGeometry(text, options);
+		
+			// center the geometry
+			// - THREE.TextGeometry isnt centered for unknown reasons. all other geometries are centered
+			geometry.computeBoundingBox();
+			var center	= new THREE.Vector3();
+			center.x	= ( geometry.boundingBox.max.x - geometry.boundingBox.min.x ) / 2;
+			center.y	= ( geometry.boundingBox.max.y - geometry.boundingBox.min.y ) / 2;
+			center.z	= ( geometry.boundingBox.max.z - geometry.boundingBox.min.z ) / 2;
+			geometry.vertices.forEach(function(vertex){
+				vertex.position.subSelf(center);
+			});
+			
+			// create a mesh with it
+			var material = new THREE.MeshLambertMaterial({ color: 0x00FF00 }); //new THREE.MeshNormalMaterial();
+			var mesh	= new THREE.Mesh( geometry, material );
+			// return a tQuery object
+			return tQuery(mesh);
+		});
+	});
+
 
 script(src="/socket.io/socket.io.js")
 script
 
 	var world = tQuery.createWorld().appendTo(document.getElementById("webgl")).start();
+	var lines = [];
+	
+	
+	world.renderer().setClearColorHex( 0x000000, 1 );
+	
+	//	var light	= new THREE.AmbientLight(0xFFFFFF);
+	//	world.scene().add(light);
+	
+	var light	= new THREE.DirectionalLight(0xFFFFFF, 3);
+	light.position.set(0, 0.6, -1).normalize();
+	world.scene().add(light);
 
 	world.loop().hook(function(delta){
+		var degSecond = delta * Math.PI / 10;
+		//console.log(degSecond);
 		for (var i=0; i< lines.length; i++) {
 			var line = lines[i];
 			line.translateZ(delta * -1);
+			line.rotateX(-degSecond);
+			line.translateY(delta * -.2);
 			//console.log(line.position);
 		}
 	});
 	
 	
-	var lines = [];
-	
-	//var object = tQuery.createTorus().addTo(world);
-	//var txt = tQuery.createText("tQuery is Fun!").scaleBy(1/4).addTo(world);
-	//world.setCameraControls(new THREEx.DragPanControls(world.camera));
-
 	var socket = io.connect(window.location.protocol + "//" + window.location.hostname);
 	socket.on('datastream', function (newLine, dataStream) {
 		if (newLine) {
-			lines.push(tQuery.createText(newLine).scaleBy(1/4).addTo(world));
+			lines.push(tQuery.createText2(newLine).scaleBy(1/4).addTo(world));
 			if (lines.length > 10) {
+				console.log(lines);
 				var removed = lines.shift();
 				removed.removeFrom(world);
 			}		
 		}
 		else {
 			for (var i=0; i< dataStream.length; i++) {
-				var l = tQuery.createText(dataStream[i]).scaleBy(1/4).addTo(world);
+				var l = tQuery.createText2(dataStream[i]).scaleBy(1/4).addTo(world);
 				l.translateZ(-1 * i);
 				lines.push(l);
 			}
