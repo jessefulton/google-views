@@ -1,76 +1,127 @@
+// SPHERES REPRESENTING EACH "LIFE WORLD" - EACH FACE REPRESENTING A SEARCH, DISTORTED BASED UPON DIFFERENCE FROM 'NORMAL' RESULTS, AND FROM EACH OTHER.
+
 .row
 	.container
 		.span12
 			#webgl(style="min-height:400px;")
 
 
-script(src="http://jeromeetienne.github.com/tquery/build/tquery-all.js")
-script
-	/**
-	* tQuery.createText('foobar')
-	*/
-	define(function(){
-		tQuery.register('createText2', function(text, options){
-			// handle parameters
-			options	= tQuery.extend(options, {
-				size		: 1,
-				height		: 0.4,
-				curveSegments	: 4,
-		
-				weight		: "bold",
-				font		: "droid serif"
-			});
-			// create the geometry
-			var geometry	= new THREE.TextGeometry(text, options);
-		
-			// center the geometry
-			// - THREE.TextGeometry isnt centered for unknown reasons. all other geometries are centered
-			geometry.computeBoundingBox();
-			var center	= new THREE.Vector3();
-			center.x	= ( geometry.boundingBox.max.x - geometry.boundingBox.min.x ) / 2;
-			center.y	= ( geometry.boundingBox.max.y - geometry.boundingBox.min.y ) / 2;
-			center.z	= ( geometry.boundingBox.max.z - geometry.boundingBox.min.z ) / 2;
-			geometry.vertices.forEach(function(vertex){
-				vertex.position.subSelf(center);
-			});
-			
-			// create a mesh with it
-			var material = new THREE.MeshLambertMaterial({ color: 0x00FF00 }); //new THREE.MeshNormalMaterial();
-			var mesh	= new THREE.Mesh( geometry, material );
-			// return a tQuery object
-			return tQuery(mesh);
-		});
-	});
-
+script(src="http://mrdoob.github.com/three.js/build/Three.js")
+script(src="http://mrdoob.github.com/three.js/examples/fonts/helvetiker_regular.typeface.js")
 
 script(src="/socket.io/socket.io.js")
 script
+	var container, stats;
 
-	var world = tQuery.createWorld().appendTo(document.getElementById("webgl")).start();
-	var lines = [];
-	
-	
-	world.renderer().setClearColorHex( 0x000000, 1 );
-	
-	//	var light	= new THREE.AmbientLight(0xFFFFFF);
-	//	world.scene().add(light);
-	
-	var light	= new THREE.DirectionalLight(0xFFFFFF, 3);
-	light.position.set(0, 0.6, -1).normalize();
-	world.scene().add(light);
+	var camera, scene, renderer;
 
-	world.loop().hook(function(delta){
-		var degSecond = delta * Math.PI / 10;
-		//console.log(degSecond);
-		for (var i=0; i< lines.length; i++) {
-			var line = lines[i];
-			line.translateZ(delta * -1);
-			line.rotateX(-degSecond);
-			line.translateY(delta * -.2);
-			//console.log(line.position);
-		}
-	});
-	
+	var text, parent;
+
+	var targetRotation = 0;
+	var targetRotationOnMouseDown = 0;
+
+	var mouseX = 0;
+	var mouseXOnMouseDown = 0;
+
+	var windowHalfX = window.innerWidth / 2;
+	var windowHalfY = window.innerHeight / 100;
+
+	init();
+	animate();
+
+	function init() {
+
+		container = document.getElementById( 'webgl' );
+
+		camera = new THREE.PerspectiveCamera( 50, container.offsetWidth / container.offsetHeight, 1, 1000 );
+		camera.position.set( 0, 150, 500 );
+
+
+		windowHalfX = container.offsetWidth / 2;
+		windowHalfY = container.offsetHeight / 2;
+
+	scene = new THREE.Scene();
+		scene.fog = new THREE.Fog( 0x000000, 250, 1400 );
+
+		// CAMERA
+
+		camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 1500 );
+		camera.position.set( 0, 400, 700 );
+		scene.add( camera );
+
+		cameraTarget = new THREE.Vector3( 0, 150, 0 );
+
+		// LIGHTS
+
+		var dirLight = new THREE.DirectionalLight( 0xffffff, 0.125 );
+		dirLight.position.set( 0, 0, 1 ).normalize();
+		scene.add( dirLight );
+
+		var pointLight = new THREE.PointLight( 0xffffff, 1.5 );
+		pointLight.position.set( 0, 100, 90 );
+		scene.add( pointLight );
+
+		var theText = "Hello three.js! :)";
+
+		var text3d = new THREE.TextGeometry( theText, {
+			size: 80,
+			height: 20,
+			curveSegments: 2,
+			font: "helvetiker"
+
+		});
+
+		text3d.computeBoundingBox();
+		var centerOffset = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
+
+		var textMaterial = new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, overdraw: true } );
+		text = new THREE.Mesh( text3d, textMaterial );
+
+		text.doubleSided = false;
+
+		text.position.x = centerOffset;
+		text.position.y = 100;
+		text.position.z = 0;
+
+		text.rotation.x = 0;
+		text.rotation.y = Math.PI * 2;
+
+		parent = new THREE.Object3D();
+		parent.add( text );
+
+		scene.add( parent );
+
+		renderer = new THREE.WebGLRenderer( { antialias: true } );
+		renderer.setSize( container.offsetWidth, container.offsetHeight );
+
+		container.appendChild( renderer.domElement );
+
+	}
+
+	function onDocumentMouseMove( event ) {
+
+		mouseX = event.clientX - windowHalfX;
+
+		targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.02;
+
+	}
+
+
+	function animate() {
+
+		requestAnimationFrame( animate );
+
+		render();
+
+
+	}
+
+	function render() {
+
+		parent.rotation.y += ( targetRotation - parent.rotation.y ) * 0.05;
+		renderer.render( scene, camera );
+
+	}
 	
 	var socket = io.connect(window.location.protocol + "//" + window.location.hostname);
 	socket.on('datastream', function (newLine, dataStream) {
@@ -96,3 +147,4 @@ script
 		
 
 	});
+	

@@ -15,6 +15,8 @@ var express = require('express')
 var models = require('./models');
 var cronjobs = require('./cronjobs');
 
+	console.log(JSON.stringify(cronjobs));
+
 var mongoose = require('mongoose')
 	, Schema = mongoose.Schema
 	, ObjectId = mongoose.SchemaTypes.ObjectId;
@@ -32,7 +34,7 @@ console.log(JSON.stringify(config));
 
 
 var app = express.createServer();
-cronjobs.init(app);
+cronjobs.test(app);
 app.configure(function(){
 	//app.db = redis.createClient();
 	app.set('views', __dirname + '/views');
@@ -396,7 +398,7 @@ app.on('crontick', function(el) {
 	}
 	app.set('datastream', datastream);
 	
-	//console.log(datastream);
+	console.log(datastream);
 	
 	app.emit('datastream', el, datastream);
 });
@@ -418,12 +420,19 @@ io.set('transports', [
 
 
 io.sockets.on('connection', function (socket) {
-
+	//on first run, send out the whole stream
 	socket.emit('datastream', null, app.set('datastream'));
-	app.on('datastream', function(el, stream) {
+
+	var emitDataStream = function(el, stream) {
+		console.log("sending out " + el);
 		socket.volatile.emit('datastream', el, stream);
+	};
+	
+	app.on('datastream', emitDataStream);
+	
+	socket.on('disconnect', function() {
+		app.removeListener('datastream', emitDataStream);
 	});
-	socket.on('disconnect', function() {});
 });
 
 
