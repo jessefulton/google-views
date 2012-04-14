@@ -393,7 +393,7 @@ var sox = require('./sockets'),
 	cronjobs = require('./cronjobs');
 sox.init(app);
 listeners.init(app);
-//cronjobs.crawl(app);
+cronjobs.crawl(app);
 cronjobs.createTextures(app);
 
 

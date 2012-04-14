@@ -57,8 +57,8 @@ module.exports = {
 	}
 	, "crawl": function(app) {
 
-		var crawlFn = require('./cron-crawl.js');
-		var userIdx = 1;
+		var crawlFn = require('./lib/crawl.js');
+		var userIdx = 0;
 		var seedIdx = 0;
 		
 		var onStdout = function(data) {
@@ -83,8 +83,9 @@ module.exports = {
 		};
 		
 		var job = new cronJob({
-			cronTime: '0 9 * * * *',
+			cronTime: '0 58 * * * *',
 			onTick: function() {
+				console.log('starting crawl job');
 				var user = users[userIdx];
 				var seed = user.seeds[seedIdx];
 
