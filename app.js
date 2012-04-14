@@ -7,15 +7,12 @@ if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
 var express = require('express')
 	, stylus = require('stylus')
 	, nib = require('nib')
-	, sio = require('socket.io')
 	, http = require('http')
 	, spawn = require('child_process').spawn
 	, fs = require('fs');
 	
 var models = require('./models');
-var cronjobs = require('./cronjobs');
 
-	console.log(JSON.stringify(cronjobs));
 
 var mongoose = require('mongoose')
 	, Schema = mongoose.Schema
@@ -27,14 +24,15 @@ var mongoose = require('mongoose')
 var config = {};
 config.site = require('./config').init(["MONGODB_URI","LOGGLY_SUBDOMAIN","LOGGLY_INPUT_KEY"], "./conf/site.js");
 
-
 config.users = require("./conf/users.js").users;
 
 console.log(JSON.stringify(config));
 
 
 var app = express.createServer();
-cronjobs.test(app);
+
+
+
 app.configure(function(){
 	//app.db = redis.createClient();
 	app.set('views', __dirname + '/views');
@@ -390,50 +388,13 @@ app.helpers({
 
 
   
-app.on('crontick', function(el) {
-	var datastream = app.set('datastream');
-	datastream.push(el);
-	if(datastream.length > 10) {
-		datastream.shift();
-	}
-	app.set('datastream', datastream);
-	
-	console.log(datastream);
-	
-	app.emit('datastream', el, datastream);
-});
-
-/**
- * Socket.IO server (single process only)
- */
-var io = sio.listen(app);
-io.set('log level', 1);
-
-
-io.set('transports', [
-	'websocket'
-	, 'flashsocket'
-	, 'htmlfile'
-	, 'xhr-polling'
-	, 'jsonp-polling'
-]);
-
-
-io.sockets.on('connection', function (socket) {
-	//on first run, send out the whole stream
-	socket.emit('datastream', null, app.set('datastream'));
-
-	var emitDataStream = function(el, stream) {
-		console.log("sending out " + el);
-		socket.volatile.emit('datastream', el, stream);
-	};
-	
-	app.on('datastream', emitDataStream);
-	
-	socket.on('disconnect', function() {
-		app.removeListener('datastream', emitDataStream);
-	});
-});
+var sox = require('./sockets'),
+	listeners = require('./listeners'),
+	cronjobs = require('./cronjobs');
+sox.init(app);
+listeners.init(app);
+//cronjobs.crawl(app);
+cronjobs.createTextures(app);
 
 
 
