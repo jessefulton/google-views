@@ -49,12 +49,12 @@ Playground.Spheres.prototype._addOne	= function(cfg)
 {
 	var restitution	= cfg.restitution;
 	var radius	= 20 + Math.random()*50;
-radius	= 180;
+	radius	= 1;
 	var geometry	= new THREE.SphereGeometry(radius, 15, 15);
 	var mesh	= new THREE.Mesh(geometry, this._material);
-	mesh.position.x	= (2*Math.random()-1) * 1500;
-	mesh.position.y	= (2*Math.random()-1) * 1500;
-	mesh.position.z	= (2*Math.random()-1) * 1500;
+	mesh.position.x	= (2*Math.random()-1) * 10;
+	mesh.position.y	= (2*Math.random()-1) * 10;
+	mesh.position.z	= (2*Math.random()-1) * 10;
 	scene.addChild(mesh);
 
 	sphereMeshes.push(mesh);

@@ -25,7 +25,7 @@ var pageOptions		= {
 	
 	spheres	: {
 		enable		: true,
-		quantity	: 120,
+		quantity	: 20,
 		restitution	: 1.0
 	},
 	
@@ -45,9 +45,9 @@ var pageOptions		= {
 	},
 	outterCube	: {
 		enable		: true,
-		width		: 10000,
-		height		: 5000,
-		depth		: 5000,
+		width		: 10,
+		height		: 5,
+		depth		: 5,
 		restitution	: 0.6
 	},
 };
@@ -96,7 +96,7 @@ function buildGui(opts, callback)
 function init() {
 	// create the camera
 	camera = new THREE.Camera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
-	camera.position.z	= -7000;
+	camera.position.z	= -70;
 	// create the Scene
 	scene = new THREE.Scene();
 
@@ -105,6 +105,16 @@ function init() {
 	var light = new THREE.DirectionalLight( 0xffffff, 1 );
 	light.position.set(1,1,0).normalize();
 	scene.addChild( light );
+				
+controls = new THREE.FirstPersonControls( camera );
+
+				
+				controls.movementSpeed = 10;
+				controls.lookSpeed = 0.125;
+				controls.lookVertical = true;
+				controls.constrainVertical = true;
+				controls.verticalMin = 1.1;
+				controls.verticalMax = 2.2;
 				
 				
 	/*
@@ -179,15 +189,15 @@ function init() {
 	microphysics	= new THREEx.Microphysics({
 		timeStep	: 1/pageOptions.physicsSteps
 	});
-	microphysics.start();
+	//microphysics.start();
 
 
-gravity	= new Playground.Gravity();
+//gravity	= new Playground.Gravity();
 nBodyGravity	= new Playground.nBodyGravity(pageOptions.nBodyGravity);
 spheres	= new Playground.Spheres(pageOptions.spheres);
-innerCube	= new Playground.InnerCube(pageOptions.innerCube);
+//innerCube	= new Playground.InnerCube(pageOptions.innerCube);
 outterCube	= new Playground.OutterCube(pageOptions.outterCube);
-player	= new Playground.Player(pageOptions.player);
+//player	= new Playground.Player(pageOptions.player);
 
 
 	//handleOption();
@@ -222,14 +232,18 @@ function animate() {
 	stats.update();
 }
 
-
+var lastFrameTime = startTime;
 // ## Render the 3D Scene
 function render() {
 
 	if( player )		player.update();
 
-	microphysics.update();	
-
+	//microphysics.update();	
+	
+	var deltaTime = (Date.now() - lastFrameTime) / 1000;
+	controls.update( deltaTime );
+	lastFrameTime = Date.now();
+	
 	// actually display the scene in the Dom element
 	renderer.render( scene, camera );
 }
