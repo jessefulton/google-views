@@ -1,7 +1,15 @@
 {
     "name": "GoogleViews"
-  , "description": "DANM MFA thesis project"
+  , "author": "Jesse Fulton <jesse.fulton@gmail.com>"
+  , "description": "Google Views: DANM MFA thesis project"
   , "version": "0.0.1"
+  , "contributors": [ 
+    {
+      "name": "Jesse Fulton",
+      "email": "jessefulton@gmail.com"
+    } 
+  ]
+
   , "dependencies": {
         "express": "2.5.8"
       , "jade": "0.20.3"
@@ -13,4 +21,6 @@
       , "cron": "0.2.0"
       , "imagemagick": "0.1.2"
     }
+    
+    
 }
