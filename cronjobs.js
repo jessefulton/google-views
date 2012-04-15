@@ -55,6 +55,10 @@ module.exports = {
 		job.start();
 		*/
 	}
+
+//	, "dbimport"
+//	, "imageprocessUpload (make sure to update DB)
+	
 	, "crawl": function(app) {
 
 		var crawlFn = require('./lib/crawl.js');
@@ -89,7 +93,8 @@ module.exports = {
 				var user = users[userIdx];
 				var seed = user.seeds[seedIdx];
 
-				crawlFn(user, seed, onStdout, onStderr);			
+				//TODO: replace directories with settings from app
+				crawlFn(user, seed, './public/screenshots/', './data/', onStdout, onStderr);			
 
 				if (++seedIdx >= user.seeds.length) {
 					seedIdx = 0;

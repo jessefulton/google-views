@@ -19,14 +19,39 @@ var mongoose = require('mongoose')
 	, ObjectId = mongoose.SchemaTypes.ObjectId;
 
 
+/*
+var imgp = require('./lib/imageprocessing');
+
+imgp.generateTexture("tor.png", "tor-sq.jpg", 250, function() {
+	console.log('converted');
+});
+*/
+
+
+
+
 
 
 var config = {};
-config.site = require('./config').init(["MONGODB_URI","LOGGLY_SUBDOMAIN","LOGGLY_INPUT_KEY"], "./conf/site.js");
+config.site = require('./config').init([
+	"MONGODB_URI","LOGGLY_SUBDOMAIN","LOGGLY_INPUT_KEY",
+	"AWS_ACCESSKEYID", "AWS_SECRETACCESSKEY",
+	"AWS_BUCKET", "MEDIA_BASE_URL"
+], "./conf/site.js");
 
 config.users = require("./conf/users.js").users;
 
 console.log(JSON.stringify(config));
+
+
+/*
+var uploader = require('./lib/uploader');
+
+var u = new uploader();
+u.init(config.site);
+//https://s3.amazonaws.com/everybodysgoogle/test/file2.png
+u.upload("/test/file2.png", "./tor.png", function(err) { console.log(err); });
+*/
 
 
 var app = express.createServer();
@@ -43,6 +68,7 @@ app.configure(function(){
 	app.set('root', __dirname);
 	app.set('outputdir', __dirname + "/public/_generated");
 	app.set('datastream', []);
+	app.set('config', config);
 	app.use(express.favicon());
 	app.use(stylus.middleware({ src: __dirname + '/public', compile: compile }))
 	app.use(express.static(__dirname + '/public'));

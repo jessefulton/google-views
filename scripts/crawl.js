@@ -35,14 +35,6 @@ var THE_USER = 	{
 
 
 
-/*
-var confFile = casper.cli.args[0];
-var renderFolder = casper.cli.args[1];
-var jsonFolder = casper.cli.args[2];
-*/
-
-
-
 
 
 /**
@@ -77,6 +69,7 @@ casper.renderJSON = function(what) {
 };
 
 
+
 /**
  *
  *
@@ -102,7 +95,6 @@ function getLinksToFollow(theSelector, baseUrl) {
 			return null;
 		}
 	});
-	
 }
 
 
@@ -124,17 +116,6 @@ var start = function(self, user) {
 
 	
 	self.then(function() {
-		/*
-		var loginSuccess = this.evaluate(function(eml) {
-	    	var el = document.querySelector("#gbgs4dn");
-	    	var ret = false;
-	    	//if (el && (el.innerText == eml)) { ret = true; }
-	    	if (el) { ret = true; }
-	    	return ret;
-    	}, {"eml": user.email});
-    	
-    	var loginSuccess = (this.getTitle() == "Account overview - Account Settings");
-    	*/
     	
     	var loginSuccess = (this.getCurrentUrl().indexOf("https://accounts.google.com/ServiceLoginAuth") != 0);
     	
@@ -149,9 +130,6 @@ var start = function(self, user) {
 				//links.sort();
 				visitLinks(this, user, links);
 			});
-			
-
-			
 		}
 		else {
 			this.log("Could not log in " + user.email, "error");
@@ -163,15 +141,7 @@ var start = function(self, user) {
 };
 
 var visitLinks = function(self, user, links) {
-	/*
-	self.echo("=================");	
-	self.renderJSON(links);
-	self.echo("=================");
-	self.log(JSON.stringify(user));
-	self.echo("=================");
-	self.log(links[0]);
-	self.echo("=================");
-	*/
+
 	var theUserEmail = user.email;
 	var seedUrl = user.seed.url;
 	
@@ -183,6 +153,7 @@ var visitLinks = function(self, user, links) {
 			var theTitle = this.getTitle();
 			this.log("\tFollowed link to " + theUrl + " (" + theTitle + ")", "INFO");	
 
+			/*
 			var theHtml = this.evaluate(function() {
 				var dt = document.doctype;
 				var doctype = '<!DOCTYPE '+ 
@@ -192,24 +163,22 @@ var visitLinks = function(self, user, links) {
 				return doctype + document.documentElement.outerHTML;
 			});
 			this.log("Got the HTML! \n" + theHtml);
+			*/
 			var theText = this.evaluate(function() { return document.body.innerText; });
-			this.log("Got the text! \n" + theText);
+			//this.log("Got the text! \n" + theText);
 			
 			var filenameRoot = guidGenerator();
 			var screenshotNamePng = filenameRoot + '.png';
 			this.capture(renderFolder + screenshotNamePng);
+			/*
 			this.capture(renderFolder + "textures/" + screenshotNamePng, {
 				top: 0,
 				left: 0,
 				width: 1024,
 				height: 1024
 			});
+			*/
 
-			
-			//var screenshotNamePdf = filenameRoot + '.pdf';
-			//this.capture(renderFolder + screenshotNamePdf);
-			
-			//TODO: CREATE OBJECT, WRITE JSON INFO TO FILE (date, url, image location, html, body text, userid, seed url
 			
 			this.log("Writing JSON file...");
 
@@ -221,7 +190,7 @@ var visitLinks = function(self, user, links) {
 					, "seed" : seedUrl
 					, "title": theTitle
 					, "date": Date.now()
-					, "html" : theHtml
+					//, "html" : theHtml
 					, "text" : theText
 					, "png" : screenshotNamePng
 					//, "pdf" : screenshotNamePdf
