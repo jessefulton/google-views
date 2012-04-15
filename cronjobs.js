@@ -58,6 +58,11 @@ module.exports = {
 
 //	, "dbimport"
 //	, "imageprocessUpload (make sure to update DB)
+
+	//inserts data into database
+	, "process": function(app) {
+		
+	}
 	
 	, "crawl": function(app) {
 
