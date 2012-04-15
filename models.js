@@ -9,7 +9,7 @@ function defineModels(mongoose, fn) {
 		"user": String
 		, "url" : String
 		, "title": String
-		, "date" : {type: Date, default: Date.now}
+		, "date" : [{type: Date, default: Date.now}]
 		, "html" : String
 		, "text" : String
 		, "png" : String

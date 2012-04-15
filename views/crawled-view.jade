@@ -1,6 +1,6 @@
 .meta
 	h2 #{result.title}
-	p Read by #{result.user} on #{dateTimeFormat(result.date)}
+	p First read by #{result.user} on #{dateTimeFormat(result.date[0])}
 	p
 		| View original at
 		a(href="#{result.url}") #{hostname(result.url)}
