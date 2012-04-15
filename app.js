@@ -66,8 +66,14 @@ app.configure(function(){
 	//let's change this to a local dir? then rsync to media server or use nginx?
 	app.set('screenshots', '/tmp');
 	app.set('root', __dirname);
-	app.set('outputdir', __dirname + "/public/_generated");
+
+	//app.set('outputdir', __dirname + "/public/_generated");
+	
+	app.set('imagedirs', {"base": "", "local": __dirname, "screnshots": "/public/screenshots/", "searches": "/public/searches/", "textures": "/public/textures/"});
+
+	
 	app.set('datastream', []);
+	
 	app.set('config', config);
 	app.use(express.favicon());
 	app.use(stylus.middleware({ src: __dirname + '/public', compile: compile }))

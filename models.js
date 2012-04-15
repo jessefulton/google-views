@@ -14,6 +14,8 @@ function defineModels(mongoose, fn) {
 		, "text" : String
 		, "png" : String
 		, "pdf" : String
+		, "tex" : String
+		, "jpg" : String
 	});
 
 	CrawledPage.virtual('id')
