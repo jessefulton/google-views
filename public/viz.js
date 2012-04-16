@@ -1,3 +1,48 @@
+	var clouds = [
+		[
+			"/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg"
+			, "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg"
+			, "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg"
+			, "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg"
+			, "/rendered/4dedfa13-0968-89e0-6512-ddea3e181e5e-tex.jpg"
+			, "/rendered/7ba9f92f-0864-5d71-e5e5-67aa3a774485-tex.jpg"
+			, "/rendered/7e1a03f4-4d6a-800f-8e31-21b62990a4c9.jpg"
+			//
+			, "/rendered/3efe00b8-f89d-1319-a01a-56994c820120-tex.jpg"
+			, "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg"
+			, "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg"
+			, "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg"
+			, "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"
+		]
+		, [
+			"/rendered/3dad0f72-3022-ed22-42ed-f3775af6f8ba-tex.jpg"
+			, "/rendered/3efe00b8-f89d-1319-a01a-56994c820120-tex.jpg"
+			, "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg"
+			, "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg"
+			, "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg"
+			, "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"
+			, "/rendered/71e254b4-4c2b-b5b5-bace-8676ca2dd56c-tex.jpg"
+		]
+		, [
+			"/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg"
+			, "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg"
+			, "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg"
+			, "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg"
+			, "/rendered/4dedfa13-0968-89e0-6512-ddea3e181e5e-tex.jpg"
+			, "/rendered/7ba9f92f-0864-5d71-e5e5-67aa3a774485-tex.jpg"
+			, "/rendered/7e1a03f4-4d6a-800f-8e31-21b62990a4c9.jpg"
+		]
+		, [
+			"/rendered/3dad0f72-3022-ed22-42ed-f3775af6f8ba-tex.jpg"
+			, "/rendered/3efe00b8-f89d-1319-a01a-56994c820120-tex.jpg"
+			, "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg"
+			, "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg"
+			, "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg"
+			, "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"
+			, "/rendered/71e254b4-4c2b-b5b5-bace-8676ca2dd56c-tex.jpg"
+		]
+	];
+
 
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -5,7 +50,7 @@
 
 			var composerScene, composer1, composer2, composer3, composer4;
 
-			var cameraOrtho, cameraPerspective, sceneModel, sceneBG, renderer, mesh, directionalLight;
+			var cameraOrtho, cameraPerspective, sceneModel, sceneBG, renderer, carousel, directionalLight;
 
 			var halfWidth, halfHeight, fullWidth, fullHeight;
 
@@ -278,91 +323,59 @@
 
 			}
 
+
+			function imageMesh(url, geom, cb) {
+				var imgTex = THREE.ImageUtils.loadTexture( url, THREE.UVMapping, function( image ) {
+					var theMesh = new THREE.Mesh( geom, imgMat );
+					theMesh.position.set(0,0,0);
+					theMesh.doubleSided = true;
+					cb(theMesh);
+				});
+				//imgTex.needsUpdate = true;
+				//imgTex.wrapT = THREE.RepeatWrapping;
+				imgTex.repeat.set( 1, 1 );
+				imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
+				var imgMat = new THREE.MeshBasicMaterial( { color: 0xdddddd, map: imgTex } );
+				imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
+			}
+
 			function createMesh( geometryyyy, scene, scale ) {
+				var cloudGroup = clouds[0];
+
 				var planeWidth = 10;
 				var numPlanes = 10;
 				var rotationAmt = (Math.PI*2)/numPlanes;
 				var r = (planeWidth/2) / (Math.tan(rotationAmt/2)); //distance from center point to center of plane
 				
 
-				var combined = new THREE.Geometry();
-				var geometry = new THREE.PlaneGeometry( planeWidth, planeWidth ); //new THREE.CubeGeometry(7, 7, 0, 0, 0, 0);
-				
-				
-				//(1/Math.tan(rotationAmt/2)) = r/plane
+				carousel = new THREE.Object3D();
+				var geometry = new THREE.PlaneGeometry( planeWidth, planeWidth );
 				
 				console.log("r=" + r);
 				
 				for (var i=0; i<numPlanes; i++) {
+					var texUrl = cloudGroup[i];
 					var rotation = rotationAmt * i;
-					var m = new THREE.Mesh( geometry );
-					m.position.set(0,0,0);
-					m.rotation.set(0,rotation,0);
-	
-    			    m.updateMatrix();
-    			    
-    			    //m.translateX(5);
-    			    m.translateZ(-r);
-					//m.rotateY(rotation);
-					
-					//m.position.x = Math.cos(rotation) * r;
-					//m.position.z = Math.sin(rotation) * r;
-					
-					/*				
-					var mat = new THREE.Matrix4();
-                    mat.setRotationY((Math.PI * 2) * r);
-                    mat.setTranslation(1, 1, 2);
-					
-					
-					m.matrix.multiplySelf(obj.matrix)
-					*/
-					/*
-					m.rotation.y = rotation;
-					m.position.x = r;
-					//m.position.z = r*i/10;
-
-					
-					var newCubeMatrix = m.matrix;
-					newCubeMatrix.identity();
-					newCubeMatrix.multiplySelf(THREE.Matrix4.rotationYMatrix(m.rotation.y));
-					newCubeMatrix.multiplySelf(THREE.Matrix4.translationMatrix(m.position.x, m.position.y, m.position.z));
-
-					m.updateMatrix();					
-					*/
-					
-					//m.lookAt(m.position, new THREE.vector3(0,0,0), new THREE.vector3(0,1,0));
-					//console.log("x: " + m.position.x + "; z: " + m.position.z);
-					
-					THREE.GeometryUtils.merge( combined, m );
+					console.log("loading " + texUrl);
+    			    imageMesh(texUrl, geometry, (function(rota) {
+						return function(m) {
+							m.position.set(0,0,0);
+							m.rotation.set(0,rota,0);
+							console.log("rotation = " + rota);
+							m.updateMatrix();
+							m.translateZ(-r);    			    
+							carousel.add(m );
+						}
+					})(rotation));
 				}
+
 				/*
-				var mesh1 = new THREE.Mesh( geometry );
-				mesh1.position.x = 7;
-				mesh1.rotation.x= Math.PI * .25;
-				mesh1.rotation.y= Math.PI * .25;
-				//mesh1.rotation.z= Math.PI * .25;
-				mesh1.position.x = 7;
-				
-				var mesh2 = new THREE.Mesh( geometry );
-				mesh2.position.y = 7;
-				
-				var mesh3 = new THREE.Mesh( geometry );
-				mesh3.position.z = 7;
-				
-				
-				THREE.GeometryUtils.merge( combined, mesh1 );
-				THREE.GeometryUtils.merge( combined, mesh2 );
-				THREE.GeometryUtils.merge( combined, mesh3 );
-				*/
-				
 				mesh = new THREE.Mesh( combined, new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
-				//mesh.rotation.x = Math.PI*.2;
-				//mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial( { color: 0xcc0000, specular: 0xFF6666}) );
 
 				mesh.position.set( 0, 0, 0 );
 				mesh.scale.set( scale, scale, scale );
-
-				scene.add( mesh );
+				*/
+				scene.add( carousel );
 
 				loader.statusDomElement.style.display = "none";
 
@@ -383,7 +396,7 @@
 
 				var time = Date.now() * 0.0004;
 
-				if ( mesh ) mesh.rotation.y = -time;
+				if ( carousel ) carousel.rotation.y = -time/10;
 
 				renderer.setViewport( 0, 0, 2 * halfWidth, 2 * halfHeight );
 
