@@ -37,7 +37,7 @@
 				cameraOrtho.position.z = 100;
 
 				cameraPerspective = new THREE.PerspectiveCamera( 50, fullWidth / fullHeight, 1, 10000 );
-				cameraPerspective.position.z = 900;
+				//cameraPerspective.position.z = 900;
 
 				sceneModel.add( cameraPerspective );
 				sceneBG.add( cameraPerspective );
@@ -278,47 +278,88 @@
 
 			}
 
-			function createMesh( geometry, scene, scale ) {
-
-				//geometry.computeTangents();
-				/*
-				var ambient = 0x444444, diffuse = 0x999999, specular = 0x080808, shininess = 20;
-
-				var shader = THREE.ShaderUtils.lib[ "normal" ];
-				var uniforms = THREE.UniformsUtils.clone( shader.uniforms );
-
-				uniforms[ "tNormal" ].texture = THREE.ImageUtils.loadTexture( "/_playground/three.js/examples/obj/leeperrysmith/Infinite-Level_02_Tangent_SmoothUV.jpg" );
-				uniforms[ "uNormalScale" ].value = - 0.75;
-
-				uniforms[ "tDiffuse" ].texture = THREE.ImageUtils.loadTexture( "/_playground/three.js/examples/obj/leeperrysmith/Map-COL.jpg" );
-
-				uniforms[ "enableAO" ].value = false;
-				uniforms[ "enableDiffuse" ].value = true;
-
-				uniforms[ "uDiffuseColor" ].value.setHex( diffuse );
-				uniforms[ "uSpecularColor" ].value.setHex( specular );
-				uniforms[ "uAmbientColor" ].value.setHex( ambient );
-
-				uniforms[ "uShininess" ].value = shininess;
-
-				uniforms[ "uDiffuseColor" ].value.convertGammaToLinear();
-				uniforms[ "uSpecularColor" ].value.convertGammaToLinear();
-				uniforms[ "uAmbientColor" ].value.convertGammaToLinear();
-
-				var parameters = { fragmentShader: shader.fragmentShader, vertexShader: shader.vertexShader, uniforms: uniforms, lights: true };
-				var mat2 = new THREE.ShaderMaterial( parameters );
-				*/
-
-				//var mat2 = new THREE.ShaderMaterial( parameters );
-
+			function createMesh( geometryyyy, scene, scale ) {
+				var planeWidth = 10;
+				var numPlanes = 10;
+				var rotationAmt = (Math.PI*2)/numPlanes;
+				var r = (planeWidth/2) / (Math.tan(rotationAmt/2)); //distance from center point to center of plane
 				
-				//mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff}) );
-				//mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0xff0000}) );
-				//mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0xff0000, ambient: 0xffffff}) );
-				mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial( { color: 0xcc0000, specular: 0xFF6666}) );
-				//mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial( { color: Math.random() * 0xffffff, wireframe: true}) );
 
-				mesh.position.set( 0, -50, 0 );
+				var combined = new THREE.Geometry();
+				var geometry = new THREE.PlaneGeometry( planeWidth, planeWidth ); //new THREE.CubeGeometry(7, 7, 0, 0, 0, 0);
+				
+				
+				//(1/Math.tan(rotationAmt/2)) = r/plane
+				
+				console.log("r=" + r);
+				
+				for (var i=0; i<numPlanes; i++) {
+					var rotation = rotationAmt * i;
+					var m = new THREE.Mesh( geometry );
+					m.position.set(0,0,0);
+					m.rotation.set(0,rotation,0);
+	
+    			    m.updateMatrix();
+    			    
+    			    //m.translateX(5);
+    			    m.translateZ(-r);
+					//m.rotateY(rotation);
+					
+					//m.position.x = Math.cos(rotation) * r;
+					//m.position.z = Math.sin(rotation) * r;
+					
+					/*				
+					var mat = new THREE.Matrix4();
+                    mat.setRotationY((Math.PI * 2) * r);
+                    mat.setTranslation(1, 1, 2);
+					
+					
+					m.matrix.multiplySelf(obj.matrix)
+					*/
+					/*
+					m.rotation.y = rotation;
+					m.position.x = r;
+					//m.position.z = r*i/10;
+
+					
+					var newCubeMatrix = m.matrix;
+					newCubeMatrix.identity();
+					newCubeMatrix.multiplySelf(THREE.Matrix4.rotationYMatrix(m.rotation.y));
+					newCubeMatrix.multiplySelf(THREE.Matrix4.translationMatrix(m.position.x, m.position.y, m.position.z));
+
+					m.updateMatrix();					
+					*/
+					
+					//m.lookAt(m.position, new THREE.vector3(0,0,0), new THREE.vector3(0,1,0));
+					//console.log("x: " + m.position.x + "; z: " + m.position.z);
+					
+					THREE.GeometryUtils.merge( combined, m );
+				}
+				/*
+				var mesh1 = new THREE.Mesh( geometry );
+				mesh1.position.x = 7;
+				mesh1.rotation.x= Math.PI * .25;
+				mesh1.rotation.y= Math.PI * .25;
+				//mesh1.rotation.z= Math.PI * .25;
+				mesh1.position.x = 7;
+				
+				var mesh2 = new THREE.Mesh( geometry );
+				mesh2.position.y = 7;
+				
+				var mesh3 = new THREE.Mesh( geometry );
+				mesh3.position.z = 7;
+				
+				
+				THREE.GeometryUtils.merge( combined, mesh1 );
+				THREE.GeometryUtils.merge( combined, mesh2 );
+				THREE.GeometryUtils.merge( combined, mesh3 );
+				*/
+				
+				mesh = new THREE.Mesh( combined, new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
+				//mesh.rotation.x = Math.PI*.2;
+				//mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial( { color: 0xcc0000, specular: 0xFF6666}) );
+
+				mesh.position.set( 0, 0, 0 );
 				mesh.scale.set( scale, scale, scale );
 
 				scene.add( mesh );
