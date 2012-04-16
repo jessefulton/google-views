@@ -5,10 +5,11 @@
 		| View original at
 		a(href="#{result.url}") #{hostname(result.url)}
 
-
-
 .crawled-page
-	img(src="/screenshots/#{result.png}", width="100%")
+	- if (result.jpg)
+		img(src="/rendered/#{result.jpg}", width="100%")
+	- else
+		.error No preview available
 
 	//
 		#pageText

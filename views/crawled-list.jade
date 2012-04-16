@@ -1,5 +1,3 @@
-h1 All Searches
-
 - if (typeof(users) != "undefined")
 	h2 Users
 	
@@ -9,13 +7,15 @@ h1 All Searches
 				a(href='/crawled/#{email}') #{email}
 
 
-h2 Crawled Pages
-- if (typeof(pagination) != "undefined")
-	#pagination
-		- for (var i=1; i<=pageCount; i++)
-			a(href='/searches/#{i}') #{i}
+- if (typeof(results) != "undefined")
+	h2 Crawled Pages
+	- if (typeof(pagination) != "undefined")
+		#pagination
+			- for (var i=1; i<=pageCount; i++)
+				a(href='/searches/#{i}') #{i}
 
-ul
-	each result in results
-		li
-			a(href='/crawled/#{result.id}') #{result.url}
+	.meta Most recent #{results.length} results
+	ul
+		each result in results
+			li
+				a(href='/crawled/#{result.id}') #{result.url}

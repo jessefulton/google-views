@@ -129,9 +129,9 @@ var sox = require('./sockets'),
 	listeners = require('./listeners'),
 	cronjobs = require('./cronjobs');
 sox.init(app);
-listeners.init(app);
-cronjobs.crawl(app);
-cronjobs.createTextures(app);
+//listeners.init(app);
+//cronjobs.crawl(app);
+//cronjobs.createTextures(app);
 
 
 
