@@ -39,7 +39,7 @@ $("#generateUrl").on('keypress', function(event) {
 
 			var neighborhoods = [];
 
-	var mesh;
+			var mesh;
 
 			var fullWidth;// = window.innerWidth;
 			var fullHeight; //fullHeight = window.innerHeight;
@@ -66,30 +66,7 @@ $("#generateUrl").on('keypress', function(event) {
 
 
 				function addFloor() {
-					// GROUND
-					var floorCanvas = document.createElement( "canvas" ),
-						floorCanvasContext = floorCanvas.getContext( "2d" );
-	
-					floorCanvas.width = floorCanvas.height = 128;
-	
-					floorCanvasContext.fillStyle = "#444";
-					floorCanvasContext.fillRect( 0, 0, 128, 128 );
-	
-					floorCanvasContext.fillStyle = "#fff";
-					floorCanvasContext.fillRect( 0, 0, 64, 64);
-					floorCanvasContext.fillRect( 64, 64, 64, 64 );
-	
-					var floorTexture = THREE.ImageUtils.loadTexture( '/screenshots/textures/google-search.png', THREE.UVMapping, function(image) {
-						console.log(image.width);
-					});
-					//var floorTexture = new THREE.Texture( floorCanvas, THREE.UVMapping, THREE.RepeatWrapping, THREE.RepeatWrapping );
-					
-					var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
-	
-					floorTexture.needsUpdate = true;
-					floorTexture.repeat.set( 10000, 10000 );
-				    floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-
+					var floorMaterial = new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  ); //new THREE.MeshLambertMaterial({color: 0x993333});
 					var geometry = new THREE.PlaneGeometry( 100, 100 );
 	
 					var floorMesh = new THREE.Mesh( geometry, floorMaterial );
@@ -98,47 +75,10 @@ $("#generateUrl").on('keypress', function(event) {
 					floorMesh.doubleSided = true;
 	
 					floorMesh.position.y = -10;
-					floorMesh.position.x = -500;
+					//floorMesh.position.x = -500;
 					scene.add( floorMesh );
 				};
 					
-
-				function addBlockingPlane(flip) {
-					// GROUND
-					var floorCanvas = document.createElement( "canvas" ),
-						floorCanvasContext = floorCanvas.getContext( "2d" );
-	
-					floorCanvas.width = floorCanvas.height = 128;
-	
-					floorCanvasContext.fillStyle = "#444";
-					floorCanvasContext.fillRect( 0, 0, 128, 128 );
-	
-					floorCanvasContext.fillStyle = "#fff";
-					floorCanvasContext.fillRect( 0, 0, 64, 64);
-					floorCanvasContext.fillRect( 64, 64, 64, 64 );
-	
-					var floorTexture = THREE.ImageUtils.loadTexture( '/screenshots/textures/google-search.png', THREE.UVMapping, function(image) {
-						console.log(image.width);
-					});
-					//var floorTexture = new THREE.Texture( floorCanvas, THREE.UVMapping, THREE.RepeatWrapping, THREE.RepeatWrapping );
-					
-					var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture } );
-	
-					floorTexture.needsUpdate = true;
-					floorTexture.repeat.set( 100, 100 );
-				    floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-
-					var geometry = new THREE.PlaneGeometry( 100, 200 );
-	
-					var floorMesh = new THREE.Mesh( geometry, floorMaterial );
-					floorMesh.rotation.y = Math.PI / 2 * (flip ? -1 : 1);
-					floorMesh.position.x = .01 * (flip ? -1 : 1);
-					//floorMesh.scale.set( 1000, 1000, 1000 );
-					floorMesh.doubleSided = true;
-	
-					floorMesh.position.y = -50;
-					scene.add( floorMesh );
-				}
 
 				
 				function addImgTex(url, x, y, z, cb) {
@@ -208,13 +148,13 @@ $("#generateUrl").on('keypress', function(event) {
 				//scene.fog = new THREE.Fog( 0xffffff, 500, 1000 );
 
 				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-				camera.position.z = 2000;
-
+				camera.position.z = -2000;
+				camera.position.y = 8000;
 				scene.add( camera );
 					
 					
-				// addFloor();
-				
+				addFloor();
+
 
 				/*
 				addBlockingPlane(true);
@@ -289,7 +229,7 @@ $("#generateUrl").on('keypress', function(event) {
 				scene.add(mesh);
 							
 							
-				scene.add(new THREE.AmbientLight(0xffffff));
+				scene.add(new THREE.AmbientLight(0xFFFFFF));
 
 
 
