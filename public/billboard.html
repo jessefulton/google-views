@@ -29,22 +29,6 @@
 
 <script type="text/javascript">
 
-var TEXTURES = 		[
-			"/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg"
-			, "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg"
-			, "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg"
-			, "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg"
-			, "/rendered/4dedfa13-0968-89e0-6512-ddea3e181e5e-tex.jpg"
-			, "/rendered/7ba9f92f-0864-5d71-e5e5-67aa3a774485-tex.jpg"
-			, "/rendered/7e1a03f4-4d6a-800f-8e31-21b62990a4c9.jpg"
-			//
-			, "/rendered/3efe00b8-f89d-1319-a01a-56994c820120-tex.jpg"
-			, "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg"
-			, "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg"
-			, "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg"
-			, "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"
-		];
-
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 
@@ -76,8 +60,8 @@ var TEXTURES = 		[
 
 			var mesh;
 
-			var fullWidth;// = window.innerWidth;
-			var fullHeight; //fullHeight = window.innerHeight;
+			var fullWidth;
+			var fullHeight;
 			var halfWidth, halfHeight;
 
 			var container;
@@ -89,7 +73,7 @@ var TEXTURES = 		[
 			var halfWidth = window.innerWidth / 2;
 			var halfHeight = window.innerHeight / 2;
 
-
+			var startTime = Date.now();
 
 			init();
 
@@ -101,26 +85,23 @@ var TEXTURES = 		[
 					//if (!width) width = 0.5;
 					//if (offset === undefined) offset = .25;
 					console.log("offset: " + offset);
-					var imgTex = THREE.ImageUtils.loadTexture( url, THREE.UVMapping, function( image ) {	});
-					//imgTex.needsUpdate = true;
+					var imgTex = THREE.ImageUtils.loadTexture( url, THREE.UVMapping); //, function( image ) {	});
+					imgTex.needsUpdate = true;
 					//imgTex.wrapT = THREE.RepeatWrapping;
 					imgTex.repeat.set( width, 1 );
 					imgTex.offset.x = offset;
 					imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
 					var imgMat = new THREE.MeshBasicMaterial( { color: 0xdddddd, map: imgTex } );
 					imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
-					console.log("loaded imageMat " + url);
 					return imgMat;
 				}
 				
 				function loadTextures(resultsObj, cb) {
 					var texWidth = 1/numBars;
-
 					for (var j=0; j<resultsObj.length; j++) {
 						var resultObj = resultsObj[j];
 						resultObj.textures = [];
 						for (var i=0; i<numBars; i++) {
-							
 							resultObj.textures.push(imageMat(resultObj.textureUrl, texWidth, texWidth*i));
 						
 						}
@@ -137,7 +118,7 @@ var TEXTURES = 		[
 								//materials order: left right top bottom front back
 								var face = (j>=2) ? j+2 : j;
 								billboard.children[i].geometry.materials[face] = tex;
-								console.log(billboard.children[i].geometry.materials[face].map.offset.x);
+								console.log("texture offsetX: " + billboard.children[i].geometry.materials[face].map.offset.x);
 							}
 						}
 					}
@@ -162,36 +143,10 @@ var TEXTURES = 		[
 					}
 				}
 				
-				function generateNeighborhoods() {
-					for (var i=0; i<1; i++) {
-						var neighborhood = [];
-						for (var j=0; j<10; j++) {
-							var building = {};
-							/*
-							var col = (Math.random()*16777215);
-							var spec = (Math.random()*16777215);
-							var amb = (Math.random()*16777215);
-							building.material = new THREE.MeshPhongMaterial({ 
-								ambient: amb
-								, color: col
-								, specular: spec
-								, shininess: 50
-								, shading: THREE.SmoothShading 
-							});
-							*/
-							building.material = imageMat(TEXTURES[j]);
-							building.texUrl = TEXTURES[j];
-							neighborhood.push(building);
-						}
-						neighborhoods.push(neighborhood);
-					}
-				}
 
 
 
 			function init() {
-				generateNeighborhoods();
-				//console.log(neighborhoods);
 				buildBillboard();
 				loadTextures(searches[0].results[0], function(res) { textureBillboard(res); });
 				textureBillboard(searches[0].results[0]);
@@ -211,7 +166,7 @@ var TEXTURES = 		[
 				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
 				camera.position.z = -10;
 				camera.position.y = 7;
-				camera.position.x = 0;
+				camera.position.x = -4;
 				
 				
 				/*
@@ -233,65 +188,6 @@ var TEXTURES = 		[
 					
 					
 
-				
-				var geometry = new THREE.CubeGeometry(2, 10, 2);
-				
-				var material = new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  ) 
-				
-				/*
-				material = new THREE.MeshBasicMaterial({
-					color: 0xcccccc
-					//, wireframe: true
-				});
-				*/
-				
-				mesh = new THREE.Object3D();
-				//mesh = new THREE.Mesh(geometry, material);
-				
-				
-				var planeWidth = 200;
-				var numPlanes = neighborhoods[0].length;
-				var rotationAmt = (Math.PI*2)/numPlanes;
-				var r = (planeWidth/2) / (Math.tan(rotationAmt/2)) + 2; 
-				console.log(neighborhoods);
-				for (var j=0; j<neighborhoods.length; j++) {
-					var neighborhoodObj = new THREE.Object3D();
-					var neighborhood = neighborhoods[j];
-					var rotat = j*rotationAmt;
-
-							console.log("adding neighborhood " + j + " has " + neighborhood.length);
-							
-						for (var i=0; i<neighborhood.length; i++) {
-
-						
-							var rota = i*rotationAmt;
-
-						
-							var bldg = new THREE.Mesh(geometry, neighborhood[i].material);
-		
-							bldg.position.set(0,0,0);
-							bldg.rotation.set(0,0,0); //(0,rota,0);
-							//bldg.matrix.scale(new THREE.Vector3(0, (i+1)*.5, 0));
-							bldg.updateMatrix();
-							bldg.translateX(2.1*i);
-							//var scaleAmt = (i+1)*.5
-							//bldg.scale.y = scaleAmt;
-							//bldg.translateY(scaleAmt * 400 /2);
-							neighborhoodObj.add(bldg);
-
-							
-						}
-
-						neighborhoodObj.position.set(0,0,0);
-						neighborhoodObj.rotation.set(0,rotat,0);
-						//bldg.matrix.scale(new THREE.Vector3(0, (i+1)*.5, 0));
-						neighborhoodObj.updateMatrix();
-						//neighborhoodObj.translateZ(-r*10);
-					
-					mesh.add(neighborhoodObj);
-				}
-
-				mesh.position.x = -8;
 				
 				billboard.position.x = -8;
 				scene.add(billboard);
@@ -334,7 +230,7 @@ var TEXTURES = 		[
 				THREEx.WindowResize(renderer, camera);
 				
 				animate();
-					console.log(mesh.children[0]);
+
 
 				function animate() {
 					requestAnimationFrame( animate );
@@ -342,32 +238,13 @@ var TEXTURES = 		[
 				}
 	
 				function render() {
-					var seconds = Date.now() / 1000;
-					var radius = 10;
+					var seconds = (Date.now() - startTime) / 1000;
 					var period = 10;
-
-					//angle	= (seconds*Math.PI)/4;
-					
-					/*
-					camera.position.x	= Math.cos((seconds/period) * Math.PI) * radius;
-					camera.position.z	= (Math.sin((seconds/period) * Math.PI) * 40);
-					
-					for (var i=0; i<meshes.length; i++) {
-						meshes[i].position.y = Math.sin((seconds/period) * i*(Math.PI/meshes.length)) * 1;
-						meshes[i].position.z = Math.cos((seconds/period) * i*(Math.PI/meshes.length)) * 1;
-					}
-					*/
-					//mesh.scale(new THREE.Vector3(0, (Math.sin(seconds/period)+1)*.5, 0));;
-					//mesh.rotation.x = (seconds/period);
-					
-					//mesh.rotation.y = (seconds/period);
 
 					var pause = Math.abs(Math.cos(seconds/(period/4))) > .5;
 
 					if (!pause) {
-					//HACK: still following city/neighborhood/building model...
 					for(var i=0; i<billboard.children.length; i++) {
-						//mesh.children[0].children[i].rotation.y = (seconds/period);
 						billboard.children[i].rotation.y += .01;
 					}
     				}
