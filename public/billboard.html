@@ -87,10 +87,11 @@
 					//if (offset === undefined) offset = .25;
 					console.log("offset: " + offset);
 					var imgTex = THREE.ImageUtils.loadTexture( url, THREE.UVMapping); //, function( image ) {	});
-					imgTex.needsUpdate = true;
+
 					//imgTex.wrapT = THREE.RepeatWrapping;
 					imgTex.repeat.set( width, 1 );
 					imgTex.offset.x = offset;
+					imgTex.needsUpdate = true;
 					imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
 					var imgMat = new THREE.MeshBasicMaterial( { color: 0xdddddd, map: imgTex } );
 					imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
@@ -101,9 +102,9 @@
 					var texWidth = 1/numBars;
 					for (var j=0; j<resultsObj.length; j++) {
 						var resultObj = resultsObj[j];
-						resultObj.textures = [];
+						resultObj.materials = [];
 						for (var i=0; i<numBars; i++) {
-							resultObj.textures.push(imageMat(resultObj.textureUrl, texWidth, texWidth*i));
+							resultObj.materials.push(imageMat(resultObj.textureUrl, texWidth, texWidth*i));
 						
 						}
 					}
@@ -114,11 +115,12 @@
 					console.log(resultsObj);
 					for (var i=0; i<numBars; i++) {
 						for (var j=0; j<resultsObj.length; j++) {
-							for (var k=0; k<resultsObj[j].textures.length; k++) {
-								var tex = resultsObj[j].textures[k];
+							for (var k=0; k<resultsObj[j].materials.length; k++) {
+								var mat = resultsObj[j].materials[k];
 								//materials order: left right top bottom front back
 								var face = (j>=2) ? j+2 : j;
-								billboard.children[i].geometry.materials[face] = tex;
+								billboard.children[i].geometry.materials[face] = mat;
+								billboard.children[i].geometry.materials[face].map.needsUpdate = true;
 								console.log("texture offsetX: " + billboard.children[i].geometry.materials[face].map.offset.x);
 							}
 						}
@@ -132,9 +134,10 @@
 					var material = new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  );
 					var materials = [];
 					for (var i=0; i<6; i++) { materials.push(material); }
-					var geometry = new THREE.CubeGeometry(2, 10, 2, 0, 0, 0, materials);
 					
 					for (var i=0; i<numBars; i++) {
+						var geometry = new THREE.CubeGeometry(2, 10, 2, 0, 0, 0, materials);
+
 						var bar = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial());
 						bar.position.set(0,0,0);
 						bar.rotation.set(0,0,0); //(0,rota,0);
