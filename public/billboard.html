@@ -86,7 +86,17 @@
 					//if (!width) width = 0.5;
 					//if (offset === undefined) offset = .25;
 					console.log("offset: " + offset);
-					var imgTex = THREE.ImageUtils.loadTexture( url, THREE.UVMapping); //, function( image ) {	});
+					var imgTex = THREE.ImageUtils.loadTexture(
+						url
+						, THREE.UVMapping
+						, function(image) {
+							//console.log("loadTex callback:");
+							//console.log(image)
+							//console.log(imgTex);
+					});
+
+					//console.log("imgTex:");
+					//console.log(imgTex);
 
 					//imgTex.wrapT = THREE.RepeatWrapping;
 					imgTex.repeat.set( width, 1 );
@@ -111,18 +121,37 @@
 					cb(resultsObj);
 				}
 				
-				function textureBillboard(resultsObj) {
-					console.log(resultsObj);
-					for (var i=0; i<numBars; i++) {
-						for (var j=0; j<resultsObj.length; j++) {
-							for (var k=0; k<resultsObj[j].materials.length; k++) {
-								var mat = resultsObj[j].materials[k];
-								//materials order: left right top bottom front back
+				function textureBillboard(resultObj) {
+					console.log(resultObj);
+					for (var j=0; j<resultObj.length; j++) {
+						var res = resultObj[j];
+						var mats = res.materials;
+						for (var i=0; i<numBars; i++) {
+						
+						//should be four results
+
+						
+							//each result object should have 10 materials;
+							//for (var k=0; k<resultObj[j].materials.length; k++) {
+							
+								var mat = mats[i];
 								var face = (j>=2) ? j+2 : j;
-								billboard.children[i].geometry.materials[face] = mat;
-								billboard.children[i].geometry.materials[face].map.needsUpdate = true;
-								console.log("texture offsetX: " + billboard.children[i].geometry.materials[face].map.offset.x);
-							}
+								console.log("material: " + i + "; face:" + face);
+
+
+								
+								(function(_geom, _face, _mat) {
+									_geom.materials[_face] = _mat;									
+									console.log("texture offsetX: " + _geom.materials[_face].map.offset.x
+										+ "; needsUpdate: " + _geom.materials[_face].map.needsUpdate);
+								})(billboard.children[i].geometry, face, mat);
+								
+								//materials order: left right top bottom front back
+								//billboard.children[i].geometry.materials[face].map = mat.map.clone();
+								//console.log(billboard.children[i].geometry.materials[face]);
+								//billboard.children[i].geometry.materials[face].map.needsUpdate = true;
+	
+							//}
 						}
 					}
 				
@@ -131,11 +160,13 @@
 				function buildBillboard() {
 					billboard = new THREE.Object3D();
 
-					var material = new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  );
-					var materials = [];
-					for (var i=0; i<6; i++) { materials.push(material); }
+
 					
 					for (var i=0; i<numBars; i++) {
+						var materials = [];
+						for (var j=0; j<6; j++) { materials.push(
+							new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  )
+						); }
 						var geometry = new THREE.CubeGeometry(2, 10, 2, 0, 0, 0, materials);
 
 						var bar = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial());
@@ -152,8 +183,13 @@
 
 			function init() {
 				buildBillboard();
-				loadTextures(searches[0].results[0], function(res) { textureBillboard(res); });
-				textureBillboard(searches[0].results[0]);
+				loadTextures(searches[0].results[0], function(res) { textureBillboard(res);
+								logMapInfo();
+				});
+				//textureBillboard(searches[0].results[0]);
+				//logMapInfo();
+				redoOffsets();
+				logMapInfo();
 				
 				container = document.getElementById( 'container' );
 				fullWidth = container.offsetWidth;
@@ -191,12 +227,12 @@
 				scene.add( camera );
 					
 					
-
 				
 				billboard.position.x = -8;
 				scene.add(billboard);
 				//scene.add(mesh);
-							
+
+
 							
 				scene.add(new THREE.AmbientLight(0xFFFFFF));
 
@@ -233,6 +269,51 @@
 
 				THREEx.WindowResize(renderer, camera);
 				
+				function redoOffsets() {
+					for(var i=0; i<billboard.children.length-4; i++) {
+							for (var j=0; j<4; j++) {
+								var face = (j>=2) ? j+2 : j;
+								
+								var col = (Math.random()*16777215);
+								var spec = (Math.random()*16777215);
+								var amb = (Math.random()*16777215);
+								
+								billboard.children[i].geometry.materials[face] = new THREE.MeshPhongMaterial({ 
+								ambient: amb
+								, color: col
+								, specular: spec
+								, shininess: 50
+								, shading: THREE.SmoothShading 
+							});
+							//	billboard.children[i].geometry.materials[face].map.offset.x = i*.1;
+							//	billboard.children[i].geometry.materials[face].map.needsUpdate = true;
+							}
+						}
+				
+
+				};
+
+				function logMapInfo() {
+					console.log("================================");
+						for(var i=0; i<billboard.children.length; i++) {
+							for (var j=0; j<4; j++) {
+								var face = (j>=2) ? j+2 : j;
+									try {
+									console.log(billboard.children[i].geometry.materials[face].map.offset.x
+										+ "; needsUpdate: " + billboard.children[i].geometry.materials[face].map.needsUpdate);
+									}
+									catch(e) {
+										console.log(e);
+										console.log(billboard.children[i]);
+									}
+							}
+						}
+					console.log("+++++++++++++++++++++++++++++++++");
+				}
+
+				//logMapInfo();
+				//window.setTimeout(logMapInfo, 2000);
+
 				animate();
 
 
@@ -248,9 +329,26 @@
 					var pause = Math.abs(Math.cos(seconds/(period/4))) > .5;
 
 					if (!pause) {
-					for(var i=0; i<billboard.children.length; i++) {
-						billboard.children[i].rotation.y += .01;
-					}
+						for(var i=0; i<billboard.children.length; i++) {
+							billboard.children[i].rotation.y += .01;
+							/*
+							for (var j=0; j<4; j++) {
+								var face = (j>=2) ? j+2 : j;
+								
+								var texWidth = 1/numBars;
+								var offsetX = texWidth * i;
+								try {
+									billboard.children[i].geometry.materials[face].map.offset.x += .001 + (i*.1); // offsetX
+									billboard.children[i].geometry.materials[face].map.needsUpdate = true;
+								} catch(e) {}
+								//console.log(billboard.children[i].geometry.materials[face].map.offset.x
+									//	+ "; needsUpdate: " + billboard.children[i].geometry.materials[face].map.needsUpdate);
+							}
+							*/
+
+						
+
+						}
     				}
 					camera.lookAt( scene.position );
 					renderer.render( scene, camera );
