@@ -1,0 +1,360 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content=""><meta name="author" content=""><title>Everybody's Google</title><link rel="stylesheet" href="/bootstrap-ui/css/bootstrap.css"><style type="text/css">.meta {
+ background-color: #ffd;
+ border: 4px solid #dda;
+ padding: 8px;
+}
+.meta h2 {
+ color: #000;
+ font-style: italic;
+}
+.result {
+ width: 49%;
+ float: left;
+}
+.row { margin-top: 5px; margin-bottom: 15px; }
+#footer { border-top: 1px solid #EEE; padding-top: 10px; margin-top: 10px; }
+#footer * { font-size: 11px; }
+</style></head><body><div id="wrapper"><div id="header" class="container"><div class="hero-unit"><h1><a href="/">Everybody's Google</a></h1><p class="form-inline form-search">See what others see. Enter a search term to begin: <input type="text" name="generateUrl" id="generateUrl"><button id="doGenerate" href="#" class="btn btn-primary"><i class="icon-search icon-white"></i> Go!
+</button></p></div></div><div id="content" class="container"><div class="row"><div class="container"><div class="span12">
+
+<div id="fullscreen" style="background-color:lime;">Full Screen</div>
+<div id="container" style="min-height:600px;width:100%;"></div></div></div></div><script src="/javascript/three/build/Three.js"></script><script src="/javascript/three/js/ShaderExtras.js"></script><script src="/javascript/three/js/postprocessing/EffectComposer.js"></script><script src="/javascript/three/js/postprocessing/RenderPass.js"></script><script src="/javascript/three/js/postprocessing/BloomPass.js"></script><script src="/javascript/three/js/postprocessing/FilmPass.js"></script><script src="/javascript/three/js/postprocessing/DotScreenPass.js"></script><script src="/javascript/three/js/postprocessing/TexturePass.js"></script><script src="/javascript/three/js/postprocessing/ShaderPass.js"></script><script src="/javascript/three/js/postprocessing/MaskPass.js"></script><script src="/javascript/three/js/Detector.js"></script><script src="/javascript/three/js/Stats.js"></script>
+<script src="/THREEx.FullScreen.js"></script>
+<script src='THREEx.WindowResize.js'></script>
+
+</div><div id="footer" class="container"><div class="span1"><a href="/about">About</a></div><div class="span1"><a href="/crawled">View data</a></div><div class="span1"><a href="/stream">Stream					</a></div></div></div><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script><script type="text/javascript" src="/bootstrap-ui/js/jquery.js"></script><script type="text/javascript" src="/bootstrap-ui/js/bootstrap-transition.js"></script><script type="text/javascript" src="/bootstrap-ui/js/bootstrap-tab.js"></script><script type="text/javascript" src="/bootstrap-ui/js/bootstrap-modal.js"></script>
+
+
+
+
+<script type="text/javascript">
+
+var TEXTURES = 		[
+			"/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg"
+			, "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg"
+			, "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg"
+			, "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg"
+			, "/rendered/4dedfa13-0968-89e0-6512-ddea3e181e5e-tex.jpg"
+			, "/rendered/7ba9f92f-0864-5d71-e5e5-67aa3a774485-tex.jpg"
+			, "/rendered/7e1a03f4-4d6a-800f-8e31-21b62990a4c9.jpg"
+			//
+			, "/rendered/3efe00b8-f89d-1319-a01a-56994c820120-tex.jpg"
+			, "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg"
+			, "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg"
+			, "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg"
+			, "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"
+		];
+
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			var neighborhoods = [];
+
+			var mesh;
+
+			var fullWidth;// = window.innerWidth;
+			var fullHeight; //fullHeight = window.innerHeight;
+			var halfWidth, halfHeight;
+
+			var container;
+
+			var camera, scene, renderer;
+
+			var mouseX = 0, mouseY = 0;
+
+			var halfWidth = window.innerWidth / 2;
+			var halfHeight = window.innerHeight / 2;
+
+			var clouds = [
+				["/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg"]
+				, ["/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg"]
+			];
+
+			var meshes = [];
+
+
+			init();
+
+
+				function addFloor() {
+					var floorMaterial = new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  ); //new THREE.MeshLambertMaterial({color: 0x993333});
+					var geometry = new THREE.PlaneGeometry( 100, 100 );
+	
+					var floorMesh = new THREE.Mesh( geometry, floorMaterial );
+					floorMesh.rotation.x = -Math.PI / 2;
+					floorMesh.scale.set( 1000, 1000, 1000 );
+					floorMesh.doubleSided = true;
+	
+					floorMesh.position.y = -10;
+					//floorMesh.position.x = -500;
+					scene.add( floorMesh );
+				};
+					
+	
+
+				function imageMat(url, offset) {
+					var imgTex = THREE.ImageUtils.loadTexture( url, THREE.UVMapping, function( image ) {	});
+					//imgTex.needsUpdate = true;
+					//imgTex.wrapT = THREE.RepeatWrapping;
+					imgTex.repeat.set( .5, 1 );
+					imgTex.offset.x = .25;
+					imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
+					var imgMat = new THREE.MeshBasicMaterial( { color: 0xdddddd, map: imgTex } );
+					imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
+					return imgMat;
+				}
+				
+				function generateNeighborhoods() {
+					for (var i=0; i<1; i++) {
+						var neighborhood = [];
+						for (var j=0; j<10; j++) {
+							var building = {};
+							/*
+							var col = (Math.random()*16777215);
+							var spec = (Math.random()*16777215);
+							var amb = (Math.random()*16777215);
+							building.material = new THREE.MeshPhongMaterial({ 
+								ambient: amb
+								, color: col
+								, specular: spec
+								, shininess: 50
+								, shading: THREE.SmoothShading 
+							});
+							*/
+							building.material = imageMat(TEXTURES[j]);
+							building.texUrl = TEXTURES[j];
+							neighborhood.push(building);
+						}
+						neighborhoods.push(neighborhood);
+					}
+				}
+
+
+
+			function init() {
+				generateNeighborhoods();
+				console.log(neighborhoods);
+
+
+				container = document.getElementById( 'container' );
+				fullWidth = container.offsetWidth;
+				fullHeight = container.offsetHeight;
+				halfWidth = fullWidth / 2;
+				halfHeight = fullHeight / 2;
+
+				//document.body.appendChild( container );
+
+				scene = new THREE.Scene();
+
+				//scene.fog = new THREE.Fog( 0xffffff, 500, 1000 );
+
+				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+				camera.position.z = -5;
+				camera.position.y = 0;
+				camera.position.x = 0;
+				
+				
+				
+  // Instantiate an Orthographic camera this time.
+  // The Left/Right/Top/Bottom values seem to be relative to the scene's 0, 0, 0 origin.
+  // The best result seems to come if the overall viewable area is divided in 2 and
+  // the Left & Bottom values set to negative
+  camera = new THREE.OrthographicCamera(
+    -10,   // Left
+    10,    // Right
+    5,   // Top
+    -5,  // Bottom
+    -10,            // Near clipping plane
+    10 );           // Far clipping plane
+ 
+  // Set the camera position so that it's not on top of our object in the scene:
+				camera.position.z = -5;
+				camera.position.y = 0	;
+				camera.position.x = 0;
+				
+				
+				scene.add( camera );
+					
+					
+				//addFloor();
+
+
+				/*
+				addBlockingPlane(true);
+				addBlockingPlane(false);				
+
+				
+				for(var i=0; i<clouds.length; i++) {
+					var cloudGroup = clouds[i];
+					var mult = (i%2 == 0) ? 1.5 : -1.5;
+					for (var j=0; j<cloudGroup.length; j++) {
+						addImgTex(cloudGroup[j], (mult * (j+1)), 0, 0, function(theMesh) {
+							meshes.push(theMesh);
+						});
+					}
+				}
+				*/
+				
+				var geometry = new THREE.CubeGeometry(2, 4, 2);
+				
+				var material = new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  ) 
+				
+				/*
+				material = new THREE.MeshBasicMaterial({
+					color: 0xcccccc
+					//, wireframe: true
+				});
+				*/
+				
+				mesh = new THREE.Object3D();
+				//mesh = new THREE.Mesh(geometry, material);
+				
+				
+				var planeWidth = 200;
+				var numPlanes = neighborhoods[0].length;
+				var rotationAmt = (Math.PI*2)/numPlanes;
+				var r = (planeWidth/2) / (Math.tan(rotationAmt/2)) + 2; 
+				console.log(neighborhoods);
+				for (var j=0; j<neighborhoods.length; j++) {
+					var neighborhoodObj = new THREE.Object3D();
+					var neighborhood = neighborhoods[j];
+					var rotat = j*rotationAmt;
+
+							console.log("adding neighborhood " + j + " has " + neighborhood.length);
+							
+						for (var i=0; i<neighborhood.length; i++) {
+
+						
+							var rota = i*rotationAmt;
+
+						
+							var bldg = new THREE.Mesh(geometry, neighborhood[i].material);
+		
+							bldg.position.set(0,0,0);
+							bldg.rotation.set(0,0,0); //(0,rota,0);
+							//bldg.matrix.scale(new THREE.Vector3(0, (i+1)*.5, 0));
+							bldg.updateMatrix();
+							bldg.translateX(2.1*i);
+							//var scaleAmt = (i+1)*.5
+							//bldg.scale.y = scaleAmt;
+							//bldg.translateY(scaleAmt * 400 /2);
+							neighborhoodObj.add(bldg);
+
+							
+						}
+
+						neighborhoodObj.position.set(0,0,0);
+						neighborhoodObj.rotation.set(0,rotat,0);
+						//bldg.matrix.scale(new THREE.Vector3(0, (i+1)*.5, 0));
+						neighborhoodObj.updateMatrix();
+						//neighborhoodObj.translateZ(-r*10);
+					
+					mesh.add(neighborhoodObj);
+				}
+
+				mesh.position.x = -8;
+				scene.add(mesh);
+							
+							
+				scene.add(new THREE.AmbientLight(0xFFFFFF));
+
+
+
+
+				// create a point light
+				var pointLight = new THREE.PointLight( 0xFF0000);
+				
+				// set its position
+				pointLight.position.x = -30;
+				pointLight.position.y = -20;
+				pointLight.position.z = 0;
+				
+				// add to the scene
+				scene.add(pointLight);
+    
+    
+				var light = new THREE.SpotLight();
+				light.position.set( 17, 33, 16 );
+				scene.add(light);
+				
+				
+				
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setSize( fullWidth, fullHeight );
+				renderer.setClearColor( 0x666666, 1 );
+				renderer.autoClear = false;
+
+				renderer.domElement.style.position = "relative";
+				container.appendChild( renderer.domElement );
+				
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+				THREEx.WindowResize(renderer, camera);
+				
+				animate();
+					console.log(mesh.children[0]);
+
+				function animate() {
+					requestAnimationFrame( animate );
+					render();
+				}
+	
+				function render() {
+					var seconds = Date.now() / 1000;
+					var radius = 10;
+					var period = 10;
+
+					//angle	= (seconds*Math.PI)/4;
+					
+					/*
+					camera.position.x	= Math.cos((seconds/period) * Math.PI) * radius;
+					camera.position.z	= (Math.sin((seconds/period) * Math.PI) * 40);
+					
+					for (var i=0; i<meshes.length; i++) {
+						meshes[i].position.y = Math.sin((seconds/period) * i*(Math.PI/meshes.length)) * 1;
+						meshes[i].position.z = Math.cos((seconds/period) * i*(Math.PI/meshes.length)) * 1;
+					}
+					*/
+					//mesh.scale(new THREE.Vector3(0, (Math.sin(seconds/period)+1)*.5, 0));;
+					//mesh.rotation.x = (seconds/period);
+					
+					//mesh.rotation.y = (seconds/period);
+
+					var pause = Math.abs(Math.cos(seconds/(period/4))) > .5;
+
+					if (!pause) {
+					//HACK: still following city/neighborhood/building model...
+					for(var i=0; i<mesh.children[0].children.length; i++) {
+						//mesh.children[0].children[i].rotation.y = (seconds/period);
+						mesh.children[0].children[i].rotation.y += .01;
+					}
+    				}
+					camera.lookAt( scene.position );
+					renderer.render( scene, camera );
+				}
+
+
+			}
+
+
+			function onDocumentMouseMove(event) {
+
+				mouseX = ( event.clientX - halfWidth );
+				mouseY = ( event.clientY - halfHeight );
+
+			}
+
+</script>
+
+
+<script type="text/javascript">
+
+$("#fullscreen").on('click', function() {
+
+	if( THREEx.FullScreen.activated() ){
+		THREEx.FullScreen.cancel();
+	}else{
+		THREEx.FullScreen.request(document.getElementById( 'container' ));
+	}
+});
+</script>
+</body></html>
