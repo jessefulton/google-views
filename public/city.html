@@ -33,7 +33,21 @@ $("#generateUrl").on('keypress', function(event) {
 
 <script type="text/javascript">
 
-
+var TEXTURES = 		[
+			"/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg"
+			, "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg"
+			, "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg"
+			, "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg"
+			, "/rendered/4dedfa13-0968-89e0-6512-ddea3e181e5e-tex.jpg"
+			, "/rendered/7ba9f92f-0864-5d71-e5e5-67aa3a774485-tex.jpg"
+			, "/rendered/7e1a03f4-4d6a-800f-8e31-21b62990a4c9.jpg"
+			//
+			, "/rendered/3efe00b8-f89d-1319-a01a-56994c820120-tex.jpg"
+			, "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg"
+			, "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg"
+			, "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg"
+			, "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"
+		];
 
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -79,39 +93,40 @@ $("#generateUrl").on('keypress', function(event) {
 					scene.add( floorMesh );
 				};
 					
-
-				
-				function addImgTex(url, x, y, z, cb) {
-					var imgTex = THREE.ImageUtils.loadTexture( url, THREE.UVMapping, function( image ) {
-						//console.log(image.width);
-						//console.log(image.height);
-					
-						var geometry = new THREE.PlaneGeometry( 1, 1 );
-
-						var THE_MESH = new THREE.Mesh( geometry, imgMat );
 	
-						//THE_MESH.scale.x = image.width / 100;
-						//THE_MESH.scale.y = image.height / 100;
-						THE_MESH.position.set(x,y,z);
-						THE_MESH.doubleSided = true;
-						scene.add( THE_MESH );
-						cb(THE_MESH);
+					
+				function imageMesh(url, geom, cb) {
+					var imgTex = THREE.ImageUtils.loadTexture( url, THREE.UVMapping, function( image ) {
+						var theMesh = new THREE.Mesh( geom, imgMat );
+						theMesh.position.set(0,0,0);
+						theMesh.doubleSided = true;
+						cb(theMesh);
 					});
 					//imgTex.needsUpdate = true;
 					//imgTex.wrapT = THREE.RepeatWrapping;
 					imgTex.repeat.set( 1, 1 );
-				    imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
+					imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
 					var imgMat = new THREE.MeshBasicMaterial( { color: 0xdddddd, map: imgTex } );
-	
 					imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
 				}
 
+				function imageMat(url) {
+					var imgTex = THREE.ImageUtils.loadTexture( url, THREE.UVMapping, function( image ) {	});
+					//imgTex.needsUpdate = true;
+					//imgTex.wrapT = THREE.RepeatWrapping;
+					imgTex.repeat.set( 1, 1 );
+					imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
+					var imgMat = new THREE.MeshBasicMaterial( { color: 0xdddddd, map: imgTex } );
+					imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
+					return imgMat;
+				}
 				
 				function generateNeighborhoods() {
 					for (var i=0; i<10; i++) {
 						var neighborhood = [];
 						for (var j=0; j<10; j++) {
 							var building = {};
+							/*
 							var col = (Math.random()*16777215);
 							var spec = (Math.random()*16777215);
 							var amb = (Math.random()*16777215);
@@ -122,6 +137,9 @@ $("#generateUrl").on('keypress', function(event) {
 								, shininess: 50
 								, shading: THREE.SmoothShading 
 							});
+							*/
+							building.material = imageMat(TEXTURES[j]);
+							building.texUrl = TEXTURES[j];
 							neighborhood.push(building);
 						}
 						neighborhoods.push(neighborhood);
@@ -149,7 +167,7 @@ $("#generateUrl").on('keypress', function(event) {
 
 				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
 				camera.position.z = -2000;
-				camera.position.y = 8000;
+				camera.position.y = 800;
 				scene.add( camera );
 					
 					
@@ -203,6 +221,23 @@ $("#generateUrl").on('keypress', function(event) {
 
 						
 							var rota = i*rotationAmt;
+							/*
+							console.log("loading " + j + ", " + i + ": " + neighborhood[i].texUrl);
+							imageMesh(neighborhood[i].texUrl, geometry, (function(rotan,z) {
+								return function(bldg) {
+									bldg.position.set(0,0,0);
+									bldg.rotation.set(0,rotan,0);
+									//bldg.matrix.scale(new THREE.Vector3(0, (i+1)*.5, 0));
+									bldg.updateMatrix();
+									bldg.translateZ(-r);
+									var scaleAmt = (z+1)*.5
+									bldg.scale.y = scaleAmt;
+									bldg.translateY(scaleAmt * 400 /2);		    
+									neighborhoodObj.add(bldg);
+								}
+							})(rota, i));	
+							*/
+							
 						
 							var bldg = new THREE.Mesh(geometry, neighborhood[i].material);
 		
@@ -215,6 +250,8 @@ $("#generateUrl").on('keypress', function(event) {
 							bldg.scale.y = scaleAmt;
 							bldg.translateY(scaleAmt * 400 /2);
 							neighborhoodObj.add(bldg);
+
+							
 						}
 
 						neighborhoodObj.position.set(0,0,0);
