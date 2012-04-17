@@ -47,6 +47,31 @@ var TEXTURES = 		[
 
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
+
+			//textures are currently 512x512... should we do 1024x1024?
+			var searches = [{
+				"term": "foo"
+				, "results": [[
+						{ "textureUrl": "/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg" } //result1img1
+						, { "textureUrl": "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg" } //result1img2
+						, { "textureUrl": "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg" } //result1img3
+						, { "textureUrl": "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg" } //result1img4
+					]
+					, [
+						{ "textureUrl": "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg" } //result2img1
+						, { "textureUrl": "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg" } //result2img2
+						, { "textureUrl": "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg" } //result2img3
+						, { "textureUrl": "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg" } //result2img4
+					]
+				]}
+			];
+				
+				
+			var curSearchIdx = 0;
+			var curSearchResultIdx = 0;
+			var numBars = 10;
+			var billboard;
+
 			var neighborhoods = [];
 
 			var mesh;
@@ -64,43 +89,73 @@ var TEXTURES = 		[
 			var halfWidth = window.innerWidth / 2;
 			var halfHeight = window.innerHeight / 2;
 
-			var clouds = [
-				["/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg"]
-				, ["/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg", "/512.jpg"]
-			];
-
-			var meshes = [];
 
 
 			init();
 
 
-				function addFloor() {
-					var floorMaterial = new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  ); //new THREE.MeshLambertMaterial({color: 0x993333});
-					var geometry = new THREE.PlaneGeometry( 100, 100 );
-	
-					var floorMesh = new THREE.Mesh( geometry, floorMaterial );
-					floorMesh.rotation.x = -Math.PI / 2;
-					floorMesh.scale.set( 1000, 1000, 1000 );
-					floorMesh.doubleSided = true;
-	
-					floorMesh.position.y = -10;
-					//floorMesh.position.x = -500;
-					scene.add( floorMesh );
-				};
 					
 	
 
-				function imageMat(url, offset) {
+				function imageMat(url, width, offset) {
+					if (!width) width = 0.5;
+					if (!offset) offset = .25;
 					var imgTex = THREE.ImageUtils.loadTexture( url, THREE.UVMapping, function( image ) {	});
 					//imgTex.needsUpdate = true;
 					//imgTex.wrapT = THREE.RepeatWrapping;
-					imgTex.repeat.set( .5, 1 );
-					imgTex.offset.x = .25;
+					imgTex.repeat.set( width, 1 );
+					imgTex.offset.x = offset;
 					imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
 					var imgMat = new THREE.MeshBasicMaterial( { color: 0xdddddd, map: imgTex } );
 					imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
+					console.log("loaded imageMat " + url);
 					return imgMat;
+				}
+				
+				function loadTextures(resultsObj, cb) {
+					var texWidth = 1/numBars;
+
+					for (var j=0; j<resultsObj.length; j++) {
+						var resultObj = resultsObj[j];
+						resultObj.textures = [];
+						for (var i=0; i<numBars; i++) {
+							
+							resultObj.textures.push(imageMat(resultObj.textureUrl, texWidth, texWidth*i));
+						
+						}
+					}
+					cb(resultsObj);
+				}
+				
+				function textureBillboard(resultsObj) {
+					console.log(resultsObj);
+					for (var i=0; i<numBars; i++) {
+						for (var j=0; j<resultsObj.length; j++) {
+							for (var k=0; k<resultsObj[j].textures.length; k++) {
+								var tex = resultsObj[j].textures[k];
+								console.log(billboard.children[i]);
+								billboard.children[i].material[j] = tex;
+							}
+						}
+					}
+				
+				}
+				
+				function buildBillboard() {
+					billboard = new THREE.Object3D();
+					var geometry = new THREE.CubeGeometry(2, 10, 2);
+					var material = new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  );
+					var materials = [];
+					for (var i=0; i<6; i++) { materials.push(material); }
+					
+					for (var i=0; i<numBars; i++) {
+						var bar = new THREE.Mesh(geometry, material);
+						bar.position.set(0,0,0);
+						bar.rotation.set(0,0,0); //(0,rota,0);
+						bar.updateMatrix();
+						bar.translateX(2.1*i);
+						billboard.add(bar);
+					}
 				}
 				
 				function generateNeighborhoods() {
@@ -132,9 +187,11 @@ var TEXTURES = 		[
 
 			function init() {
 				generateNeighborhoods();
-				console.log(neighborhoods);
-
-
+				//console.log(neighborhoods);
+				buildBillboard();
+				//loadTextures(searches[0].results[0], function(res) { textureBillboard(res); });
+				//textureBillboard(searches[0].results[0]);
+				
 				container = document.getElementById( 'container' );
 				fullWidth = container.offsetWidth;
 				fullHeight = container.offsetHeight;
@@ -154,19 +211,15 @@ var TEXTURES = 		[
 				
 				
 				
-  // Instantiate an Orthographic camera this time.
-  // The Left/Right/Top/Bottom values seem to be relative to the scene's 0, 0, 0 origin.
-  // The best result seems to come if the overall viewable area is divided in 2 and
-  // the Left & Bottom values set to negative
-  camera = new THREE.OrthographicCamera(
-    -10,   // Left
-    10,    // Right
-    5,   // Top
-    -5,  // Bottom
-    -10,            // Near clipping plane
-    10 );           // Far clipping plane
+				camera = new THREE.OrthographicCamera(
+					-10,   // Left
+					10,    // Right
+					5,   // Top
+					-5,  // Bottom
+					-10,            // Near clipping plane
+					10 );           // Far clipping plane
  
-  // Set the camera position so that it's not on top of our object in the scene:
+
 				camera.position.z = -5;
 				camera.position.y = 0	;
 				camera.position.x = 0;
@@ -175,26 +228,9 @@ var TEXTURES = 		[
 				scene.add( camera );
 					
 					
-				//addFloor();
-
-
-				/*
-				addBlockingPlane(true);
-				addBlockingPlane(false);				
 
 				
-				for(var i=0; i<clouds.length; i++) {
-					var cloudGroup = clouds[i];
-					var mult = (i%2 == 0) ? 1.5 : -1.5;
-					for (var j=0; j<cloudGroup.length; j++) {
-						addImgTex(cloudGroup[j], (mult * (j+1)), 0, 0, function(theMesh) {
-							meshes.push(theMesh);
-						});
-					}
-				}
-				*/
-				
-				var geometry = new THREE.CubeGeometry(2, 4, 2);
+				var geometry = new THREE.CubeGeometry(2, 10, 2);
 				
 				var material = new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  ) 
 				
@@ -252,7 +288,10 @@ var TEXTURES = 		[
 				}
 
 				mesh.position.x = -8;
-				scene.add(mesh);
+				
+				billboard.position.x = -8;
+				scene.add(billboard);
+				//scene.add(mesh);
 							
 							
 				scene.add(new THREE.AmbientLight(0xFFFFFF));
@@ -323,9 +362,9 @@ var TEXTURES = 		[
 
 					if (!pause) {
 					//HACK: still following city/neighborhood/building model...
-					for(var i=0; i<mesh.children[0].children.length; i++) {
+					for(var i=0; i<billboard.children.length; i++) {
 						//mesh.children[0].children[i].rotation.y = (seconds/period);
-						mesh.children[0].children[i].rotation.y += .01;
+						billboard.children[i].rotation.y += .01;
 					}
     				}
 					camera.lookAt( scene.position );
