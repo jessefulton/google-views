@@ -1,7 +1,10 @@
 module.exports.init = function(app) {
 
-	var config = app.set('config');
-
+	var config = app.set('config')
+		, spawn = require('child_process').spawn
+		, fs = require('fs');
+	
+//var models = require('./models');
 	
 	/**
 	 * App routes.
@@ -151,7 +154,7 @@ module.exports.init = function(app) {
 		var filename = "public/screenshots/searches/" + userEmail + "/" + query + ".png";
 		
 		var bin = "casperjs";
-		var args = ["./scripts/search.js", "--email=" + userEmail, "--password=" + userPass, "--query=\"" + query + "\"", "--filename=" + filename];
+		var args = ["./scripts/search.js", "--email=" + userEmail, "--password=" + userPass, "--query=" + query.replace(/(\W)/gi, "\\ "), "--filename=" + filename];
 		
 	
 		console.log("About to run casperjs");
