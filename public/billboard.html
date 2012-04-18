@@ -1,41 +1,61 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content=""><meta name="author" content=""><title>Everybody's Google</title><link rel="stylesheet" href="/bootstrap-ui/css/bootstrap.css"><style type="text/css">.meta {
- background-color: #ffd;
- border: 4px solid #dda;
- padding: 8px;
-}
-.meta h2 {
- color: #000;
- font-style: italic;
-}
-.result {
- width: 49%;
- float: left;
-}
-body, html {width:100%; height:100%}
-.row { margin-top: 5px; margin-bottom: 15px; }
-#footer { border-top: 1px solid #EEE; padding-top: 10px; margin-top: 10px; }
-#footer * { font-size: 11px; }
-</style></head><body>
-<div id="fullscreen" style="background-color:lime;position:absolute;z-index:1000;">Full Screen</div>
-<div id="container" style="height:50%;width:50%;"></div>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<meta name="description" content="" />
+	<meta name="author" content="" />
+	<title>Everybody's Google</title>
 
+	<style type="text/css">
+	/*
+	* Color palette modified from tinuviel
+	* http://www.colourlovers.com/palette/1166568/tdott_beauty
+	*/
+		body, html {
+			background-color:#222; 
+			color: #FFFFFF;
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+			font-size: 16px;
+			line-height: 24px;
+			margin: 0px;
+			overflow: hidden;
+			}
+		h1, h2, h3, h4, h5, h6 { color: #FF0078; }
+		.meta { color: #0590A9; }
+		a:link { text-decoration:none; color: #FF0078; font-weight: bold; }
+		a:visited { text-decoration:none; color: #FF0078; font-weight: bold; }
+		a:hover { text-decoration:none; color: #C0C0C0; font-weight: bold; }
+		a:active {}
+	</style>
+	<script src="/javascript/three/build/Three.js"></script>
+	<script src="/javascript/three/js/ShaderExtras.js"></script>
+	<script src="/javascript/three/js/postprocessing/EffectComposer.js"></script>
+	<script src="/javascript/three/js/postprocessing/RenderPass.js"></script>
+	<script src="/javascript/three/js/postprocessing/BloomPass.js"></script>
+	<script src="/javascript/three/js/postprocessing/FilmPass.js"></script>
+	<script src="/javascript/three/js/postprocessing/DotScreenPass.js"></script>
+	<script src="/javascript/three/js/postprocessing/TexturePass.js"></script>
+	<script src="/javascript/three/js/postprocessing/ShaderPass.js"></script>
+	<script src="/javascript/three/js/postprocessing/MaskPass.js"></script>
+	<script src="/javascript/three/js/Detector.js"></script>
+	<script src="/javascript/three/js/Stats.js"></script>
+	<script src="/THREEx.FullScreen.js"></script>
+	<script src='THREEx.WindowResize.js'></script>
+</head>
+<body>
+<div class="meta" style="position:absolute;z-index:1000;"><a href="#" id="fullscreen">Full Screen</a></div>
 
-<script src="/javascript/three/build/Three.js"></script>
-<script src="/javascript/three/js/ShaderExtras.js"></script>
-<script src="/javascript/three/js/postprocessing/EffectComposer.js"></script>
-<script src="/javascript/three/js/postprocessing/RenderPass.js"></script>
-<script src="/javascript/three/js/postprocessing/BloomPass.js"></script>
-<script src="/javascript/three/js/postprocessing/FilmPass.js"></script>
-<script src="/javascript/three/js/postprocessing/DotScreenPass.js"></script>
-<script src="/javascript/three/js/postprocessing/TexturePass.js"></script>
-<script src="/javascript/three/js/postprocessing/ShaderPass.js"></script>
-<script src="/javascript/three/js/postprocessing/MaskPass.js"></script>
-<script src="/javascript/three/js/Detector.js"></script>
-<script src="/javascript/three/js/Stats.js"></script>
-<script src="/THREEx.FullScreen.js"></script>
-<script src='THREEx.WindowResize.js'></script>
+<script type="text/javascript">
 
+document.getElementById("fullscreen").onclick= function() {
 
+	if( THREEx.FullScreen.activated() ){
+		THREEx.FullScreen.cancel();
+	}else{
+		THREEx.FullScreen.request();
+	}
+	return false;
+};
+</script>
 <script type="text/javascript">
 
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -63,15 +83,17 @@ body, html {width:100%; height:100%}
 			var curSearchIdx = 0;
 			var curSearchResultIdx = 0;
 			var numBars = 10;
-			var billboard;
 
-			var neighborhoods = [];
+			var billboard;
+			var billboardWidth = 1;
+			var billboardHeight = 1;
+			var barGap = 0;
+			var barWidth = billboardWidth/numBars;
+
 
 			var mesh;
 
-			var fullWidth;
-			var fullHeight;
-			var halfWidth, halfHeight;
+
 
 			var container;
 
@@ -173,13 +195,13 @@ body, html {width:100%; height:100%}
 						for (var j=0; j<6; j++) { materials.push(
 							new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  )
 						); }
-						var geometry = new THREE.CubeGeometry(2, 10, 2, 0, 0, 0, materials);
+						var geometry = new THREE.CubeGeometry(barWidth, billboardHeight, barWidth, 0, 0, 0, materials);
 
 						var bar = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial());
 						bar.position.set(0,0,0);
 						bar.rotation.set(0,0,0); //(0,rota,0);
 						bar.updateMatrix();
-						bar.translateX(2.1*i);
+						bar.translateX(i * (barWidth + barGap));
 						billboard.add(bar);
 					}
 				}
@@ -195,14 +217,10 @@ body, html {width:100%; height:100%}
 				//redoOffsets();
 				///logMapInfo();
 				
-				container = document.getElementById( 'container' );
-				fullWidth = container.offsetWidth;
-				fullHeight = container.offsetHeight;
-				halfWidth = fullWidth / 2;
-				halfHeight = fullHeight / 2;
-
-				//document.body.appendChild( container );
-
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+	
+	
 				scene = new THREE.Scene();
 
 				//scene.fog = new THREE.Fog( 0xffffff, 500, 1000 );
@@ -212,7 +230,7 @@ body, html {width:100%; height:100%}
 				
 				
 				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-				camera.position.z = -10;
+				camera.position.z = -1.5;
 				camera.position.y = 0;
 				camera.position.x = 0;
 				
@@ -236,7 +254,7 @@ body, html {width:100%; height:100%}
 					
 					
 				
-				billboard.position.x = -(2.1*4.5);
+				billboard.position.x = -((barWidth + barGap) * ((numBars-1)/2));
 				scene.add(billboard);
 				//scene.add(mesh);
 
@@ -266,7 +284,7 @@ body, html {width:100%; height:100%}
 				
 				
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setSize( fullWidth, fullHeight );
+				renderer.setSize( window.innerWidth-16, window.innerHeight-16);
 				renderer.setClearColor( 0x666666, 1 );
 				renderer.autoClear = false;
 
@@ -385,23 +403,10 @@ body, html {width:100%; height:100%}
 
 			function onDocumentMouseMove(event) {
 
-				mouseX = ( event.clientX - halfWidth );
-				mouseY = ( event.clientY - halfHeight );
+				mouseX = ( event.clientX - (window.innerWidth/2) );
+				mouseY = ( event.clientY - (window.innerHeight/2) );
 
 			}
 
-</script>
-
-
-<script type="text/javascript">
-
-document.getElementById("fullscreen").onclick= function() {
-
-	if( THREEx.FullScreen.activated() ){
-		THREEx.FullScreen.cancel();
-	}else{
-		THREEx.FullScreen.request(document.getElementById( 'container' ));
-	}
-};
 </script>
 </body></html>
