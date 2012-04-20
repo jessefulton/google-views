@@ -107,7 +107,7 @@ Billboard.prototype._texture = function(callback) {
 	var texturesToLoad = this.textureUrls.length * this.numBars;
 	var texturesLoaded = 0;
 	
-	console.log(this);
+	//console.log(this);
 	
 	var texWidth = 1/this.numBars;
 	for (var j=0; j<this.textureUrls.length; j++) {
@@ -115,19 +115,19 @@ Billboard.prototype._texture = function(callback) {
 			var offset = texWidth*(-i - 1);
 			//offset = Math.random();
 
-			console.log("BILLBOARD LOAD: " + this.textureUrls[j]);
+			//console.log("BILLBOARD LOAD: " + this.textureUrls[j]);
 
 			var imgTex = THREE.ImageUtils.loadTexture(
 				this.textureUrls[j]
 				, THREE.UVMapping
 				, function(image) {
-					console.log("___LOADED " + image);
+					//console.log("___LOADED " + image);
 					texturesLoaded++;
 					if (texturesLoaded >= texturesToLoad) {
 						callback();
 					}
 			});
-			console.log(offset);
+			//console.log(offset);
 
 			//imgTex.wrapT = THREE.RepeatWrapping;
 			imgTex.repeat.set( texWidth, 1 );
@@ -167,9 +167,24 @@ Billboard.prototype.tick = function(deltaTime, rate) {
 var SearchQueue = {};
 
 //SEARCH RESULTS
-var SearchResults = function() {
+var SearchResults = function(cfg) {
+	this.term = cfg.term;
+	this.rawData = cfg.data;
 	this.billboards = [];
+	console.log(cfg);
 	
+
+	for (var i=0; i<this.rawData.length; i++) {
+		console.log(this.rawData[i]);
+		this.billboards.push(new Billboard({"textures":this.rawData[i]}));
+	}
+	
+}
+
+SearchResults.prototype.tick = function(deltaTime) {
+	for (var i=0; i<this.billboards.length; i++) {
+		this.billboards[i].tick(deltaTime);
+	}
 }
 
 
@@ -188,24 +203,23 @@ var bb = new Billboard({
 
 
 			//textures are currently 512x512... should we do 1024x1024?
-			var searches = [{
-				"term": "foo"
-				, "results": [[
-						{ "textureUrl": "/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg" } //result1img1
-						, { "textureUrl": "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg" } //result1img2
-						, { "textureUrl": "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg" } //result1img3
-						, { "textureUrl": "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg" } //result1img4
+
+			var _results= [[
+						"/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg"
+						, "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg"
+						, "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg"
+						, "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg"
 					]
 					, [
-						{ "textureUrl": "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg" } //result2img1
-						, { "textureUrl": "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg" } //result2img2
-						, { "textureUrl": "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg" } //result2img3
-						, { "textureUrl": "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg" } //result2img4
+						"/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg"
+						, "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg"
+						, "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg"
+						, "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"
 					]
-				]}
-			];
+				];
 				
-				
+			var sr = new SearchResults({"term": "foo", "data": _results});
+	
 			var curSearchIdx = 0;
 			var curSearchResultIdx = 0;
 			var numBars = 10;
@@ -272,10 +286,12 @@ var bb = new Billboard({
 				scene.add( camera );
 					
 					
+				sr.billboards[0].obj.position.x = -((barWidth + barGap) * ((numBars-1)/2));
+				sr.billboards[1].obj.position.x = ((barWidth + barGap) * ((numBars-1)/2)) + .2;
+
+				scene.add(sr.billboards[0].obj);
+				scene.add(sr.billboards[1].obj);
 				
-				bb.obj.position.x = -((barWidth + barGap) * ((numBars-1)/2));
-				scene.add(bb.obj);
-							
 				scene.add(new THREE.AmbientLight(0xFFFFFF));
 
 				// create a point light
@@ -336,7 +352,7 @@ var bb = new Billboard({
 					//pause = false;
 
 					if (!pause) {
-						bb.tick(deltaTime);
+						sr.tick(deltaTime);
     				}
 					camera.lookAt( scene.position );
 					renderer.render( scene, camera );
