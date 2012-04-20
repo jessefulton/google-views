@@ -62,10 +62,58 @@ document.getElementById("fullscreen").onclick= function() {
 </script>
 <script type="text/javascript">
 
+var container;
+var camera, renderer, startTime;
+var mouseX = 0, mouseY = 0;
+
+
+//SEARCH RESULTS LOAD QUEUE 
+var SearchQueue = [
+	{"term": "foo"
+		, "data": [
+					[ "/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg", "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg", "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg", "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg" ]
+					, [ "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg", "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg", "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg", "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"]
+					, [ "/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg", "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg", "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg", "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg" ]
+					, [ "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg", "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg", "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg", "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"]
+					, [ "/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg", "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg", "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg", "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg" ]
+					, [ "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg", "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg", "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg", "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"]
+					, [ "/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg", "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg", "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg", "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg" ]
+					, [ "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg", "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg", "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg", "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"]
+					, [ "/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg", "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg", "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg", "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg" ]
+					, [ "/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg", "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg", "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg", "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"]
+				]
+	}
+];
+
 //MAIN APP
-var Viz = function() {};
-Viz.prototype.init = function() {}
-Viz.prototype.tick = function() {}
+var Viz = function() {
+	this.currentSearch = null;
+	this.nextSearch = null;
+	this.scene = new THREE.Scene();
+};
+
+Viz.prototype.init = function() {
+	var rawSearch = SearchQueue.shift();
+	this.currentSearch = new SearchResults(rawSearch, function() {
+		console.log("SEARCH LOADED FROM VIZ");
+	});
+	SearchQueue.push(rawSearch);
+	this.animate();
+}
+
+Viz.prototype.next = function() {
+
+}
+
+Viz.prototype.animate = function() {
+
+}
+
+Viz.prototype.render = function() {
+	if (this.currentSearch) {
+		this.currentSearch.tick();
+	}
+}
 
 
 //BILLBOARD
@@ -78,7 +126,7 @@ var Billboard = function(opts, onload) {
 	this.textureUrls = opts.textures;
 	
 	this._build();
-	this._texture(function() {console.log("LOADED ALL TEXTURES!");} );
+	this._texture(onload ? onload : function() {});
 	
 	
 };
@@ -103,7 +151,7 @@ Billboard.prototype._build = function() {
 	}
 }
 
-Billboard.prototype._texture = function(callback) {
+Billboard.prototype._texture = function(onComplete) {
 	var texturesToLoad = this.textureUrls.length * this.numBars;
 	var texturesLoaded = 0;
 	
@@ -121,10 +169,10 @@ Billboard.prototype._texture = function(callback) {
 				this.textureUrls[j]
 				, THREE.UVMapping
 				, function(image) {
-					//console.log("___LOADED " + image);
 					texturesLoaded++;
+					console.log("___LOADED TEXTURE " + texturesLoaded + "/" + texturesToLoad);
 					if (texturesLoaded >= texturesToLoad) {
-						callback();
+						onComplete();
 					}
 			});
 			//console.log(offset);
@@ -162,23 +210,33 @@ Billboard.prototype.tick = function(deltaTime, rate) {
 }
 
 
-
-//SEARCH RESULTS LOAD QUEUE 
-var SearchQueue = {};
-
 //SEARCH RESULTS
-var SearchResults = function(cfg) {
+var SearchResults = function(cfg, onload) {
 	this.term = cfg.term;
 	this.rawData = cfg.data;
 	this.billboards = [];
-	console.log(cfg);
+	//this.obj = new THREE.Object3D();
 	
+	this._load(onload ? onload : function() {});
+}
 
+SearchResults.prototype._load = function(onload) {
+	var numToLoad = this.rawData.length;
+	var numLoaded = 0;
 	for (var i=0; i<this.rawData.length; i++) {
 		console.log(this.rawData[i]);
-		this.billboards.push(new Billboard({"textures":this.rawData[i]}));
+		this.billboards.push(new Billboard({"textures":this.rawData[i]}, function() {
+			numLoaded++;
+			console.log("loaded billboard " + numLoaded + "/" + numToLoad);
+			if (numLoaded >= numToLoad) {
+				onload();
+			}
+		}));
 	}
-	
+}
+
+SearchResults.prototype._destroy = function() {
+
 }
 
 SearchResults.prototype.tick = function(deltaTime) {
@@ -189,14 +247,7 @@ SearchResults.prototype.tick = function(deltaTime) {
 
 
 
-var bb = new Billboard({
-	"textures": ["/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg"
-						, "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg"
-						, "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg" //result1img3
-						, "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg" 
-					]
-	//, "divisionSpacing": .01
-});
+
 
 
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -218,46 +269,28 @@ var bb = new Billboard({
 					]
 				];
 				
-			var sr = new SearchResults({"term": "foo", "data": _results});
+			var sr = new SearchResults({"term": "foo", "data": _results}, function() {
+				console.log("FINISHED LOADING!!!");
+			});
 	
-			var curSearchIdx = 0;
-			var curSearchResultIdx = 0;
-			var numBars = 10;
-
-			var billboard;
-			var billboardWidth = 1;
-			var billboardHeight = 1;
-			var barGap = 0;
-			var barWidth = billboardWidth/numBars;
 
 
-			var mesh;
 
-
-			var imagesLoaded = 0;
-			var imagesToLoad = 0;
-
-
-			var container;
-
-			var camera, scene, renderer;
-
-			var mouseX = 0, mouseY = 0;
-
-
-			var startTime;
 
 			init();
 
 
 
-
+			var app;
 
 			function init() {
+				app = new Viz();
+				//app.init();
+				
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
-				scene = new THREE.Scene();
+
 
 				//scene.fog = new THREE.Fog( 0xffffff, 500, 1000 );
 				
@@ -283,16 +316,16 @@ var bb = new Billboard({
 				camera.position.x = 0;
 				*/
 				
-				scene.add( camera );
+				app.scene.add( camera );
 					
 					
-				sr.billboards[0].obj.position.x = -((barWidth + barGap) * ((numBars-1)/2));
-				sr.billboards[1].obj.position.x = ((barWidth + barGap) * ((numBars-1)/2)) + .2;
+				sr.billboards[0].obj.position.x = -1.2;
+				sr.billboards[1].obj.position.x = 1.2;
 
-				scene.add(sr.billboards[0].obj);
-				scene.add(sr.billboards[1].obj);
+				app.scene.add(sr.billboards[0].obj);
+				app.scene.add(sr.billboards[1].obj);
 				
-				scene.add(new THREE.AmbientLight(0xFFFFFF));
+				app.scene.add(new THREE.AmbientLight(0xFFFFFF));
 
 				// create a point light
 				var pointLight = new THREE.PointLight( 0xFF0000);
@@ -303,17 +336,17 @@ var bb = new Billboard({
 				pointLight.position.z = 0;
 				
 				// add to the scene
-				scene.add(pointLight);
+				app.scene.add(pointLight);
     
     
 				var light = new THREE.SpotLight();
 				light.position.set( 17, 33, 16 );
-				scene.add(light);
+				app.scene.add(light);
 				
 				
 				
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setSize( window.innerWidth-16, window.innerHeight-16);
+				renderer.setSize( window.innerWidth, window.innerHeight);
 				renderer.setClearColor( 0x666666, 1 );
 				renderer.autoClear = false;
 
@@ -354,8 +387,8 @@ var bb = new Billboard({
 					if (!pause) {
 						sr.tick(deltaTime);
     				}
-					camera.lookAt( scene.position );
-					renderer.render( scene, camera );
+					camera.lookAt( app.scene.position );
+					renderer.render( app.scene, camera );
 					lastFrameTime = now;
 					totalTime += deltaTime;
 				}
