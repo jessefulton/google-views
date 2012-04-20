@@ -150,12 +150,17 @@ Billboard.prototype.isLoaded = function() {
 	}
 	return true;
 }
-Billboard.prototype.tick = function() {}
+Billboard.prototype.tick = function(deltaTime, rate) {
+	if (!rate) { rate = .1; }
+	
+	var period = .25; //rotations per second
+	var fullRotation = (Math.PI*2);
+	var amt = (fullRotation * period * deltaTime) * rate;
+	for(var i=0; i<this.obj.children.length; i++) {
+		this.obj.children[i].rotation.y += amt;
+	}
+}
 
-//BILLBOARD FACE
-var BillboardDivision = function(opts) {
-
-};
 
 
 //SEARCH RESULTS LOAD QUEUE 
@@ -231,137 +236,16 @@ var bb = new Billboard({
 			init();
 
 
-				function onBillboardLoad() {
-				}
-				function moveBillboardIn() {}
-				function moveBillboardOut() {}
-				
-				//create Billboard class...
-				//create search class...
-				//create search queue class...
-				//create app class...
-	
-
-				function imageMat(url, width, offset) {
-					imagesToLoad++;
-					//if (!width) width = 0.5;
-					//if (offset === undefined) offset = .25;
-					//console.log("offset: " + offset);
-					var imgTex = THREE.ImageUtils.loadTexture(
-						url
-						, THREE.UVMapping
-						, function(image) {
-
-							imagesLoaded++;
-							console.log("Loaded " + imagesLoaded + "/" + imagesToLoad + " images");
-							//console.log(image)
-							//console.log(imgTex);
-					});
-
-					//console.log("imgTex:");
-					//console.log(imgTex);
-
-					//imgTex.wrapT = THREE.RepeatWrapping;
-					imgTex.repeat.set( width, 1 );
-					imgTex.offset.x = offset;
-					imgTex.needsUpdate = true;
-					imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
-					var imgMat = new THREE.MeshBasicMaterial( { color: 0xdddddd, map: imgTex } );
-					imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
-					return imgMat;
-				}
-				
-				function loadTextures(resultsObj, cb) {
-					var texWidth = 1/numBars;
-					for (var j=0; j<resultsObj.length; j++) {
-						var resultObj = resultsObj[j];
-						resultObj.materials = [];
-						for (var i=0; i<numBars; i++) {
-							resultObj.materials.push(imageMat(resultObj.textureUrl, texWidth, texWidth*(-i - 1)));
-						
-						}
-					}
-					cb(resultsObj);
-				}
-				
-				function textureBillboard(resultObj) {
-					console.log(resultObj);
-					for (var j=0; j<resultObj.length; j++) {
-						var res = resultObj[j];
-						var mats = res.materials;
-						for (var i=0; i<numBars; i++) {
-						
-						//should be four results
-
-						
-							//each result object should have 10 materials;
-							//for (var k=0; k<resultObj[j].materials.length; k++) {
-							
-								var mat = mats[i];
-								var face = (j>=2) ? j+2 : j;
-								//console.log("material: " + i + "; face:" + face);
-
-
-								
-								(function(_geom, _face, _mat) {
-									_geom.materials[_face] = _mat;									
-									//console.log("texture offsetX: " + _geom.materials[_face].map.offset.x
-										//+ "; needsUpdate: " + _geom.materials[_face].map.needsUpdate);
-								})(billboard.children[i].geometry, face, mat);
-								
-								//materials order: left right top bottom front back
-								//billboard.children[i].geometry.materials[face].map = mat.map.clone();
-								//console.log(billboard.children[i].geometry.materials[face]);
-								//billboard.children[i].geometry.materials[face].map.needsUpdate = true;
-	
-							//}
-						}
-					}
-				
-				}
-				
-				function buildBillboard() {
-					billboard = new THREE.Object3D();
-
-
-					
-					for (var i=0; i<numBars; i++) {
-						var materials = [];
-						for (var j=0; j<6; j++) { materials.push(
-							new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  )
-						); }
-						var geometry = new THREE.CubeGeometry(barWidth, billboardHeight, barWidth, 0, 0, 0, materials);
-
-						var bar = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial());
-						bar.position.set(0,0,0);
-						bar.rotation.set(0,0,0); //(0,rota,0);
-						bar.updateMatrix();
-						bar.translateX(i * (barWidth + barGap));
-						billboard.add(bar);
-					}
-				}
-				
 
 
 
 			function init() {
-				buildBillboard();
-				loadTextures(searches[0].results[0], function(res) { textureBillboard(res); });
-				//textureBillboard(searches[0].results[0]);
-				//logMapInfo();
-				//redoOffsets();
-				///logMapInfo();
-				
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
-	
-	
+
 				scene = new THREE.Scene();
 
 				//scene.fog = new THREE.Fog( 0xffffff, 500, 1000 );
-
-
-
 				
 				
 				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
@@ -391,16 +275,8 @@ var bb = new Billboard({
 				
 				bb.obj.position.x = -((barWidth + barGap) * ((numBars-1)/2));
 				scene.add(bb.obj);
-				//scene.add(mesh);
-				console.log("bb.ojb");
-				console.log(bb.obj);
-
-
 							
 				scene.add(new THREE.AmbientLight(0xFFFFFF));
-
-
-
 
 				// create a point light
 				var pointLight = new THREE.PointLight( 0xFF0000);
@@ -432,50 +308,6 @@ var bb = new Billboard({
 
 				THREEx.WindowResize(renderer, camera, container);
 				
-				function redoOffsets() {
-					for(var i=0; i<billboard.children.length-4; i++) {
-							for (var j=0; j<4; j++) {
-								var face = (j>=2) ? j+2 : j;
-								
-								var col = (Math.random()*16777215);
-								var spec = (Math.random()*16777215);
-								var amb = (Math.random()*16777215);
-								
-								billboard.children[i].geometry.materials[face] = new THREE.MeshPhongMaterial({ 
-								ambient: amb
-								, color: col
-								, specular: spec
-								, shininess: 50
-								, shading: THREE.SmoothShading 
-							});
-							//	billboard.children[i].geometry.materials[face].map.offset.x = i*.1;
-							//	billboard.children[i].geometry.materials[face].map.needsUpdate = true;
-							}
-						}
-				
-
-				};
-
-				function logMapInfo() {
-					console.log("================================");
-						for(var i=0; i<billboard.children.length; i++) {
-							for (var j=0; j<4; j++) {
-								var face = (j>=2) ? j+2 : j;
-									try {
-									console.log(billboard.children[i].geometry.materials[face].map.offset.x
-										+ "; needsUpdate: " + billboard.children[i].geometry.materials[face].map.needsUpdate);
-									}
-									catch(e) {
-										console.log(e);
-										console.log(billboard.children[i]);
-									}
-							}
-						}
-					console.log("+++++++++++++++++++++++++++++++++");
-				}
-
-				//logMapInfo();
-				//window.setTimeout(logMapInfo, 2000);
 
 				animate();
 
@@ -485,8 +317,10 @@ var bb = new Billboard({
 					render();
 				}
 	
+	
 				var lastFrameTime;
 				var totalTime = 0;
+	
 				function render() {
 					var now = Date.now() / 1000;
 					if (!lastFrameTime) { lastFrameTime = Date.now()/1000; }
@@ -502,31 +336,7 @@ var bb = new Billboard({
 					//pause = false;
 
 					if (!pause) {
-						for(var i=0; i<bb.obj.children.length; i++) {
-							bb.obj.children[i].rotation.y += amt;
-							
-							//console.log(billboard.children[i].rotation.y);
-							
-							
-							//(Math.PI/2)/(seconds/(period/4));
-							/*
-							for (var j=0; j<4; j++) {
-								var face = (j>=2) ? j+2 : j;
-								
-								var texWidth = 1/numBars;
-								var offsetX = texWidth * i;
-								try {
-									billboard.children[i].geometry.materials[face].map.offset.x += .001 + (i*.1); // offsetX
-									billboard.children[i].geometry.materials[face].map.needsUpdate = true;
-								} catch(e) {}
-								//console.log(billboard.children[i].geometry.materials[face].map.offset.x
-									//	+ "; needsUpdate: " + billboard.children[i].geometry.materials[face].map.needsUpdate);
-							}
-							*/
-
-						
-
-						}
+						bb.tick(deltaTime);
     				}
 					camera.lookAt( scene.position );
 					renderer.render( scene, camera );
