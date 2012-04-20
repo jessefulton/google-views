@@ -94,8 +94,11 @@ var Viz = function() {
 
 Viz.prototype.init = function() {
 	var rawSearch = SearchQueue.shift();
-	this.currentSearch = new SearchResults(rawSearch, function() {
+	var _scene = app.scene;
+	this.currentSearch = new SearchResults(rawSearch, function(sr) {
 		console.log("SEARCH LOADED FROM VIZ");
+		console.log(sr);
+		sr.addTo(_scene);
 	});
 	SearchQueue.push(rawSearch);
 	this.animate();
@@ -107,6 +110,10 @@ Viz.prototype.next = function() {
 
 Viz.prototype.animate = function() {
 
+}
+
+Viz.prototype.tick = function(deltaTime) {
+	this.currentSearch.tick(deltaTime);
 }
 
 Viz.prototype.render = function() {
@@ -221,6 +228,7 @@ var SearchResults = function(cfg, onload) {
 }
 
 SearchResults.prototype._load = function(onload) {
+	var _self = this;
 	var numToLoad = this.rawData.length;
 	var numLoaded = 0;
 	for (var i=0; i<this.rawData.length; i++) {
@@ -229,7 +237,7 @@ SearchResults.prototype._load = function(onload) {
 			numLoaded++;
 			console.log("loaded billboard " + numLoaded + "/" + numToLoad);
 			if (numLoaded >= numToLoad) {
-				onload();
+				onload(_self);
 			}
 		}));
 	}
@@ -245,6 +253,19 @@ SearchResults.prototype.tick = function(deltaTime) {
 	}
 }
 
+SearchResults.prototype.addTo = function(scn) {
+	var _width = 1;
+	var _height = 1;
+	
+	for (var i=0; i<this.billboards.length; i++) {
+		var bb = this.billboards[i].obj;
+		
+		bb.position.x = (Math.floor(i/2) - (_width/2)) - 2.5;
+		bb.position.y = (_height/2) * ((i % 2 == 0) ? 1 : -1);
+		scn.add(bb);
+	}
+}
+
 
 
 
@@ -254,25 +275,6 @@ SearchResults.prototype.tick = function(deltaTime) {
 
 
 			//textures are currently 512x512... should we do 1024x1024?
-
-			var _results= [[
-						"/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg"
-						, "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg"
-						, "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg"
-						, "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg"
-					]
-					, [
-						"/rendered/7b9899a3-3a92-b68d-72d1-cc1aa56e0253-tex.jpg"
-						, "/rendered/45afb6d8-6f37-efa2-48e0-2d0469647c65-tex.jpg"
-						, "/rendered/62d1e32f-64df-adc0-24d6-a38929021d7e-tex.jpg"
-						, "/rendered/68bd3e22-1965-aeaf-5b06-6b6458831884-tex.jpg"
-					]
-				];
-				
-			var sr = new SearchResults({"term": "foo", "data": _results}, function() {
-				console.log("FINISHED LOADING!!!");
-			});
-	
 
 
 
@@ -285,7 +287,7 @@ SearchResults.prototype.tick = function(deltaTime) {
 
 			function init() {
 				app = new Viz();
-				//app.init();
+				app.init();
 				
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
@@ -296,7 +298,7 @@ SearchResults.prototype.tick = function(deltaTime) {
 				
 				
 				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-				camera.position.z = -1.5;
+				camera.position.z = -3;
 				camera.position.y = 0;
 				camera.position.x = 0;
 				
@@ -319,11 +321,11 @@ SearchResults.prototype.tick = function(deltaTime) {
 				app.scene.add( camera );
 					
 					
-				sr.billboards[0].obj.position.x = -1.2;
-				sr.billboards[1].obj.position.x = 1.2;
+				//sr.billboards[0].obj.position.x = -1.2;
+				//sr.billboards[1].obj.position.x = 1.2;
 
-				app.scene.add(sr.billboards[0].obj);
-				app.scene.add(sr.billboards[1].obj);
+				//app.scene.add(sr.billboards[0].obj);
+				//app.scene.add(sr.billboards[1].obj);
 				
 				app.scene.add(new THREE.AmbientLight(0xFFFFFF));
 
@@ -385,7 +387,7 @@ SearchResults.prototype.tick = function(deltaTime) {
 					//pause = false;
 
 					if (!pause) {
-						sr.tick(deltaTime);
+						app.tick(deltaTime);
     				}
 					camera.lookAt( app.scene.position );
 					renderer.render( app.scene, camera );
