@@ -27,6 +27,7 @@
 		a:active {}
 	</style>
 	<script src="/javascript/three/build/Three.js"></script>
+	<!--
 	<script src="/javascript/three/js/ShaderExtras.js"></script>
 	<script src="/javascript/three/js/postprocessing/EffectComposer.js"></script>
 	<script src="/javascript/three/js/postprocessing/RenderPass.js"></script>
@@ -36,8 +37,11 @@
 	<script src="/javascript/three/js/postprocessing/TexturePass.js"></script>
 	<script src="/javascript/three/js/postprocessing/ShaderPass.js"></script>
 	<script src="/javascript/three/js/postprocessing/MaskPass.js"></script>
+	-->
 	<script src="/javascript/three/js/Detector.js"></script>
+	<!--
 	<script src="/javascript/three/js/Stats.js"></script>
+	-->
 	<script src="/THREEx.FullScreen.js"></script>
 	<script src='THREEx.WindowResize.js'></script>
 </head>
@@ -57,6 +61,123 @@ document.getElementById("fullscreen").onclick= function() {
 };
 </script>
 <script type="text/javascript">
+
+//MAIN APP
+var Viz = function() {};
+Viz.prototype.init = function() {}
+Viz.prototype.tick = function() {}
+
+
+//BILLBOARD
+var Billboard = function(opts, onload) {
+	this.obj = new THREE.Object3D();
+	this.numBars = opts.divisions ? opts.divisions : 10;
+	this.divisionSpacing = opts.divisionSpacing ? opts.divisionSpacing : 0;
+	this.height = opts.height ? opts.height : 1;
+	this.width = opts.width ? opts.width : 1;
+	this.textureUrls = opts.textures;
+	
+	this._build();
+	this._texture(function() {console.log("LOADED ALL TEXTURES!");} );
+	
+	
+};
+
+Billboard.prototype._build = function() {
+	var barWidth = this.width/this.numBars;
+			
+	for (var i=0; i<this.numBars; i++) {
+		var materials = [];
+		for (var j=0; j<6; j++) { materials.push(
+			new THREE.MeshPhongMaterial( { ambient: 0x555555, color: 0x555555, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading }  )
+		); }
+
+		var geometry = new THREE.CubeGeometry(barWidth, this.height, barWidth, 0, 0, 0, materials);
+
+		var bar = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial());
+		bar.position.set(0,0,0);
+		bar.rotation.set(0,0,0); //(0,rota,0);
+		bar.updateMatrix();
+		bar.translateX(i * (barWidth + this.divisionSpacing));
+		this.obj.add(bar);
+	}
+}
+
+Billboard.prototype._texture = function(callback) {
+	var texturesToLoad = this.textureUrls.length * this.numBars;
+	var texturesLoaded = 0;
+	
+	console.log(this);
+	
+	var texWidth = 1/this.numBars;
+	for (var j=0; j<this.textureUrls.length; j++) {
+		for (var i=0; i<this.numBars; i++) {
+			var offset = texWidth*(-i - 1);
+			//offset = Math.random();
+
+			console.log("BILLBOARD LOAD: " + this.textureUrls[j]);
+
+			var imgTex = THREE.ImageUtils.loadTexture(
+				this.textureUrls[j]
+				, THREE.UVMapping
+				, function(image) {
+					console.log("___LOADED " + image);
+					texturesLoaded++;
+					if (texturesLoaded >= texturesToLoad) {
+						callback();
+					}
+			});
+			console.log(offset);
+
+			//imgTex.wrapT = THREE.RepeatWrapping;
+			imgTex.repeat.set( texWidth, 1 );
+			imgTex.offset.x = offset;
+			imgTex.needsUpdate = true;
+			imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
+			var imgMat = new THREE.MeshBasicMaterial( { color: 0xdddddd, map: imgTex } );
+			imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
+
+			var face = (j>=2) ? j+2 : j;
+			this.obj.children[i].geometry.materials[face] = imgMat;
+		}
+	}
+
+}
+
+Billboard.prototype.isLoaded = function() {
+	for(var i=0; i<faces.length; i++) {
+		if (!faces.isLoaded()) { return false; }
+	}
+	return true;
+}
+Billboard.prototype.tick = function() {}
+
+//BILLBOARD FACE
+var BillboardDivision = function(opts) {
+
+};
+
+
+//SEARCH RESULTS LOAD QUEUE 
+var SearchQueue = {};
+
+//SEARCH RESULTS
+var SearchResults = function() {
+	this.billboards = [];
+	
+}
+
+
+
+var bb = new Billboard({
+	"textures": ["/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg"
+						, "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg"
+						, "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg" //result1img3
+						, "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg" 
+					]
+	//, "divisionSpacing": .01
+});
+
 
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -94,6 +215,9 @@ document.getElementById("fullscreen").onclick= function() {
 			var mesh;
 
 
+			var imagesLoaded = 0;
+			var imagesToLoad = 0;
+
 
 			var container;
 
@@ -107,10 +231,19 @@ document.getElementById("fullscreen").onclick= function() {
 			init();
 
 
-					
+				function onBillboardLoad() {
+				}
+				function moveBillboardIn() {}
+				function moveBillboardOut() {}
+				
+				//create Billboard class...
+				//create search class...
+				//create search queue class...
+				//create app class...
 	
 
 				function imageMat(url, width, offset) {
+					imagesToLoad++;
 					//if (!width) width = 0.5;
 					//if (offset === undefined) offset = .25;
 					//console.log("offset: " + offset);
@@ -118,7 +251,9 @@ document.getElementById("fullscreen").onclick= function() {
 						url
 						, THREE.UVMapping
 						, function(image) {
-							//console.log("loadTex callback:");
+
+							imagesLoaded++;
+							console.log("Loaded " + imagesLoaded + "/" + imagesToLoad + " images");
 							//console.log(image)
 							//console.log(imgTex);
 					});
@@ -254,9 +389,11 @@ document.getElementById("fullscreen").onclick= function() {
 					
 					
 				
-				billboard.position.x = -((barWidth + barGap) * ((numBars-1)/2));
-				scene.add(billboard);
+				bb.obj.position.x = -((barWidth + barGap) * ((numBars-1)/2));
+				scene.add(bb.obj);
 				//scene.add(mesh);
+				console.log("bb.ojb");
+				console.log(bb.obj);
 
 
 							
@@ -365,8 +502,8 @@ document.getElementById("fullscreen").onclick= function() {
 					//pause = false;
 
 					if (!pause) {
-						for(var i=0; i<billboard.children.length; i++) {
-							billboard.children[i].rotation.y += amt;
+						for(var i=0; i<bb.obj.children.length; i++) {
+							bb.obj.children[i].rotation.y += amt;
 							
 							//console.log(billboard.children[i].rotation.y);
 							
