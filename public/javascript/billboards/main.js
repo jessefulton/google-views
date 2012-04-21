@@ -40,12 +40,13 @@ var Viz = function() {
 
 Viz.prototype.init = function(onComplete) {
 	var self = this;
-	console.log('initializing sockets');
-	this.initSockets(function() {
-		console.log('initializing scene');
-		self.initScene(function() {
-			console.log('search results');
-			self.loadSearchResults(onComplete);
+
+	console.log('initializing scene');
+	self.initScene(function() {
+		console.log('initializing sockets');
+		self.initSockets(function() {
+			self.next();
+			onComplete();
 		});
 	});
 }
@@ -62,6 +63,9 @@ Viz.prototype.initSockets = function (onComplete) {
 		}
 		else {
 			self.queue.add(newTerm, self.scene);
+		}
+		if (this.currentSearch == null) {
+			self.next();
 		}
 	});
 }
@@ -111,41 +115,30 @@ Viz.prototype.initScene = function(onComplete) {
 	onComplete();
 }
 
-Viz.prototype.loadSearchResults = function(onComplete) {
+Viz.prototype.loadSearchResults = function(data) {
 	var _scene = this.scene;
-	var rawSearch = _queueData[0];
-	this.currentSearch = new SearchResults(rawSearch, function(sr) {
+	this.currentSearch = new SearchResults(data, function(sr) {
 		console.log("SEARCH LOADED FROM VIZ");
 		console.log(sr);
 		sr.addTo(_scene);
-		onComplete();
+		//onComplete();
 	});
 }
 
-/*
-Viz.prototype._init = function() {
-	var rawSearch = _queueData.shift();
-	var self = this;
-	var _scene = this.scene;
-	this.currentSearch = new SearchResults(rawSearch, function(sr) {
-		console.log("SEARCH LOADED FROM VIZ");
-		console.log(sr);
-		sr.addTo(_scene);
-	});
-	self.animate();
-	_queueData.push(rawSearch);
-}
-*/
-
-Viz.prototype.getTextures = function(cb) {
-	socket.emit('queryTextures', function(textures) {
-		console.log(textures);
-		cb(textures);
-	});
+Viz.prototype.getTextures = function(term, cb) {
+	this.socket.emit('queryTextures', term, cb);
 }
 
 Viz.prototype.next = function() {
-
+	console.log("inside viz.next... queue " + this.queue.isEmpty());
+	if (!this.queue.isEmpty()) {
+		var term = this.queue.next();
+		var self = this;
+		this.getTextures(term, function(data) {
+			console.log(data);
+			self.loadSearchResults(data);
+		});
+	}
 }
 
 Viz.prototype.animate = function() {
@@ -254,8 +247,9 @@ Billboard.prototype.tick = function(deltaTime, rate) {
 
 //SEARCH RESULTS
 var SearchResults = function(cfg, onload) {
-	this.term = cfg.term;
-	this.rawData = cfg.data;
+	//this.term = cfg.term;
+	//this.rawData = cfg.data;
+	this.rawData = cfg;
 	this.billboards = [];
 	//this.obj = new THREE.Object3D();
 	console.log('creating search results...');
@@ -267,7 +261,7 @@ SearchResults.prototype._load = function(onload) {
 	var numToLoad = this.rawData.length;
 	var numLoaded = 0;
 	for (var i=0; i<this.rawData.length; i++) {
-		console.log(this.rawData[i]);
+		//console.log(this.rawData[i]);
 		this.billboards.push(new Billboard({"textures":this.rawData[i]}, function() {
 			numLoaded++;
 			console.log("loaded billboard " + numLoaded + "/" + numToLoad);
@@ -308,6 +302,10 @@ SearchQueue = function(app) {
 	this.data = [];
 	this.objs = {};
 	this.maxLength = 20;
+}
+SearchQueue.prototype.isEmpty = function() { 
+	console.log(this.data);
+	return this.data.length == 0; 
 }
 SearchQueue.prototype.set = function(words, scene) {
 	//ensure array
@@ -394,38 +392,6 @@ SearchQueue.prototype.remove = function(word, scene) {
 
 
 
-
-/*
-		var theText = "Hello three.js! :)";
-
-		var text3d = new THREE.TextGeometry( theText, {
-			size: 80,
-			height: 20,
-			curveSegments: 2,
-			font: "helvetiker"
-
-		});
-
-		text3d.computeBoundingBox();
-		var centerOffset = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
-
-		var textMaterial = new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, overdraw: true } );
-		text = new THREE.Mesh( text3d, textMaterial );
-
-		text.doubleSided = false;
-
-		text.position.x = centerOffset;
-		text.position.y = 100;
-		text.position.z = 0;
-
-		text.rotation.x = 0;
-		text.rotation.y = Math.PI * 2;
-
-		parent = new THREE.Object3D();
-		parent.add( text );
-
-		scene.add( parent );
-*/
 
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
