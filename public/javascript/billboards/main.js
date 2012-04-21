@@ -5,7 +5,7 @@ var mouseX = 0, mouseY = 0;
 
 
 //SEARCH RESULTS LOAD QUEUE 
-var SearchQueue = [
+var _queueData = [
 	{"term": "foo"
 		, "data": [
 					[ "/rendered/2f1c4e96-8aac-83ad-009f-b0b1443a8142-tex.jpg", "/rendered/3ad20227-fe24-5d59-b179-b3b6fde0d6c4-tex.jpg", "/rendered/3b1dd42e-ff4f-4888-b6ef-d7b7a84df4b7-tex.jpg", "/rendered/4acf6ddb-3088-1fb1-5c45-1ecd578a68e7-tex.jpg" ]
@@ -26,19 +26,122 @@ var SearchQueue = [
 var Viz = function() {
 	this.currentSearch = null;
 	this.nextSearch = null;
-	this.scene = new THREE.Scene();
+	this.socket = null;
+	
+	this.scene;
+	this.container;
+	this.camera;
+	this.renderer;
+	
+	this.animatingObjects = [];
+	this.queue = new SearchQueue();
+
 };
 
-Viz.prototype.init = function() {
-	var rawSearch = SearchQueue.shift();
-	var _scene = app.scene;
+Viz.prototype.init = function(onComplete) {
+	var self = this;
+	console.log('initializing sockets');
+	this.initSockets(function() {
+		console.log('initializing scene');
+		self.initScene(function() {
+			console.log('search results');
+			self.loadSearchResults(onComplete);
+		});
+	});
+}
+
+Viz.prototype.initSockets = function (onComplete) {
+	var self = this;
+	this.socket = io.connect(window.location.protocol + "//" + window.location.hostname);
+	this.socket.on('connect', function() { 
+		onComplete();
+	});
+	this.socket.on('queue', function (newTerm, fullQueue) {
+		if (!newTerm) {
+			self.queue.set(fullQueue, self.scene);
+		}
+		else {
+			self.queue.add(newTerm, self.scene);
+		}
+	});
+}
+
+Viz.prototype.initScene = function(onComplete) {
+	this.container = document.createElement( 'div' );
+	document.body.appendChild( this.container );
+	
+	this.scene = new THREE.Scene();
+	
+	this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+	this.camera.position.z = -5;
+	this.camera.position.y = 0;
+	this.camera.position.x = 0;	
+	this.scene.add( this.camera );
+		
+
+	
+	this.scene.add(new THREE.AmbientLight(0xFFFFFF));
+
+	// create a point light
+	var pointLight = new THREE.PointLight( 0xFF0000);
+	pointLight.position.x = -30;
+	pointLight.position.y = -20;
+	pointLight.position.z = 0;
+	this.scene.add(pointLight);
+
+
+	var light = new THREE.SpotLight();
+	light.position.set( 17, 33, 16 );
+	this.scene.add(light);
+	
+	
+	
+	this.renderer = new THREE.WebGLRenderer( { antialias: true } );
+	this.renderer.setSize( window.innerWidth, window.innerHeight);
+	this.renderer.setClearColor( 0x666666, 1 );
+	this.renderer.autoClear = false;
+
+	this.renderer.domElement.style.position = "relative";
+	this.container.appendChild( this.renderer.domElement );
+	
+	//document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+	THREEx.WindowResize(this.renderer, this.camera, this.container);
+	console.log('finished scene');
+	onComplete();
+}
+
+Viz.prototype.loadSearchResults = function(onComplete) {
+	var _scene = this.scene;
+	var rawSearch = _queueData[0];
+	this.currentSearch = new SearchResults(rawSearch, function(sr) {
+		console.log("SEARCH LOADED FROM VIZ");
+		console.log(sr);
+		sr.addTo(_scene);
+		onComplete();
+	});
+}
+
+/*
+Viz.prototype._init = function() {
+	var rawSearch = _queueData.shift();
+	var self = this;
+	var _scene = this.scene;
 	this.currentSearch = new SearchResults(rawSearch, function(sr) {
 		console.log("SEARCH LOADED FROM VIZ");
 		console.log(sr);
 		sr.addTo(_scene);
 	});
-	SearchQueue.push(rawSearch);
-	this.animate();
+	self.animate();
+	_queueData.push(rawSearch);
+}
+*/
+
+Viz.prototype.getTextures = function(cb) {
+	socket.emit('queryTextures', function(textures) {
+		console.log(textures);
+		cb(textures);
+	});
 }
 
 Viz.prototype.next = function() {
@@ -53,17 +156,12 @@ Viz.prototype.tick = function(deltaTime) {
 	this.currentSearch.tick(deltaTime);
 }
 
-Viz.prototype.render = function() {
-	if (this.currentSearch) {
-		this.currentSearch.tick();
-	}
-}
 
 
 //BILLBOARD
 var Billboard = function(opts, onload) {
 	this.obj = new THREE.Object3D();
-	this.numBars = opts.divisions ? opts.divisions : 10;
+	this.numBars = opts.divisions ? opts.divisions : 4;
 	this.divisionSpacing = opts.divisionSpacing ? opts.divisionSpacing : 0;
 	this.height = opts.height ? opts.height : 1;
 	this.width = opts.width ? opts.width : 1;
@@ -114,7 +212,7 @@ Billboard.prototype._texture = function(onComplete) {
 				, THREE.UVMapping
 				, function(image) {
 					texturesLoaded++;
-					console.log("___LOADED TEXTURE " + texturesLoaded + "/" + texturesToLoad);
+					//console.log("___LOADED TEXTURE " + texturesLoaded + "/" + texturesToLoad);
 					if (texturesLoaded >= texturesToLoad) {
 						onComplete();
 					}
@@ -160,7 +258,7 @@ var SearchResults = function(cfg, onload) {
 	this.rawData = cfg.data;
 	this.billboards = [];
 	//this.obj = new THREE.Object3D();
-	
+	console.log('creating search results...');
 	this._load(onload ? onload : function() {});
 }
 
@@ -205,7 +303,129 @@ SearchResults.prototype.addTo = function(scn) {
 
 
 
+SearchQueue = function(app) {
+	this.app = app;
+	this.data = [];
+	this.objs = {};
+	this.maxLength = 20;
+}
+SearchQueue.prototype.set = function(words, scene) {
+	//ensure array
+	if( Object.prototype.toString.call( words ) === '[object Array]' ) {
+		console.log("setting queue to " + words);
+		this.data = [];
+		for (var i=0; i<words.length; i++) {
+			this.add(words[i], scene);
+		}
+	}
+}
 
+SearchQueue.prototype.next = function() {
+	var word = this.data.shift();
+	this.data.push(word);
+	return word;
+}
+
+
+SearchQueue.prototype.add = function(word, scene) {
+	console.log("adding to queue: " + word);
+	//add to queue
+	//add to scene
+	
+	if(!this.objs[word]) {
+		this.data.push(word);
+		if (this.data.length > this.maxLength) {
+			console.log("TOO MANY!");
+		}
+	
+		var obj = this.createTextObj(word);
+		
+		obj.position.y = -1 * this.data.length;
+		obj.position.x = 5;
+		this.objs[word] = obj;
+		
+		scene.add(obj);
+	}				
+}
+
+SearchQueue.prototype.createTextObj = function(word) {
+		var text3d = new THREE.TextGeometry( word, {
+			size: 1,
+			height: .1,
+			curveSegments: 2,
+			font: "helvetiker"
+		});
+		
+		text3d.computeBoundingBox();
+		//var centerOffset = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
+
+		var textMaterial = new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, overdraw: true } );
+		var text = new THREE.Mesh( text3d, textMaterial );
+
+		text.doubleSided = false;
+
+		//text.position.x = centerOffset;
+		//text.position.y = 100;
+		//text.position.z = 0;
+
+		//text.rotation.x = 0;
+		
+		
+		text.rotation.y = Math.PI;
+		return text;
+}
+
+SearchQueue.prototype.remove = function(word, scene) {
+	//remove from queue
+	//remove from scene
+	var obj = this.objs[word];
+	if (obj) {
+		scene.remove(obj);
+		delete this.objs[word];
+		for (var i=0; i<this.data.length; i++) {
+			if (this.data[i] == word) {
+				this.data.splice(i,1);
+				return;
+			}
+		}
+	}
+}
+
+
+
+
+
+/*
+		var theText = "Hello three.js! :)";
+
+		var text3d = new THREE.TextGeometry( theText, {
+			size: 80,
+			height: 20,
+			curveSegments: 2,
+			font: "helvetiker"
+
+		});
+
+		text3d.computeBoundingBox();
+		var centerOffset = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
+
+		var textMaterial = new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, overdraw: true } );
+		text = new THREE.Mesh( text3d, textMaterial );
+
+		text.doubleSided = false;
+
+		text.position.x = centerOffset;
+		text.position.y = 100;
+		text.position.z = 0;
+
+		text.rotation.x = 0;
+		text.rotation.y = Math.PI * 2;
+
+		parent = new THREE.Object3D();
+		parent.add( text );
+
+		scene.add( parent );
+*/
 
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -221,83 +441,19 @@ init();
 
 
 var app;
+var searchQueue;
 
 function init() {
 	app = new Viz();
-	app.init();
 	
-	container = document.createElement( 'div' );
-	document.body.appendChild( container );
-
-
-
-	//scene.fog = new THREE.Fog( 0xffffff, 500, 1000 );
+	app.init(function() {
+		animate();
 	
-	
-	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-	camera.position.z = -3;
-	camera.position.y = 0;
-	camera.position.x = 0;
-	
-	
-	/*
-	camera = new THREE.OrthographicCamera(
-		-10,   // Left
-		10,    // Right
-		5,   // Top
-		-5,  // Bottom
-		-10,            // Near clipping plane
-		10 );           // Far clipping plane
-
-
-	camera.position.z = -5;
-	camera.position.y = 0	;
-	camera.position.x = 0;
-	*/
-	
-	app.scene.add( camera );
-		
-		
-	//sr.billboards[0].obj.position.x = -1.2;
-	//sr.billboards[1].obj.position.x = 1.2;
-
-	//app.scene.add(sr.billboards[0].obj);
-	//app.scene.add(sr.billboards[1].obj);
-	
-	app.scene.add(new THREE.AmbientLight(0xFFFFFF));
-
-	// create a point light
-	var pointLight = new THREE.PointLight( 0xFF0000);
-	
-	// set its position
-	pointLight.position.x = -30;
-	pointLight.position.y = -20;
-	pointLight.position.z = 0;
-	
-	// add to the scene
-	app.scene.add(pointLight);
-
-
-	var light = new THREE.SpotLight();
-	light.position.set( 17, 33, 16 );
-	app.scene.add(light);
-	
-	
-	
-	renderer = new THREE.WebGLRenderer( { antialias: true } );
-	renderer.setSize( window.innerWidth, window.innerHeight);
-	renderer.setClearColor( 0x666666, 1 );
-	renderer.autoClear = false;
-
-	renderer.domElement.style.position = "relative";
-	container.appendChild( renderer.domElement );
-	
-	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-
-	THREEx.WindowResize(renderer, camera, container);
+	});
 	
 
-	animate();
+
+	
 
 
 	function animate() {
@@ -326,8 +482,8 @@ function init() {
 		if (!pause) {
 			app.tick(deltaTime);
 		}
-		camera.lookAt( app.scene.position );
-		renderer.render( app.scene, camera );
+		app.camera.lookAt( app.scene.position );
+		app.renderer.render( app.scene, app.camera );
 		lastFrameTime = now;
 		totalTime += deltaTime;
 	}
@@ -335,44 +491,11 @@ function init() {
 
 }
 
-
+/*
 function onDocumentMouseMove(event) {
 
 	mouseX = ( event.clientX - (window.innerWidth/2) );
 	mouseY = ( event.clientY - (window.innerHeight/2) );
 
 }
-
-
-
-
-
-var socket = io.connect(window.location.protocol + "//" + window.location.hostname);
-socket.on('queue', function (newTerm, fullQueue) {
-	console.log("**** SOCKET.IO ****");
-	console.log(newTerm);
-	console.log(fullQueue);
-	console.log("**** --------- ****");
-	/*
-	if (newLine) {
-		lines.push(tQuery.createText2(newLine).scaleBy(1/4).addTo(world));
-		if (lines.length > 10) {
-			console.log(lines);
-			var removed = lines.shift();
-			removed.removeFrom(world);
-		}		
-	}
-	else {
-		for (var i=0; i< dataStream.length; i++) {
-			var l = tQuery.createText2(dataStream[i]).scaleBy(1/4).addTo(world);
-			l.translateZ(-1 * i);
-			lines.push(l);
-		}
-		if (lines.length > 10) {
-			var removed = lines.shift();
-			removed.removeFrom(world);
-		}		
-	}
-	*/	
-
-});
+*/
