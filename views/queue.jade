@@ -1,0 +1,11 @@
+.row
+	.span8
+		form.form-inline(method="get")
+			input(type="text", name="add")
+			input.btn.btn-inverse(type="submit") Submit
+	.span4
+		h3 Queue
+		- if (typeof(error) != 'undefined' && error)
+			.alert.alert-error #{error}
+		- each term in queue
+			p #{term}
