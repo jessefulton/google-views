@@ -1,0 +1,68 @@
+!!! 5
+html(lang="en")
+	head
+		meta(charset="utf-8")
+		meta(name="viewport", content="width=device-width, initial-scale=1.0")
+		meta(name="description", content="")
+		meta(name="author", content="")
+		title Everybody's Google
+		link(rel='stylesheet', href='/bootstrap-ui/css/bootstrap.css')
+		style(type="text/css")
+			.meta {
+				background-color: #ffd;
+				border: 4px solid #dda;
+				padding: 8px;
+			}
+			.meta h2 {
+				color: #000;
+				font-style: italic;
+			}
+			.result {
+				width: 49%;
+				float: left;
+			}
+			.row { margin-top: 5px; margin-bottom: 15px; }
+			#footer { border-top: 1px solid #EEE; padding-top: 10px; margin-top: 10px; }
+			#footer * { font-size: 11px; }
+			
+			/*
+			* Color palette modified from tinuviel
+			* http://www.colourlovers.com/palette/1166568/tdott_beauty
+			*/
+				body, html {
+					background-color:#222; 
+					color: #FFFFFF;
+					font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+					font-size: 16px;
+					line-height: 24px;
+					margin: 0px;
+					overflow: hidden;
+					}
+				h1, h2, h3, h4, h5, h6 { color: #FF0078; }
+				.meta { color: #0590A9; }
+				a:link { text-decoration:none; color: #FF0078; font-weight: bold; }
+				a:visited { text-decoration:none; color: #FF0078; font-weight: bold; }
+				a:hover { text-decoration:none; color: #C0C0C0; font-weight: bold; }
+				a:active {}
+
+				.hero-unit { background-color: #090909; }
+			
+	body
+
+		.meta(style="position:absolute;z-index:1000;")
+			a(href="#", id="fullscreen") Full Screen
+		script(src="/socket.io/socket.io.js")
+		script(src="/javascript/three/build/Three.js")
+		script(src="/javascript/three/js/Detector.js")
+		script(src="/THREEx.FullScreen.js")
+		script(src="/THREEx.WindowResize.js")
+		script(src="/javascript/billboards/main.js")
+		script
+			document.getElementById("fullscreen").onclick = function() {
+				if( THREEx.FullScreen.activated() ){
+					THREEx.FullScreen.cancel();
+				}else{
+					THREEx.FullScreen.request();
+				}
+				return false;
+			};

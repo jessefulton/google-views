@@ -27,7 +27,17 @@ module.exports.init = function(app) {
 			socket.volatile.emit('datastream', el, stream);
 		};
 		
+		var emitQueue = function(element, newQueue) {
+			console.log("sending out " + element);
+			console.log("queue " + newQueue);
+			socket.emit('queue', element, newQueue);
+		};
+
+
+		emitQueue(null, app.set('visualizationSearchQueue'));
+		
 		app.on('datastream', emitDataStream);
+		app.on('visualizationSearchQueue.add', emitQueue);
 		
 		socket.on('disconnect', function() {
 			app.removeListener('datastream', emitDataStream);

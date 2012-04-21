@@ -208,137 +208,171 @@ SearchResults.prototype.addTo = function(scn) {
 
 
 
-			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 
-			//textures are currently 512x512... should we do 1024x1024?
-
-
-
-
-			init();
+//textures are currently 512x512... should we do 1024x1024?
 
 
 
-			var app;
 
-			function init() {
-				app = new Viz();
-				app.init();
-				
-				container = document.createElement( 'div' );
-				document.body.appendChild( container );
+init();
 
 
 
-				//scene.fog = new THREE.Fog( 0xffffff, 500, 1000 );
-				
-				
-				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-				camera.position.z = -3;
-				camera.position.y = 0;
-				camera.position.x = 0;
-				
-				
-				/*
-				camera = new THREE.OrthographicCamera(
-					-10,   // Left
-					10,    // Right
-					5,   // Top
-					-5,  // Bottom
-					-10,            // Near clipping plane
-					10 );           // Far clipping plane
- 
+var app;
 
-				camera.position.z = -5;
-				camera.position.y = 0	;
-				camera.position.x = 0;
-				*/
-				
-				app.scene.add( camera );
-					
-					
-				//sr.billboards[0].obj.position.x = -1.2;
-				//sr.billboards[1].obj.position.x = 1.2;
-
-				//app.scene.add(sr.billboards[0].obj);
-				//app.scene.add(sr.billboards[1].obj);
-				
-				app.scene.add(new THREE.AmbientLight(0xFFFFFF));
-
-				// create a point light
-				var pointLight = new THREE.PointLight( 0xFF0000);
-				
-				// set its position
-				pointLight.position.x = -30;
-				pointLight.position.y = -20;
-				pointLight.position.z = 0;
-				
-				// add to the scene
-				app.scene.add(pointLight);
-    
-    
-				var light = new THREE.SpotLight();
-				light.position.set( 17, 33, 16 );
-				app.scene.add(light);
-				
-				
-				
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setSize( window.innerWidth, window.innerHeight);
-				renderer.setClearColor( 0x666666, 1 );
-				renderer.autoClear = false;
-
-				renderer.domElement.style.position = "relative";
-				container.appendChild( renderer.domElement );
-				
-				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-
-				THREEx.WindowResize(renderer, camera, container);
-				
-
-				animate();
+function init() {
+	app = new Viz();
+	app.init();
+	
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
 
 
-				function animate() {
-					requestAnimationFrame( animate );
-					render();
-				}
+
+	//scene.fog = new THREE.Fog( 0xffffff, 500, 1000 );
 	
 	
-				var lastFrameTime;
-				var totalTime = 0;
+	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+	camera.position.z = -3;
+	camera.position.y = 0;
+	camera.position.x = 0;
 	
-				function render() {
-					var now = Date.now() / 1000;
-					if (!lastFrameTime) { lastFrameTime = Date.now()/1000; }
-					var deltaTime = now - lastFrameTime;
-
-					var rate = .1;
-					
-					var period = .25; //rotations per second
-					var fullRotation = (Math.PI*2);
-					var amt = (fullRotation * period * deltaTime) * rate;
-					//console.log(deltaTime);
-					var pause = (Math.cos((totalTime * (Math.PI/period) * period) * rate)) > 0;
-					//pause = false;
-
-					if (!pause) {
-						app.tick(deltaTime);
-    				}
-					camera.lookAt( app.scene.position );
-					renderer.render( app.scene, camera );
-					lastFrameTime = now;
-					totalTime += deltaTime;
-				}
+	
+	/*
+	camera = new THREE.OrthographicCamera(
+		-10,   // Left
+		10,    // Right
+		5,   // Top
+		-5,  // Bottom
+		-10,            // Near clipping plane
+		10 );           // Far clipping plane
 
 
-			}
+	camera.position.z = -5;
+	camera.position.y = 0	;
+	camera.position.x = 0;
+	*/
+	
+	app.scene.add( camera );
+		
+		
+	//sr.billboards[0].obj.position.x = -1.2;
+	//sr.billboards[1].obj.position.x = 1.2;
+
+	//app.scene.add(sr.billboards[0].obj);
+	//app.scene.add(sr.billboards[1].obj);
+	
+	app.scene.add(new THREE.AmbientLight(0xFFFFFF));
+
+	// create a point light
+	var pointLight = new THREE.PointLight( 0xFF0000);
+	
+	// set its position
+	pointLight.position.x = -30;
+	pointLight.position.y = -20;
+	pointLight.position.z = 0;
+	
+	// add to the scene
+	app.scene.add(pointLight);
 
 
-			function onDocumentMouseMove(event) {
+	var light = new THREE.SpotLight();
+	light.position.set( 17, 33, 16 );
+	app.scene.add(light);
+	
+	
+	
+	renderer = new THREE.WebGLRenderer( { antialias: true } );
+	renderer.setSize( window.innerWidth, window.innerHeight);
+	renderer.setClearColor( 0x666666, 1 );
+	renderer.autoClear = false;
 
-				mouseX = ( event.clientX - (window.innerWidth/2) );
-				mouseY = ( event.clientY - (window.innerHeight/2) );
+	renderer.domElement.style.position = "relative";
+	container.appendChild( renderer.domElement );
+	
+	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
-			}
+	THREEx.WindowResize(renderer, camera, container);
+	
+
+	animate();
+
+
+	function animate() {
+		requestAnimationFrame( animate );
+		render();
+	}
+
+
+	var lastFrameTime;
+	var totalTime = 0;
+
+	function render() {
+		var now = Date.now() / 1000;
+		if (!lastFrameTime) { lastFrameTime = Date.now()/1000; }
+		var deltaTime = now - lastFrameTime;
+
+		var rate = .1;
+		
+		var period = .25; //rotations per second
+		var fullRotation = (Math.PI*2);
+		var amt = (fullRotation * period * deltaTime) * rate;
+		//console.log(deltaTime);
+		var pause = (Math.cos((totalTime * (Math.PI/period) * period) * rate)) > 0;
+		//pause = false;
+
+		if (!pause) {
+			app.tick(deltaTime);
+		}
+		camera.lookAt( app.scene.position );
+		renderer.render( app.scene, camera );
+		lastFrameTime = now;
+		totalTime += deltaTime;
+	}
+
+
+}
+
+
+function onDocumentMouseMove(event) {
+
+	mouseX = ( event.clientX - (window.innerWidth/2) );
+	mouseY = ( event.clientY - (window.innerHeight/2) );
+
+}
+
+
+
+
+
+var socket = io.connect(window.location.protocol + "//" + window.location.hostname);
+socket.on('queue', function (newTerm, fullQueue) {
+	console.log("**** SOCKET.IO ****");
+	console.log(newTerm);
+	console.log(fullQueue);
+	console.log("**** --------- ****");
+	/*
+	if (newLine) {
+		lines.push(tQuery.createText2(newLine).scaleBy(1/4).addTo(world));
+		if (lines.length > 10) {
+			console.log(lines);
+			var removed = lines.shift();
+			removed.removeFrom(world);
+		}		
+	}
+	else {
+		for (var i=0; i< dataStream.length; i++) {
+			var l = tQuery.createText2(dataStream[i]).scaleBy(1/4).addTo(world);
+			l.translateZ(-1 * i);
+			lines.push(l);
+		}
+		if (lines.length > 10) {
+			var removed = lines.shift();
+			removed.removeFrom(world);
+		}		
+	}
+	*/	
+
+});

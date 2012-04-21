@@ -47,9 +47,12 @@ module.exports.init = function(app) {
 			
 			if (doAdd) {
 				q.push(term)
+				app.set('visualizationSearchQueue', q)
+				app.emit('visualizationSearchQueue.add', term, q);
 			}
 
-			app.set('visualizationSearchQueue', q)
+
+			
 			res.render('queue', { layout: true, "term": term, queue: q, error: err });
 		}
 		else{
