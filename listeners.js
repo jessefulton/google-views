@@ -27,4 +27,13 @@ module.exports.init = function(app) {
 		}
 		console.log(JSON.stringify(obj));
 	});
+
+	app.on('visualizationSearchQueue.add', function(obj) {
+		var q = app.set('visualizationSearchQueue');
+		q.push(obj);
+		app.set('visualizationSearchQueue', q);
+	});
+	
+	
+	
 }

@@ -63,7 +63,7 @@ app.configure(function(){
 
 	
 	app.set('datastream', []);
-	
+	app.set('visualizationSearchQueue', []);
 	app.set('config', config);
 	app.use(express.favicon());
 	app.use(stylus.middleware({ src: __dirname + '/public', compile: compile }))

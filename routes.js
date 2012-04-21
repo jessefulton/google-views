@@ -19,8 +19,51 @@ module.exports.init = function(app) {
 		res.render('personas', { layout: true, personas: config.users });
 	});
 	app.get('/stream', function (req, res) {
-		res.render('stream', { layout: true});
+		res.render('stream', { layout: true });
 	});
+	app.get('/visualize', function (req, res) {
+		res.render('visualize', { layout: false });
+	});
+
+
+	app.get('/queue', function (req, res, next) {
+		if (req.query.add) {
+			console.log('adding to queue');
+			var term = req.query.add;
+			term = term.toLowerCase().trim();
+			var q = app.set('visualizationSearchQueue');
+			
+			var doAdd = true;
+			var err = null;
+			
+			for (var i=0; i<q.length; i++) {
+				var el = q[i];
+				if (el.toLowerCase().trim() == term) {
+					doAdd = false;
+					err = "Term " + term + " is already queued";
+					break;
+				}
+			};
+			
+			if (doAdd) {
+				q.push(term)
+			}
+
+			app.set('visualizationSearchQueue', q)
+			res.render('queue', { layout: true, "term": term, queue: q, error: err });
+		}
+		else{
+			next();
+		}
+	});
+
+	app.get('/queue', function (req, res) {
+		console.log('showing queue');
+		var q = app.set('visualizationSearchQueue');
+		res.render('queue', { layout: true, queue: q });
+	});
+
+
 	app.get('/crawled/:pageId', function (req, res, next) {
 		app.CrawledPage.findById(req.params.pageId, function(err, result) {
 			if (!err) {

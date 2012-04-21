@@ -24,16 +24,35 @@ html(lang="en")
 			.row { margin-top: 5px; margin-bottom: 15px; }
 			#footer { border-top: 1px solid #EEE; padding-top: 10px; margin-top: 10px; }
 			#footer * { font-size: 11px; }
+			
+			/*
+			* Color palette modified from tinuviel
+			* http://www.colourlovers.com/palette/1166568/tdott_beauty
+			*/
+				body, html {
+					background-color:#222; 
+					color: #FFFFFF;
+					font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+					font-size: 16px;
+					line-height: 24px;
+					margin: 0px;
+					overflow: hidden;
+					}
+				h1, h2, h3, h4, h5, h6 { color: #FF0078; }
+				.meta { color: #0590A9; }
+				a:link { text-decoration:none; color: #FF0078; font-weight: bold; }
+				a:visited { text-decoration:none; color: #FF0078; font-weight: bold; }
+				a:hover { text-decoration:none; color: #C0C0C0; font-weight: bold; }
+				a:active {}
+
+				.hero-unit { background-color: #090909; }
+			
 	body
 		#wrapper
 			#header.container
 				.hero-unit
 					h1: a(href="/") Everybody's Google
-					p.form-inline.form-search See what others see. Enter a search term to begin: 
-						input(type="text", name="generateUrl", id="generateUrl")
-						button.btn.btn-primary(id="doGenerate", href="#")
-							i.icon-search.icon-white
-							|  Go!
+					p.form-inline.form-search See what others see.
 
 			#content.container!= body
 			#footer.container
@@ -49,18 +68,3 @@ html(lang="en")
 		script(type='text/javascript', src='/bootstrap-ui/js/bootstrap-transition.js')
 		script(type='text/javascript', src='/bootstrap-ui/js/bootstrap-tab.js')
 		script(type='text/javascript', src='/bootstrap-ui/js/bootstrap-modal.js')
-		script(type="text/javascript")
-			//$('#captcha-image').modal({"show":false})
-			var doGenerate = function() {
-				var url = document.getElementById("generateUrl").value;
-				window.location = "/search/" + url;
-				return false;
-			}
-
-			$("#doGenerate").on('click', doGenerate);
-			$("#generateUrl").on('keypress', function(event) {
-				if (event.which == 13) {
-					$("#doGenerate").click();
-					//doGenerate();
-				}
-			});
