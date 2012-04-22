@@ -42,21 +42,46 @@ module.exports = {
 		var job = new cronJob({
 		  "cronTime": cronTime ? cronTime : '0 * * * * *',
 		  "onTick": function() {
-
-
-				app.WebSearchQueryQueue.find({"processed": false }, {}).limit(1).sort("date", -1).execFind(function(err, results) {
-					if (!err) {
-						if (results && results.length > 0) {
-							console.log("FOUND ITEM IN QUEUE ");
-							console.log(JSON.stringify(results));
-					
-							users.forEach(function(user, idx, arr) {
+				var queueItem = null;
+				var curUser = -1;
+				
+				function doSearch() {
+					curUser++;
+					console.log('cronjobs.doSearch ' + curUser);
+					if (curUser >= users.length) {
+						console.log("cron search, YES! last user");
+						queueItem.processed = true;
+						queueItem.save(function(err, obj) {
+							console.log("PROCESSED: " + JSON.stringify(obj));
+						});
+					}
+					else {
+						console.log("cron search, not last user");
+						var user = users[curUser];
+						searchFn(
+							user
+							, queueItem.query
+							, doSearch
+							, function(data) {
+								console.log("DATA: " + data);
+								//var links = JSON.parse(data);
+								//console.log(links);
 								
-							});
-						}
-						else { 
-							console.log("QUEUE EMPTY");
-						}
+								//app.
+								
+							}
+							, function(errData) {
+								console.log("error searching: " + errData);
+							}
+						);
+					}
+				}
+
+
+				app.WebSearchQueryQueue.findOne({"processed": false }, {}, {"sort": {"date": -1}}, function(err, result) {
+					if (!err) {
+						queueItem = result;
+						doSearch();
 					}
 					else {
 						console.log(err);

@@ -92,7 +92,7 @@ routes.init(app);
 models.defineModels(mongoose, function() {
 	app.CrawledPage = mongoose.model('crawledpage');
 
-	app.WebSearchResult = mongoose.model('websearchresult');
+	//app.WebSearchResult = mongoose.model('websearchresult');
 	app.WebSearch = mongoose.model('websearch');
 	app.ClientWebSearch = mongoose.model('clientwebsearch');
 
@@ -140,7 +140,7 @@ var sox = require('./sockets'),
 
 sox.init(app);
 //listeners.init(app);
-cronjobs.search(app, '*/15 * * * * *');
+cronjobs.search(app, '15 * * * * *');
 //cronjobs.crawl(app);
 //cronjobs.createTextures(app);
 

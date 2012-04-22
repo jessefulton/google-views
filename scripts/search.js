@@ -1,7 +1,9 @@
 //TODO: Combine/replace this with generic "view.js"
-
+	
 var fs = require('fs');
 var casper = require('casper').create();
+
+casper.echo("Starting casper script");
 
 var links = [];
 
@@ -22,6 +24,8 @@ var email = casper.cli.get("email");
 var password = casper.cli.get("password");
 var query = casper.cli.get("query");
 
+
+
 casper.start("https://accounts.google.com/Logout");
 
 casper.thenOpen("https://accounts.google.com/Login", function() {
@@ -36,8 +40,7 @@ casper.thenOpen("https://accounts.google.com/Login", function() {
 
 
 casper.thenOpen('https://www.google.com/search?q=' + query, function() {
-	//this.echo("searched");
-    //this.capture(filename);
+	this.echo("user " + email + " searched for " + query);
     links = links.concat(this.evaluate(getLinks));
 
 });
@@ -45,6 +48,7 @@ casper.thenOpen('https://www.google.com/search?q=' + query, function() {
 
 
 casper.run(function() {
+	this.echo("about to run casper script");
     //this.echo(links.length + ' links found:');
     this.echo(JSON.stringify(links)).exit();
 	//this.exit();

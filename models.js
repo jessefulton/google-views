@@ -39,6 +39,7 @@ function defineModels(mongoose, fn) {
 	/**
 	 * The actual search result items (web pages)
 	 */
+	 /*
 	var WebSearchResult = new Schema({
 		title: String
 		, url: String
@@ -49,7 +50,7 @@ function defineModels(mongoose, fn) {
 	});
 	WebSearchResult.virtual('id')
 		.get(function() { return this._id.toHexString(); });
-	
+	*/
 	
 	/**
 	 * A search query result for a particular client (plugin, server, etc.)
@@ -59,7 +60,7 @@ function defineModels(mongoose, fn) {
 		//, url: String
 		, clientId: String
 		//, clicked: [WebSearchResult]
-		, results: [WebSearchResult]	
+		, results: [String]	
 	});
 	
 	/**
@@ -76,7 +77,7 @@ function defineModels(mongoose, fn) {
 
 
 	mongoose.model('crawledpage', CrawledPage);
-	mongoose.model('websearchresult', WebSearchResult);
+	//mongoose.model('websearchresult', WebSearchResult);
 	mongoose.model('websearch', WebSearch);
 	mongoose.model('clientwebsearch', ClientWebSearch);
 	mongoose.model('websearchqueryqueue', WebSearchQueryQueue);
