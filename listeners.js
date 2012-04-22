@@ -1,4 +1,5 @@
 module.exports.init = function(app) {
+	/*
 	app.on('crontick', function(el) {
 		var datastream = app.set('datastream');
 		datastream.push(el);
@@ -28,6 +29,8 @@ module.exports.init = function(app) {
 		console.log(JSON.stringify(obj));
 	});
 
+	*/
+	
 	/*
 	app.on('visualizationSearchQueue.add', function(obj) {
 		var q = app.set('visualizationSearchQueue');
@@ -35,7 +38,5 @@ module.exports.init = function(app) {
 		app.set('visualizationSearchQueue', q);
 	});
 	*/
-	
-	
 	
 }

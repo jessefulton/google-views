@@ -3,15 +3,18 @@ function defineModels(mongoose, fn) {
 		ObjectId = Schema.ObjectId;
 
 	/**
-	 * These are items which the server still needs to look up
+	 * Pages which have been crawled and captured
 	 */
 	var CrawledPage = new Schema({
-		"user": String
-		, "url" : String
+		//"user": String
+		"url" : String
 		, "title": String
 		, "date" : [{type: Date, default: Date.now}]
-		, "html" : String
 		, "text" : String
+		
+		//TODO: Move images to search crawls...
+			//eliminate html - just store body text (from main selector)
+		, "html" : String
 		, "png" : String
 		, "pdf" : String
 		, "tex" : String
@@ -21,18 +24,6 @@ function defineModels(mongoose, fn) {
 	CrawledPage.virtual('id')
 		.get(function() { return this._id.toHexString(); });
 
-	var Screenshot = new Schema({
-		"url" : String
-		, "tex" : String
-		, "jpg" : String
-	});
-
-	Screenshot.virtual('id')
-		.get(function() { return this._id.toHexString(); });
-	
-
-	var Schema = mongoose.Schema,
-		ObjectId = Schema.ObjectId;
 
 	/**
 	 * These are items which the server still needs to look up
@@ -40,6 +31,7 @@ function defineModels(mongoose, fn) {
 	var WebSearchQueryQueue = new Schema({
 		created: {type: Date, default: Date.now}
 		, query: String
+		, processed: {type: Boolean, default: false }
 	});
 	WebSearchQueryQueue.virtual('id')
 		.get(function() { return this._id.toHexString(); });
@@ -50,9 +42,10 @@ function defineModels(mongoose, fn) {
 	var WebSearchResult = new Schema({
 		title: String
 		, url: String
-		, briefDescription: String
-		, pageContent: String
-		, rawHTML: String
+		//, briefDescription: String
+		//, pageContent: String
+		//, rawHTML: String
+		//imageId = id
 	});
 	WebSearchResult.virtual('id')
 		.get(function() { return this._id.toHexString(); });
@@ -63,9 +56,9 @@ function defineModels(mongoose, fn) {
 	 */
 	var ClientWebSearch = new Schema({
 		created: {type: Date, default: Date.now}
-		, url: String
+		//, url: String
 		, clientId: String
-		, clicked: [WebSearchResult]
+		//, clicked: [WebSearchResult]
 		, results: [WebSearchResult]	
 	});
 	
@@ -82,14 +75,13 @@ function defineModels(mongoose, fn) {
 		.get(function() { return this._id.toHexString(); });
 
 
-  mongoose.model('crawledpage', CrawledPage);
-  mongoose.model('websearchresult', WebSearchResult);
-  mongoose.model('websearch', WebSearch);
-  mongoose.model('clientwebsearch', ClientWebSearch);
-  mongoose.model('websearchqueryqueue', WebSearchQueryQueue);
-
-
-  fn();
+	mongoose.model('crawledpage', CrawledPage);
+	mongoose.model('websearchresult', WebSearchResult);
+	mongoose.model('websearch', WebSearch);
+	mongoose.model('clientwebsearch', ClientWebSearch);
+	mongoose.model('websearchqueryqueue', WebSearchQueryQueue);
+	
+	fn();
 }
 
 exports.defineModels = defineModels; 

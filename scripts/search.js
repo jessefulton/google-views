@@ -3,29 +3,29 @@
 var fs = require('fs');
 var casper = require('casper').create();
 
+var links = [];
 
-if (!(casper.cli.has("email")) || !(casper.cli.has("password")) || !(casper.cli.has("query")) || !(casper.cli.has("filename"))) {
-	casper.echo("Requires arguments --email=% --password=% --query=% --filename=%").exit();
+function getLinks() {
+    var links = document.querySelectorAll('h3.r a');
+    return Array.prototype.map.call(links, function(e) {
+        return e.getAttribute('href')
+    });
+}
+
+
+
+if (!(casper.cli.has("email")) || !(casper.cli.has("password")) || !(casper.cli.has("query")) ) {
+	casper.echo("Requires arguments --email=% --password=% --query=%").exit();
 }
 
 var email = casper.cli.get("email");
 var password = casper.cli.get("password");
 var query = casper.cli.get("query");
-var filename = casper.cli.get("filename");
 
-
-var dir = filename.substring(0, filename.lastIndexOf("/"));
-casper.echo("does " + dir + " exist?");
-casper.echo(fs.exists(dir));
-if (!fs.exists(dir)) {
-	fs.makeDirectory(dir);
-}
-
-casper.echo ("Beginning script: " + query + " --> " + filename);
 casper.start("https://accounts.google.com/Logout");
 
 casper.thenOpen("https://accounts.google.com/Login", function() {
-	this.echo("opened login page");
+	//this.echo("opened login page");
     this.fill('form#gaia_loginform', {
     	'Email': email
     	, 'Passwd': password
@@ -36,12 +36,16 @@ casper.thenOpen("https://accounts.google.com/Login", function() {
 
 
 casper.thenOpen('https://www.google.com/search?q=' + query, function() {
-	this.echo("searched");
-    this.capture(filename);
+	//this.echo("searched");
+    //this.capture(filename);
+    links = links.concat(this.evaluate(getLinks));
+
 });
 
 
 
 casper.run(function() {
-	this.exit();
+    //this.echo(links.length + ' links found:');
+    this.echo(JSON.stringify(links)).exit();
+	//this.exit();
 });

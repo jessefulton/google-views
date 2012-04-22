@@ -4,7 +4,6 @@ module.exports.init = function(app) {
 		, spawn = require('child_process').spawn
 		, fs = require('fs');
 	
-//var models = require('./models');
 	
 	/**
 	 * App routes.
@@ -33,27 +32,25 @@ module.exports.init = function(app) {
 			term = term.toLowerCase().trim();
 			var q = app.set('visualizationSearchQueue');
 			
-			var doAdd = true;
-			var err = null;
-			
-			for (var i=0; i<q.length; i++) {
-				var el = q[i];
-				if (el.toLowerCase().trim() == term) {
-					doAdd = false;
-					err = "Term " + term + " is already queued";
-					break;
+
+			var wsqq = new app.WebSearchQueryQueue({"query": term});
+			wsqq.save(function(saveErr, savedObj) {
+				var err = null;
+				if (!saveErr) {
+					q.push(term)
+					app.set('visualizationSearchQueue', q)
+					app.emit('visualizationSearchQueue.add', term, q);
 				}
-			};
-			
-			if (doAdd) {
-				q.push(term)
-				app.set('visualizationSearchQueue', q)
-				app.emit('visualizationSearchQueue.add', term, q);
-			}
+				else {
+					console.log(saveErr);
+					err = "Term " + term + " is already queued";
+				}
+				res.render('queue', { layout: true, "term": term, queue: q, error: err });
+			});
 
 
 			
-			res.render('queue', { layout: true, "term": term, queue: q, error: err });
+
 		}
 		else{
 			next();

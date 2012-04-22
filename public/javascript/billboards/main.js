@@ -1,6 +1,7 @@
 
-
-//MAIN APP
+//==================
+//==== Main App ====
+//==================
 var Viz = function() {
 	this.currentSearch = null;
 	this.nextSearch = null;
@@ -131,7 +132,10 @@ Viz.prototype.tick = function(deltaTime) {
 
 
 
-//BILLBOARD
+
+//===================
+//==== Billboard ====
+//===================
 var Billboard = function(opts, onload) {
 	this.obj = new THREE.Object3D();
 	this.numBars = opts.divisions ? opts.divisions : 4;
@@ -225,7 +229,10 @@ Billboard.prototype.tick = function(deltaTime, rate) {
 }
 
 
-//SEARCH RESULTS
+
+//=======================
+//==== SearchResults ====
+//=======================
 var SearchResults = function(cfg, onload) {
 	//this.term = cfg.term;
 	//this.rawData = cfg.data;
@@ -275,18 +282,23 @@ SearchResults.prototype.addTo = function(scn) {
 	}
 }
 
-
-
+//=====================
+//==== SearchQueue ====
+//=====================
 SearchQueue = function(app) {
 	this.app = app;
 	this.data = [];
 	this.objs = {};
 	this.maxLength = 20;
+	this.fontSize = .1;
+	this.lineHeight = this.fontSize * 1.5;
 }
+
 SearchQueue.prototype.isEmpty = function() { 
 	console.log(this.data);
 	return this.data.length == 0; 
 }
+
 SearchQueue.prototype.set = function(words, scene) {
 	//ensure array
 	if( Object.prototype.toString.call( words ) === '[object Array]' ) {
@@ -318,7 +330,7 @@ SearchQueue.prototype.add = function(word, scene) {
 	
 		var obj = this.createTextObj(word);
 		
-		obj.position.y = -1 * this.data.length;
+		obj.position.y = -1 * this.data.length * this.lineHeight;
 		obj.position.x = 5;
 		this.objs[word] = obj;
 		
@@ -328,8 +340,8 @@ SearchQueue.prototype.add = function(word, scene) {
 
 SearchQueue.prototype.createTextObj = function(word) {
 		var text3d = new THREE.TextGeometry( word, {
-			size: 1,
-			height: .1,
+			size: this.fontSize,
+			height: .01,
 			curveSegments: 2,
 			font: "helvetiker"
 		});

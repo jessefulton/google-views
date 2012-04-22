@@ -30,7 +30,7 @@ module.exports.init = function(app) {
 		var emitQueue = function(element, newQueue) {
 			console.log("sending out " + element);
 			console.log("queue " + newQueue);
-			socket.emit('queue', element, newQueue);
+			io.sockets.emit('queue', element, newQueue);
 		};
 
 

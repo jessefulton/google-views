@@ -31,6 +31,62 @@ module.exports = {
 		});
 		job.start();
 	}
+	
+	
+	
+	, "search": function(app, cronTime) {
+			
+		var searchFn = require('./lib/search.js');
+		var users = app.set('config').users;
+		
+		var job = new cronJob({
+		  "cronTime": cronTime ? cronTime : '0 * * * * *',
+		  "onTick": function() {
+
+
+				app.WebSearchQueryQueue.find({"processed": false }, {}).limit(1).sort("date", -1).execFind(function(err, results) {
+					if (!err) {
+						if (results && results.length > 0) {
+							console.log("FOUND ITEM IN QUEUE ");
+							console.log(JSON.stringify(results));
+					
+							users.forEach(function(user, idx, arr) {
+								
+							});
+						}
+						else { 
+							console.log("QUEUE EMPTY");
+						}
+					}
+					else {
+						console.log(err);
+			
+					}
+				});
+				
+
+		  },
+		  "start": true
+		});
+		job.start();
+
+		
+		
+
+	
+	
+	
+	
+		//app.getNextInQueue(function() {
+			//users.forEach() {
+				//searchFn(user, query, function(data){}, function(data) {});
+			
+		//});
+		
+
+	}
+	
+	
 	, "createTextures": function(app) {
 		var files = [];
 		

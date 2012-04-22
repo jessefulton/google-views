@@ -91,6 +91,15 @@ routes.init(app);
 
 models.defineModels(mongoose, function() {
 	app.CrawledPage = mongoose.model('crawledpage');
+
+	app.WebSearchResult = mongoose.model('websearchresult');
+	app.WebSearch = mongoose.model('websearch');
+	app.ClientWebSearch = mongoose.model('clientwebsearch');
+
+	app.WebSearchQueryQueue = mongoose.model('websearchqueryqueue');
+	
+
+	
 	mongoose.connect(config.site.MONGODB_URI);
     mongoose.connection.on("open", function() {
         console.log("opened connection to database!");
@@ -128,11 +137,26 @@ app.helpers({
 var sox = require('./sockets'),
 	listeners = require('./listeners'),
 	cronjobs = require('./cronjobs');
+
 sox.init(app);
 //listeners.init(app);
+cronjobs.search(app, '*/15 * * * * *');
 //cronjobs.crawl(app);
 //cronjobs.createTextures(app);
 
+app.WebSearchQueryQueue.find({"processed": false}).sort("date", -1).execFind(function(err, results) {
+	if (!err) {
+		var sq = [];
+		results.forEach(function(el, idx, arr) {
+			sq.push(el.query);
+		});
+		app.set("visualizationSearchQueue", sq);
+	}
+	else {
+		console.log(err);
+
+	}
+});
 
 
 /**
