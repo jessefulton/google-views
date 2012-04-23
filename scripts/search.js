@@ -7,11 +7,30 @@ var casper = require('casper').create();
 
 var links = [];
 
+
+//TODO: REWRITE URLS TO BE ABSOLUTE!!!!
+//TODO: IGNORE ALL NEWS, BLOGS, ETC. LINKS!!!! (see everybody's google plugin)
+
 function getLinks() {
-    var links = document.querySelectorAll('h3.r a');
-    return Array.prototype.map.call(links, function(e) {
+    //var foundLinks = document.querySelectorAll('h3.r a');
+	var foundLinks = document.querySelectorAll("#ires li:not([class*=tpo]):not([id=newsbox]) h3.r a");
+ 	
+ 	var links = [];
+	var dummyA = document.createElement('a');
+	for(var i=0; i<foundLinks.length; i++) {
+		var el = foundLinks[i];
+		dummyA.href = el.href
+		el.href = dummyA.href;
+		links.push(el.href);
+	}
+	
+	return links;
+
+	/*
+	 return Array.prototype.map.call(links, function(e) {
         return e.getAttribute('href')
     });
+    */
 }
 
 

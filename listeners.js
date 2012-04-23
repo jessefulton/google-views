@@ -51,30 +51,35 @@ module.exports.init = function(app) {
 						var texFilename = baseFilename + "-tex.jpg";
 						
 						console.log("generating textures for " + url);
-						
-						imageProcessing.rasterize(url, (RENDER_DIR + pngFilename), function(code) {
-							if (code === 0) {
-		
-								imageProcessing.convert((RENDER_DIR + pngFilename), (RENDER_DIR + jpgFilename), function() {
-									imageProcessing.generateTexture((RENDER_DIR + jpgFilename), (RENDER_DIR + texFilename), TEXTURE_SIZE, function() {
-												
-										cp.png = pngFilename;
-										cp.jpg = jpgFilename;
-										cp.tex = texFilename;
-										cp.save(function(err, savedObj) { 
-											console.log("generated textures " + JSON.stringify(cp));
-											cb(); 
-										});
-										
-									}); // end texture
-								}); // end convert
-							
-							}
-							else {
-								console.log("error rasterizing " + url);
-								cb();
-							}
-						}); // end rasterize
+						try {
+							imageProcessing.rasterize(url, (RENDER_DIR + pngFilename), function(code) {
+								if (code === 0) {
+			
+									imageProcessing.convert((RENDER_DIR + pngFilename), (RENDER_DIR + jpgFilename), function() {
+										imageProcessing.generateTexture((RENDER_DIR + jpgFilename), (RENDER_DIR + texFilename), TEXTURE_SIZE, function() {
+													
+											cp.png = pngFilename;
+											cp.jpg = jpgFilename;
+											cp.tex = texFilename;
+											cp.save(function(err, savedObj) { 
+												console.log("generated textures " + JSON.stringify(cp));
+												cb(); 
+											});
+											
+										}); // end texture
+									}); // end convert
+								
+								}
+								else {
+									console.log("**** error rasterizing " + url);
+									cb();
+								}
+							}); // end rasterize
+						}
+						catch(e) { 
+							console.log(e);
+							cb();
+						}
 					});	// end CrawledPages findOne
 				}
 				, function(err) {
