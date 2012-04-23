@@ -133,7 +133,7 @@ sox.init(app);
 listeners.init(app);
 
 
-//cronjobs.search(app, '15 * * * * *');
+cronjobs.search(app, '15 * * * * *');
 
 
 //cronjobs.crawl(app);
@@ -160,8 +160,12 @@ app.WebSearchQueryQueue.find().sort("date", -1, "processed", 1).limit(20).execFi
 
 
 //app.WebSearchQueryQueue.findOne({"processed": true }, {}, {"sort": {"date": -1}}, function(err, result) {
-	app.emit('visualizationSearchQueue.processedOne', "android");
+//	app.emit('visualizationSearchQueue.processedOne', "android");
 //});
+
+app.on("visualizationSearchQueue.texturesGenerated", function(ws) {
+	console.log("GENERATED TEXTURES FOR : " + ws.query);
+});
 
 
 /**
