@@ -63,6 +63,8 @@ app.configure(function(){
 
 	
 	app.set('datastream', []);
+	
+	//TODO: set flag for images ready
 	app.set('visualizationSearchQueue', []);
 	app.set('config', config);
 	app.use(express.favicon());

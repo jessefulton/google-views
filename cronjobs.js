@@ -43,32 +43,28 @@ module.exports = {
 		  "cronTime": cronTime ? cronTime : '0 * * * * *',
 		  "onTick": function() {
 				var queueItem = null;
+				var webSearch = null;
 				var curUser = -1;
 				
 				function doSearch() {
 					curUser++;
-					console.log('cronjobs.doSearch ' + curUser);
 					if (curUser >= users.length) {
 						console.log("cron search, YES! last user");
 						queueItem.processed = true;
 						queueItem.save(function(err, obj) {
-							console.log("PROCESSED: " + JSON.stringify(obj));
+							app.emit("searchComplete", queueItem.query);
 						});
 					}
 					else {
-						console.log("cron search, not last user");
 						var user = users[curUser];
 						searchFn(
 							user
 							, queueItem.query
 							, doSearch
 							, function(data) {
-								console.log("DATA: " + data);
-								//var links = JSON.parse(data);
-								//console.log(links);
-								
-								//app.
-								
+								//console.log("DATA: " + data);
+								var links = JSON.parse(data);
+								saveLinks(queueItem.query, user.email, links);
 							}
 							, function(errData) {
 								console.log("error searching: " + errData);
@@ -85,9 +81,33 @@ module.exports = {
 					}
 					else {
 						console.log(err);
-			
 					}
 				});
+				
+
+				function saveLinks(query, email, links) {
+					app.WebSearch.findOne({"query": query}, function(err, ws) {
+						if (!err && ws) {
+							console.log("===found one!");
+						}
+						else {
+							console.log("Couldn't find record for " + query);
+							ws = new app.WebSearch({"query": query});
+						}
+			
+						var cs = new app.ClientWebSearch({clientId: email, results: links});
+						ws.searches.push(cs);
+						
+						ws.save(function(err, newObj) {
+							if (err) {
+								console.log("Error saving websearch");
+							}
+						});
+					});				
+				}
+				
+			
+				
 				
 
 		  },
