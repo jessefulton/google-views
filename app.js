@@ -1,18 +1,13 @@
 if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
 
-
 /**
  * Module dependencies.
  */
 var express = require('express')
-	, stylus = require('stylus')
-	, nib = require('nib')
-	, http = require('http')
-	, spawn = require('child_process').spawn
-	, fs = require('fs');
+	, http = require('http');
 	
-var models = require('./models');
-var routes = require('./routes');
+var models = require('./models')
+	, routes = require('./routes');
 
 var mongoose = require('mongoose')
 	, Schema = mongoose.Schema
@@ -30,8 +25,6 @@ config.site = require('./config').init([
 ], "./conf/site.js");
 
 config.users = require("./conf/users.js").users;
-
-console.log(JSON.stringify(config));
 
 
 /*
@@ -54,12 +47,15 @@ app.configure(function(){
 	app.set('view engine', 'jade');
 	app.set('case sensitive routes', true);
 	//let's change this to a local dir? then rsync to media server or use nginx?
-	app.set('screenshots', '/tmp');
+	//app.set('screenshots', '/tmp');
 	app.set('root', __dirname);
 
 	//app.set('outputdir', __dirname + "/public/_generated");
 	
-	app.set('renderdir', "/public/rendered");
+	
+	//TODO: trailing slash?
+	app.set('renderdir', "/public/rendered/");
+	app.set('crawldatadir', "./data/");
 
 	
 	app.set('datastream', []);
@@ -68,16 +64,17 @@ app.configure(function(){
 	app.set('visualizationSearchQueue', []);
 	app.set('config', config);
 	app.use(express.favicon());
-	app.use(stylus.middleware({ src: __dirname + '/public', compile: compile }))
+	//app.use(stylus.middleware({ src: __dirname + '/public', compile: compile }))
 	app.use(express.static(__dirname + '/public'));
 	app.use(app.router);
   
+	/*
 	function compile (str, path) {
 		return stylus(str)
 			.set('filename', path)
 			.use(nib());
 	};
-  
+	*/
 });
 
 
@@ -87,20 +84,11 @@ app.configure('development', function(){
 });
 
 
-routes.init(app);
-
-
-
 models.defineModels(mongoose, function() {
 	app.CrawledPage = mongoose.model('crawledpage');
-
-	//app.WebSearchResult = mongoose.model('websearchresult');
 	app.WebSearch = mongoose.model('websearch');
 	app.ClientWebSearch = mongoose.model('clientwebsearch');
-
 	app.WebSearchQueryQueue = mongoose.model('websearchqueryqueue');
-	
-
 	
 	mongoose.connect(config.site.MONGODB_URI);
     mongoose.connection.on("open", function() {
@@ -109,6 +97,7 @@ models.defineModels(mongoose, function() {
 });
 
 
+routes.init(app);
 
 
 
@@ -142,23 +131,32 @@ var sox = require('./sockets'),
 
 sox.init(app);
 //listeners.init(app);
-cronjobs.search(app, '15 * * * * *');
+
+
+//cronjobs.search(app, '15 * * * * *');
+
+
 //cronjobs.crawl(app);
 //cronjobs.createTextures(app);
 
-app.WebSearchQueryQueue.find({"processed": false}).sort("date", -1).execFind(function(err, results) {
+
+
+// LOAD THE QUEUE FROM THE DB INTO MEMORY //
+app.WebSearchQueryQueue.find().sort("date", -1, "processed", 1).limit(20).execFind(function(err, results) {
+//app.WebSearchQueryQueue.find({"processed": false}).sort("date", -1).execFind(function(err, results) {
 	if (!err) {
 		var sq = [];
 		results.forEach(function(el, idx, arr) {
 			sq.push(el.query);
 		});
+		console.log(sq);
 		app.set("visualizationSearchQueue", sq);
 	}
 	else {
 		console.log(err);
-
 	}
 });
+
 
 
 /**

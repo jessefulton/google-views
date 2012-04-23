@@ -14,28 +14,35 @@ module.exports.init = function(app) {
 	app.get('/about', function (req, res) {
 		res.render('about', { layout: true });
 	});
+	
+	/*
 	app.get('/personas', function (req, res) {
 		res.render('personas', { layout: true, personas: config.users });
 	});
 	app.get('/stream', function (req, res) {
 		res.render('stream', { layout: true });
 	});
+	*/
+	
 	app.get('/visualize', function (req, res) {
 		res.render('visualize', { layout: false });
 	});
 
 
+	/** 
+	* Adds an item to the search queue. If item already exists, error printed to page.
+	*/
 	app.get('/queue', function (req, res, next) {
 		if (req.query.add) {
 			console.log('adding to queue');
 			var term = req.query.add;
 			term = term.toLowerCase().trim();
-			var q = app.set('visualizationSearchQueue');
 			
 
 			var wsqq = new app.WebSearchQueryQueue({"query": term});
 			wsqq.save(function(saveErr, savedObj) {
 				var err = null;
+				var q = app.set('visualizationSearchQueue');
 				if (!saveErr) {
 					q.push(term)
 					app.set('visualizationSearchQueue', q)
@@ -48,15 +55,16 @@ module.exports.init = function(app) {
 				res.render('queue', { layout: true, "term": term, queue: q, error: err });
 			});
 
-
-			
-
 		}
 		else{
 			next();
 		}
 	});
 
+
+	/** 
+	* Displays queue
+	*/
 	app.get('/queue', function (req, res) {
 		console.log('showing queue');
 		var q = app.set('visualizationSearchQueue');
@@ -64,6 +72,9 @@ module.exports.init = function(app) {
 	});
 
 
+	/**
+	*
+	*/
 	app.get('/crawled/:pageId', function (req, res, next) {
 		app.CrawledPage.findById(req.params.pageId, function(err, result) {
 			if (!err) {
@@ -83,7 +94,9 @@ module.exports.init = function(app) {
 		});
 	});
 	
-	
+	/**
+	*
+	*/
 	app.get('/crawled/:userId', function (req, res, next) {
 	
 		//db.crawledpages.find({"user": "jesseinla2@gmail.com"}, {"title":1});
@@ -107,7 +120,10 @@ module.exports.init = function(app) {
 	});
 	
 	
-	
+	/**
+	*
+	*/
+
 	//TODO: remove list of 100 pages...
 	app.get('/crawled', function (req, res, next) {
 		var pgNum = 1; //req.params.pageNumber ? req.params.pageNumber : 1;
@@ -157,6 +173,10 @@ module.exports.init = function(app) {
 		});
 	});
 	
+	
+	/**
+	*
+	*/
 	app.get('/search/:query', function (req, res) {
 		var u = [];
 		config.users.forEach(function(el, idx, arr) {
@@ -165,6 +185,8 @@ module.exports.init = function(app) {
 		res.render('search-view', { layout: true, "users":u, "query": req.params.query });
 	});
 	
+
+
 	/**
 	 * App routes.
 	 */
@@ -233,7 +255,6 @@ module.exports.init = function(app) {
 	/**
 	 * GET serve when already rasterized.
 	 */
-	
 	app.get('/screenshots/textures/:filename', function(req, res, next){
 		//if file exists: public/screenshots/id
 		//convert to 1024x512

@@ -1,4 +1,6 @@
 var cronJob = require('cron').CronJob
+	, async = require('async')
+	, searcher = require('./lib/searcher.js')
 	, users = require('./conf/users.js').users
 	, fs = require('fs');
 
@@ -35,99 +37,67 @@ module.exports = {
 	
 	
 	, "search": function(app, cronTime) {
-			
-		var searchFn = require('./lib/search.js');
-		var users = app.set('config').users;
-		
 		var job = new cronJob({
-		  "cronTime": cronTime ? cronTime : '0 * * * * *',
-		  "onTick": function() {
-				var queueItem = null;
-				var webSearch = null;
-				var curUser = -1;
-				
-				function doSearch() {
-					curUser++;
-					if (curUser >= users.length) {
-						console.log("cron search, YES! last user");
-						queueItem.processed = true;
-						queueItem.save(function(err, obj) {
-							app.emit("searchComplete", queueItem.query);
-						});
-					}
-					else {
-						var user = users[curUser];
-						searchFn(
-							user
-							, queueItem.query
-							, doSearch
-							, function(data) {
-								//console.log("DATA: " + data);
-								var links = JSON.parse(data);
-								saveLinks(queueItem.query, user.email, links);
-							}
-							, function(errData) {
-								console.log("error searching: " + errData);
-							}
-						);
-					}
-				}
-
+			"cronTime": cronTime ? cronTime : '0 * * * * *',
+			"onTick": function() {
 
 				app.WebSearchQueryQueue.findOne({"processed": false }, {}, {"sort": {"date": -1}}, function(err, result) {
-					if (!err) {
-						queueItem = result;
-						doSearch();
+					if (!err && result) {
+							var query = result.query;
+							
+							
+							async.forEachSeries(users
+								, function(user, cb) {
+									var email = user.email
+							
+									searcher.search(result.query, user, function(links) {
+										app.WebSearch.findOne({"query": query}, function(err, ws) {
+											if (!err && ws) {
+												console.log("===found one!");
+											}
+											else {
+												console.log("Couldn't find record for " + query);
+												ws = new app.WebSearch({"query": query});
+											}
+								
+											var cs = new app.ClientWebSearch({clientId: email, results: links});
+											ws.searches.push(cs);
+											
+											ws.save(function(err, newObj) {
+												if (err) {
+													console.log("Error saving websearch");
+												}
+												cb();
+											});
+										});				
+									});
+									
+								}
+								, function(err) {
+									console.log("FINISHED SEARCHES!! SAVING!");
+									result.processed = true;
+									result.save(function(err) {
+										if (!err) {
+											app.emit("visualizationSearchQueue.process", result.query);
+										}
+									});
+							});
 					}
 					else {
-						console.log(err);
+						if (err) {
+							console.log(err);
+						}
+						else { 
+							console.log("ran search cron job, but nothing in queue");
+						}
 					}
 				});
-				
-
-				function saveLinks(query, email, links) {
-					app.WebSearch.findOne({"query": query}, function(err, ws) {
-						if (!err && ws) {
-							console.log("===found one!");
-						}
-						else {
-							console.log("Couldn't find record for " + query);
-							ws = new app.WebSearch({"query": query});
-						}
-			
-						var cs = new app.ClientWebSearch({clientId: email, results: links});
-						ws.searches.push(cs);
-						
-						ws.save(function(err, newObj) {
-							if (err) {
-								console.log("Error saving websearch");
-							}
-						});
-					});				
-				}
-				
-			
-				
-				
 
 		  },
 		  "start": true
 		});
 		job.start();
 
-		
-		
-
-	
-	
-	
-	
-		//app.getNextInQueue(function() {
-			//users.forEach() {
-				//searchFn(user, query, function(data){}, function(data) {});
-			
-		//});
-		
 
 	}
 	
@@ -168,6 +138,8 @@ module.exports = {
 	, "crawl": function(app) {
 
 		var crawlFn = require('./lib/crawl.js');
+		var RENDER_DIR = app.set('renderdir');
+		var CRAWL_DATA_DIR = app.set('crawldatadir');
 		var userIdx = 0;
 		var seedIdx = 0;
 		
@@ -195,12 +167,15 @@ module.exports = {
 		var job = new cronJob({
 			cronTime: '0 58 * * * *',
 			onTick: function() {
+				
+			
+			
 				console.log('starting crawl job');
 				var user = users[userIdx];
 				var seed = user.seeds[seedIdx];
 
 				//TODO: replace directories with settings from app
-				crawlFn(user, seed, './public/screenshots/', './data/', onStdout, onStderr);			
+				crawlFn(user, seed, RENDER_DIR, CRAWL_DATA_DIR, onStdout, onStderr);			
 
 				if (++seedIdx >= user.seeds.length) {
 					seedIdx = 0;
