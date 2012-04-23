@@ -54,9 +54,9 @@ app.configure(function(){
 	
 	
 	//TODO: trailing slash?
-	app.set('renderdir', "/public/rendered/");
-	app.set('crawldatadir', "./data/");
-
+	app.set('renderdir', __dirname + "/public/rendered/");
+	app.set('crawldatadir', __dirname + "/data/");
+	app.set('textureSize', 1024)
 	
 	app.set('datastream', []);
 	
@@ -130,7 +130,7 @@ var sox = require('./sockets'),
 	cronjobs = require('./cronjobs');
 
 sox.init(app);
-//listeners.init(app);
+listeners.init(app);
 
 
 //cronjobs.search(app, '15 * * * * *');
@@ -157,6 +157,11 @@ app.WebSearchQueryQueue.find().sort("date", -1, "processed", 1).limit(20).execFi
 	}
 });
 
+
+
+//app.WebSearchQueryQueue.findOne({"processed": true }, {}, {"sort": {"date": -1}}, function(err, result) {
+	app.emit('visualizationSearchQueue.processedOne', "android");
+//});
 
 
 /**

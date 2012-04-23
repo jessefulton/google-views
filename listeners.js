@@ -1,5 +1,6 @@
-var imageProcessing = require('./lib/imageprocessing');
-var utils = require('./lib/utils');
+var imageProcessing = require('./lib/imageprocessing')
+	, utils = require('./lib/utils')
+	, async = require('async');
 
 
 
@@ -11,61 +12,76 @@ module.exports.init = function(app) {
 
 
 	var RENDER_DIR = app.set('renderdir');
-	var TEXTURE_SIZE = 1024;
+	var TEXTURE_SIZE = app.set('textureSize');
 
 
-	app.on('searchComplete', function(query) {
-
-		function generateTexture(urls) {
-			//remove dups from urls
-			urls = utils.unique(urls);
-			urls.forEach(function(url, idx, arr) {
-				var baseFilename = utils.md5(url);
-				var pngFilename = baseFilename + ".png";
-				var jpgFilename = baseFilename + ".jpg";
-				var texFilename = baseFilename + "-tex.jpg";
-				
-				imageProcessing.rasterize(url, (RENDER_DIR + pngFilename), function(code) {
-					if (code === 0) {
-
-						imageprocessing.convert(pngFilename, jpgFilename, function() {
-							imageprocessing.texture(jpgFilename, texFilename, TEXTURE_SIZE, function() {
-								app.CrawledPage.findOne({"url": url}, function(err, cp) {
-									if (err || !ws) {
-										cp = new app.CrawledPage({"url": url});
-									}
-									
-									cp.png = pngFilename;
-									cp.jpg = jpgFilename;
-									cp.tex = texFilename;
-									cp.save();
-								});	// end findOne
-								
-							}); // end texture
-						}); // end convert
-					
-					}
-					else {
-						console.log("error rasterizing " + url);
-					}
-				}); // end rasterize
-
-			}); // end foreach
-		}
-	
+	app.on('visualizationSearchQueue.processedOne', function(query) {
 		app.WebSearch.findOne({"query": query}, function(err, ws) {
-					if (!err && ws) {
-						var urls = [];
-						//ClientSearch objects
-						ws.searches.forEach(function(cs, csIdx, csArr) {
-							cs.results.forEach(function(url, idx, arr) {
-								urls.push(url);
-							});
-						});
+			if (err) { console.log("ERROR finding websearch for " + query); return; }
+			console.log("found object for " + query);
+			console.log(ws);
+		
+			var urls = [];
+			//ClientSearch objects
+			ws.searches.forEach(function(cs, csIdx, csArr) {
+				cs.results.forEach(function(url, idx, arr) {
+					urls.push(url);
+				});
+			});
+			
+			
+			async.forEachSeries(
+				urls
+				, function(url, cb) {
+					app.CrawledPage.findOne({"url": url}, function(err, cp) {
+						if (err || !cp) {
+							cp = new app.CrawledPage({"url": url});
+						}
+						//if this page already has textures generated, return
+						if (cp.jpg || cp.tex) { 
+							console.log("texture already exists for " + url);
+							cb();
+							return;
+						}
 						
-						generateTextures(urls);
-					}
-		});
+						
+						var baseFilename = utils.md5(url);
+						var pngFilename = baseFilename + ".png";
+						var jpgFilename = baseFilename + ".jpg";
+						var texFilename = baseFilename + "-tex.jpg";
+						
+						console.log("generating textures for " + url);
+						
+						imageProcessing.rasterize(url, (RENDER_DIR + pngFilename), function(code) {
+							if (code === 0) {
+		
+								imageProcessing.convert((RENDER_DIR + pngFilename), (RENDER_DIR + jpgFilename), function() {
+									imageProcessing.generateTexture((RENDER_DIR + jpgFilename), (RENDER_DIR + texFilename), TEXTURE_SIZE, function() {
+												
+										cp.png = pngFilename;
+										cp.jpg = jpgFilename;
+										cp.tex = texFilename;
+										cp.save(function(err, savedObj) { 
+											console.log("generated textures " + JSON.stringify(cp));
+											cb(); 
+										});
+										
+									}); // end texture
+								}); // end convert
+							
+							}
+							else {
+								console.log("error rasterizing " + url);
+								cb();
+							}
+						}); // end rasterize
+					});	// end CrawledPages findOne
+				}
+				, function(err) {
+					app.emit("visualizationSearchQueue.texturesGenerated", ws);
+				}
+			); // end async
+		}); // end WebSearch findOne
 	});
 
 	/*

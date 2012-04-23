@@ -73,12 +73,12 @@ module.exports = {
 									});
 									
 								}
-								, function(err) {
+								, function(e) {
 									console.log("FINISHED SEARCHES!! SAVING!");
 									result.processed = true;
-									result.save(function(err) {
+									result.save(function(err, savedObj) {
 										if (!err) {
-											app.emit("visualizationSearchQueue.process", result.query);
+											app.emit("visualizationSearchQueue.processedOne", savedObj.query);
 										}
 									});
 							});
