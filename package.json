@@ -19,6 +19,9 @@
       , "optimist": "0.3.1"
       , "socket.io": "0.9.5"
       , "cron": "0.2.0"
+      , "crypto": "0.0.3"
+      , "fs.extra": "1.0.1"
+      , "async": "0.1.18"
       , "imagemagick": "0.1.2"
     }
     
