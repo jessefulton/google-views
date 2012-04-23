@@ -96,9 +96,6 @@ Viz.prototype.initScene = function(onComplete) {
 
 Viz.prototype.loadSearchResults = function(data) {
 	var _scene = this.scene;
-	
-	//{userid : results}
-	
 	this.currentSearch = new SearchResults(data, function(sr) {
 		console.log("SEARCH LOADED FROM VIZ");
 		console.log(sr);
@@ -434,11 +431,11 @@ function init() {
 
 		var rate = .1;
 		
-		var period = 1.25; //rotations per second
+		var period = .25; //rotations per second
 		var fullRotation = (Math.PI*2);
 		var amt = (fullRotation * period * deltaTime) * rate;
 		//console.log(deltaTime);
-		var pause = false; //(Math.cos((totalTime * (Math.PI/period) * period) * rate)) > 0;
+		var pause = (Math.cos((totalTime * (Math.PI/period) * period) * rate)) > 0;
 		//pause = false;
 
 		if (!pause) {
