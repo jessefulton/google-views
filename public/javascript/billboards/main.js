@@ -96,14 +96,18 @@ Viz.prototype.initScene = function(onComplete) {
 
 Viz.prototype.loadSearchResults = function(data) {
 	var _scene = this.scene;
-	if (this.currentSearch) {
-		this.currentSearch.removeFrom(_scene);
-	}
+	var oldSearch = this.currentSearch;
 	this.currentSearch = new SearchResults(data, function(sr) {
-		console.log("SEARCH LOADED FROM VIZ");
-		console.log(sr);
-		sr.addTo(_scene);
-		//onComplete();
+	
+		if (oldSearch) {
+			oldSearch.removeFrom(_scene, function() {
+				sr.addTo(_scene);
+				oldSearch = null;
+			});
+		}
+		else {
+			sr.addTo(_scene);
+		}
 	});
 }
 
@@ -319,6 +323,7 @@ Billboard.prototype.tick = function(deltaTime, totalTime) {
 var SearchResults = function(cfg, onload) {
 	//this.term = cfg.term;
 	//this.rawData = cfg.data;
+	this.obj = new THREE.Object3D();
 	this.rawData = cfg;
 	this.billboards = [];
 	this.bbHeight = 1.5;
@@ -332,15 +337,21 @@ SearchResults.prototype._load = function(onload) {
 	var _self = this;
 	var numToLoad = this.rawData.length;
 	var numLoaded = 0;
+	var _width = this.bbWidth;
+	var _height = this.bbHeight;
 	for (var i=0; i<this.rawData.length; i++) {
 		//console.log(this.rawData[i]);
-		this.billboards.push(new Billboard({"textures":this.rawData[i], "width": this.bbWidth, "height": this.bbHeight }, function() {
+		var bb = new Billboard({"textures":this.rawData[i], "width": this.bbWidth, "height": this.bbHeight }, function() {
 			numLoaded++;
 			console.log("loaded billboard " + numLoaded + "/" + numToLoad);
 			if (numLoaded >= numToLoad) {
 				onload(_self);
 			}
-		}));
+		});
+		bb.obj.position.x = (Math.floor(i/2)*_width - (_width/2)) - (_width * 2.5);
+		bb.obj.position.y = (_height/2) * ((i % 2 == 0) ? 1 : -1);
+		this.billboards.push(bb);
+		this.obj.add(bb.obj);
 	}
 }
 
@@ -355,43 +366,54 @@ SearchResults.prototype.tick = function(deltaTime, totalTime) {
 }
 
 SearchResults.prototype.addTo = function(scn) {
-	var _width = this.bbWidth;
-	var _height = this.bbHeight;
+	var theGroup = this.obj;
+	theGroup.position.z = 100;
 	
-	for (var i=0; i<this.billboards.length; i++) {
-		var bb = this.billboards[i].obj;
+	var current	= { z: 100 };
+	var anim = new TWEEN.Tween(current)
+		.to({z: 0 }, 5000)
+		//.delay(userOpts.delay)
+		.easing(TWEEN.Easing.Exponential.EaseOut)
+		.onUpdate(function() {
+			theGroup.position.z = current.z;
+		});
+
+	anim.onComplete(function() {
+		console.log('finished animating query term');
+		//scn.remove(current.obj);
+		//anim.stop();
+		TWEEN.remove(anim);
+	})
+	
+	anim.start();
 		
-		bb.position.x = (Math.floor(i/2)*_width - (_width/2)) - (_width * 2.5);
-		bb.position.y = (_height/2) * ((i % 2 == 0) ? 1 : -1);
-		scn.add(bb);
-	}
+	
+	scn.add(this.obj);
 }
 
-SearchResults.prototype.removeFrom = function(scn) {	
-	//TWEEN.removeAll();
-	for (var i=0; i<this.billboards.length; i++) {
-		scn.remove(this.billboards[i].obj);
-		/*
-		var billboard = this.billboards[i];
-		var current	= { obj: billboard.obj, z: 0 };
-		var tweenOut = new TWEEN.Tween(current)
-			.to({z: 1000}, 5000)
-			//.delay(userOpts.delay)
-			//.easing(TWEEN.Easing['Quintic']['InOut'])
-			.onUpdate(function() {
-				current.obj.position.z = current.z;
-			});
+SearchResults.prototype.removeFrom = function(scn, cb) {
 
-		tweenOut.onComplete(function() {
-			console.log('finished animating bb');
-			console.log(current);
-			scn.remove(current.obj);
-		})
+	var theGroup = this.obj;
+	theGroup.position.z = 0;
+	
+	var current	= { z: 0 };
+	var anim = new TWEEN.Tween(current)
+		.to({z: 100 }, 5000)
+		//.delay(userOpts.delay)
+		.easing(TWEEN.Easing.Exponential.EaseIn)
+		.onUpdate(function() {
+			theGroup.position.z = current.z;
+		});
+
+	anim.onComplete(function() {
+		scn.remove(theGroup);
+		TWEEN.remove(anim);
+		if (cb) { cb(); }
+	})
+	
+	anim.start();
 		
-		tweenOut.start();
-		*/
-		
-	}
+
 }
 
 //=====================
