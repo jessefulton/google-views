@@ -38,7 +38,9 @@ Viz.prototype.initSockets = function (onComplete) {
 	});
 	this.socket.on('queue', function (newTerm, fullQueue) {
 		if (!newTerm) {
-			self.queue.set(fullQueue, self.scene);
+			if (self.queue.isEmpty()){
+				self.queue.set(fullQueue, self.scene);
+			}
 		}
 		else {
 			self.queue.add(newTerm, self.scene);
@@ -95,18 +97,23 @@ Viz.prototype.initScene = function(onComplete) {
 }
 
 Viz.prototype.loadSearchResults = function(data) {
+	var self = this;
 	var _scene = this.scene;
 	var oldSearch = this.currentSearch;
 	this.currentSearch = new SearchResults(data, function(sr) {
 	
 		if (oldSearch) {
 			oldSearch.removeFrom(_scene, function() {
-				sr.addTo(_scene);
+				sr.addTo(_scene, function() {
+					window.setTimeout(function() {self.next();}, 10000);
+				});
 				oldSearch = null;
 			});
 		}
 		else {
-			sr.addTo(_scene);
+			sr.addTo(_scene, function() {
+				window.setTimeout(function() {self.next();}, 10000);
+			});
 		}
 	});
 }
@@ -291,7 +298,22 @@ Billboard.prototype.tick = function(deltaTime, totalTime) {
 
 }
 
-
+Billboard.prototype.deallocate = function() {
+	//console.log(this.obj);
+	for (var i=0; i<this.obj.children.length; i++) {
+		var mesh = this.obj.children[i];
+		//console.log(mesh);
+		for (var j=0; j<mesh.geometry.materials.length; j++) {
+			var mat = mesh.geometry.materials[j];
+			if (mat.map) {
+				//console.log("deallocated " + mat.map);
+				app.renderer.deallocateTexture( mat.map )
+			}
+			else { console.log("No texture on material"); console.log(mat); }
+		}
+		app.renderer.deallocateObject(mesh);
+	}
+}
 
 //=======================
 //==== SearchResults ====
@@ -344,7 +366,7 @@ SearchResults.prototype.tick = function(deltaTime, totalTime) {
 	}
 }
 
-SearchResults.prototype.addTo = function(scn) {
+SearchResults.prototype.addTo = function(scn, onComplete) {
 	var theGroup = this.obj;
 	theGroup.position.z = 100;
 	
@@ -357,11 +379,7 @@ SearchResults.prototype.addTo = function(scn) {
 			theGroup.position.z = current.z;
 		});
 
-	anim.onComplete(function() {
-		console.log('finished animating query term');
-		//scn.remove(current.obj);
-		//anim.stop();
-	})
+	anim.onComplete(onComplete)
 	
 	
 	//anim.chain(rota);
@@ -374,6 +392,7 @@ SearchResults.prototype.addTo = function(scn) {
 SearchResults.prototype.removeFrom = function(scn, cb) {
 
 	var theGroup = this.obj;
+	var self = this;
 	theGroup.position.z = 0;
 	
 	var current	= { z: 0 };
@@ -386,6 +405,11 @@ SearchResults.prototype.removeFrom = function(scn, cb) {
 		});
 
 	anim.onComplete(function() {
+	
+		for(var i=0; i<self.billboards.length; i++) {
+			self.billboards[i].deallocate();
+		}
+	
 		scn.remove(theGroup);
 		if (cb) { cb(); }
 	})
@@ -555,7 +579,7 @@ function init() {
 	});
 	
 
-window.setInterval(function() { app.next(); }, 15000);
+//window.setInterval(function() { app.next(); }, 15000);
 	
 
 
