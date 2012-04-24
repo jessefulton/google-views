@@ -505,15 +505,37 @@ SearchQueue.prototype.next = function() {
 	this.data.push(word);
 	
 	for (var i=0; i<this.data.length; i++) {
+		
 		var theObj = this.objs[this.data[i]];
-		theObj.position.y = 1 * i* this.lineHeight;
+
+		animatePosition(theObj, { y: (1 * i* this.lineHeight), z: -2, x: 5 }, 5000, function() {
+			console.log("ANIMATED POSITION");
+		});
+		//theObj.position.y = 1 * i* this.lineHeight;
+	}
+		
+	return word;
+}
+
+function animatePosition(obj, to, duration, onComplete) {
+	
+	var current = {x: obj.position.x, y: obj.position.y, z: obj.position.z};
+	
+	var anim = new TWEEN.Tween(current)
+		.to(to, duration)
+		//.delay(userOpts.delay)
+		//.easing(TWEEN.Easing['Quintic']['InOut'])
+		.onUpdate(function() {
+			obj.position.x = current.x;
+			obj.position.y = current.y;
+			obj.position.z = current.z;
+		});
+
+	if (onComplete) {
+		anim.onComplete(onComplete);
 	}
 	
-	
-	
-	
-	
-	return word;
+	anim.start();
 }
 
 
@@ -540,7 +562,7 @@ SearchQueue.prototype.add = function(word, scene) {
 		
 		var current	= { x:-10, z: -10 };
 		var anim = new TWEEN.Tween(current)
-			.to({z: 0, x: 5 }, 5000)
+			.to({z: -2, x: 5 }, 5000)
 			//.delay(userOpts.delay)
 			//.easing(TWEEN.Easing['Quintic']['InOut'])
 			.onUpdate(function() {
