@@ -61,31 +61,30 @@ module.exports = {
 	
 	
 	, "createTextures": function(app) {
-		var files = [];
-		
-		var queue = [];
-		
+
 		app.on("texture.missing", function(url) {
-			console.log("CREATE TEXTURES: MISSING " + url);	
-			queue.push(url);
 			var q = app.set('textureGenerationQueue');
 			q.push(url);
+			q = utils.unique(q);
 			app.set('textureGenerationQueue', q);
 			
-			console.log("ADDED MISSING TEXTURE TO QUEUE: " + q);
+			console.log("ADDED MISSING TEXTURE TO QUEUE: " + url);
+			console.log(JSON.stringify(q));
 			
 		});
 
-		
+		/*
 		//listen for calls to add elements to queue
 		app.on('textures-queue-add', function(els) {
 			files.push.apply(files, ensureArray(els));
 		});
+		*/
 		
 		//var crawlFn = require('./cron-textures.js');
 		var job = new cronJob({
 		  cronTime: '0 */2 * * * *',
 		  onTick: function() {
+  			var queue = app.set('textureGenerationQueue');
 		  	if (queue.length > 0) {
 		  		var url = queue.pop();
 			  	imageProcessing.generateAndSaveTexture(app, url, function() {
