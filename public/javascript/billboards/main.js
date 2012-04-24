@@ -11,6 +11,7 @@ var Viz = function() {
 	this.container;
 	this.camera;
 	this.renderer;
+	this.textureCache = new TextureCache();
 	
 	this.animatingObjects = [];
 	this.queue = new SearchQueue();
@@ -151,8 +152,38 @@ Viz.prototype.tick = function(deltaTime, totalTime) {
 	}
 }
 
+//~~~ TODO: SAME THING WITH MATERIALS ~~~//
+//======================
+//==== TextureCache ====
+//======================
+var TextureCache = function() {
+	this.textures = {};
+}
 
+TextureCache.prototype.add = function(url, texture) {
+	this[url] = texture;
+}
 
+TextureCache.prototype.has = function(url) {
+	return !!(this[url]);
+}
+
+TextureCache.prototype.get = function(url) {
+	return this[url];
+}
+
+TextureCache.prototype.remove = function(url) {
+	if (this.textures[url]) {
+		app.renderer.deallocateTexture( this.textures[url] );
+		delete this.textures[url];
+	}
+}
+
+TextureCache.prototype.clear = function() {
+	for(var key in this.textures) {
+		this.remove(this.textures[key]);
+	}
+}
 
 //===================
 //==== Billboard ====
@@ -234,35 +265,43 @@ Billboard.prototype._texture = function(onComplete) {
 					}
 				continue;
 			}
-
-			//=============
-			var self = this;
-
-			var imgTex = THREE.ImageUtils.loadTexture(
-				this.textureUrls[j]
-				, THREE.UVMapping
-				, function(image) {
-					texturesLoaded += self.numBars;
-					//imgTex.image = null;
-					image = null;
-
-					//console.log("___LOADED TEXTURE " + texturesLoaded + "/" + texturesToLoad);
-					if (texturesLoaded >= texturesToLoad) {
-						onComplete();
-					}
-			});
-			//console.log(offset);
-
-			//imgTex.wrapT = THREE.RepeatWrapping;
-			imgTex.repeat.set( texWidth, 1 );
-			imgTex.offset.x = offset;
-			imgTex.needsUpdate = true;
-			imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
-			imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
-
-
-			//=============
 			
+			var imgTex;
+			if (app.textureCache.has(this.textureUrls[j])) {
+				console.log('loading texture from cache...');
+				imgTex = app.textureCache.get(this.textureUrls[j]);
+				texturesLoaded+= this.numBars;
+				if (texturesLoaded >= texturesToLoad) {
+					onComplete();
+				}
+			}
+			else {
+				var self = this;
+
+				var imgTex = THREE.ImageUtils.loadTexture(
+					this.textureUrls[j]
+					, THREE.UVMapping
+					, function(image) {
+						texturesLoaded += self.numBars;
+						//imgTex.image = null;
+						image = null;
+	
+						//console.log("___LOADED TEXTURE " + texturesLoaded + "/" + texturesToLoad);
+						if (texturesLoaded >= texturesToLoad) {
+							onComplete();
+						}
+				});
+				//console.log(offset);
+	
+				//imgTex.wrapT = THREE.RepeatWrapping;
+				imgTex.repeat.set( texWidth, 1 );
+				imgTex.offset.x = offset;
+				imgTex.needsUpdate = true;
+				imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
+				imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
+				app.textureCache.add(this.textureUrls[j], imgTex);
+			}
+
 			
 
 			//console.log("BILLBOARD LOAD: " + this.textureUrls[j]);
@@ -313,6 +352,9 @@ Billboard.prototype.deallocate = function() {
 		}
 		app.renderer.deallocateObject(mesh);
 	}
+	for (var i=0; i<this.textureUrls.length; i++) {
+		app.textureCache.remove(this.textureUrls[i]);
+	}
 }
 
 //=======================
@@ -323,6 +365,10 @@ var SearchResults = function(cfg, onload) {
 	//this.rawData = cfg.data;
 	this.obj = new THREE.Object3D();
 	this.rawData = cfg;
+	
+	
+	//TODO: CACHE TEXTURES & MESHES BY URL, RATHER THAN GENERATING NEW FOR EACH CUBE FACE
+	
 	this.billboards = [];
 	this.bbHeight = 1.5;
 	this.bbWidth = 1.5;
@@ -368,9 +414,9 @@ SearchResults.prototype.tick = function(deltaTime, totalTime) {
 
 SearchResults.prototype.addTo = function(scn, onComplete) {
 	var theGroup = this.obj;
-	theGroup.position.z = 100;
+	theGroup.position.z = 1000;
 	
-	var current	= { z: 100 };
+	var current	= { z: 1000 };
 	var anim = new TWEEN.Tween(current)
 		.to({z: 0 }, 5000)
 		//.delay(userOpts.delay)
@@ -397,7 +443,7 @@ SearchResults.prototype.removeFrom = function(scn, cb) {
 	
 	var current	= { z: 0 };
 	var anim = new TWEEN.Tween(current)
-		.to({z: 100 }, 5000)
+		.to({z: 1000 }, 5000)
 		//.delay(userOpts.delay)
 		.easing(TWEEN.Easing.Exponential.EaseIn)
 		.onUpdate(function() {
