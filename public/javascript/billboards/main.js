@@ -106,7 +106,7 @@ Viz.prototype.loadSearchResults = function(data) {
 
 Viz.prototype.getTextures = function(term, cb) {
 	console.log("ORIGINAL TERM " + term);
-	this.socket.emit('queryTextures', term, cb);
+	this.socket.emit('queryTextures', "wtf", cb);
 }
 
 Viz.prototype.next = function() {

@@ -43,58 +43,12 @@ module.exports = {
 
 				app.WebSearchQueryQueue.findOne({"processed": false }, {}, {"sort": {"date": -1}}, function(err, result) {
 					if (!err && result) {
-							var query = result.query;
-							
-							
-							async.forEachSeries(users
-								, function(user, cb) {
-									var email = user.email
-							
-									searcher.search(result.query, user, function(links) {
-										app.WebSearch.findOne({"query": query}, function(err, ws) {
-											if (!err && ws) {
-												console.log("===found one!");
-											}
-											else {
-												console.log("Couldn't find record for " + query);
-												ws = new app.WebSearch({"query": query});
-											}
-								
-											var cs = new app.ClientWebSearch({clientId: email, results: links});
-											ws.searches.push(cs);
-											
-											ws.save(function(err, newObj) {
-												if (err) {
-													console.log("Error saving websearch");
-												}
-												cb();
-											});
-										});				
-									});
-									
-								}
-								, function(e) {
-									console.log("FINISHED SEARCHES!! SAVING!");
-									result.processed = true;
-									result.save(function(err, savedObj) {
-										if (!err) {
-											app.emit("visualizationSearchQueue.processedOne", savedObj.query);
-										}
-									});
-							});
-					}
-					else {
-						if (err) {
-							console.log(err);
-						}
-						else { 
-							console.log("ran search cron job, but nothing in queue");
-						}
+						searcher.process(result, users);
 					}
 				});
 
-		  },
-		  "start": true
+			},
+			"start": true
 		});
 		job.start();
 
@@ -165,7 +119,8 @@ module.exports = {
 		};
 		
 		var job = new cronJob({
-			cronTime: '0 58 * * * *',
+			//cronTime: '0 0,10,20,30,40,50 * * * *',
+			cronTime: '0 40 * * * *',
 			onTick: function() {
 				
 			

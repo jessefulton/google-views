@@ -3,6 +3,8 @@ var imageProcessing = require('./lib/imageprocessing')
 	, async = require('async');
 
 
+var searcher = require('./lib/searcher');
+
 
 /**
 * Creates a series of listeners to fire off functionality when certain events occur
@@ -10,7 +12,7 @@ var imageProcessing = require('./lib/imageprocessing')
 */
 module.exports.init = function(app) {
 
-
+	var users = app.set('config').users;
 	var RENDER_DIR = app.set('renderdir');
 	var TEXTURE_SIZE = app.set('textureSize');
 
@@ -102,7 +104,11 @@ module.exports.init = function(app) {
 		
 		app.emit('datastream', el, datastream);
 	});
+	*/
+	
+	
 	app.on('crawl output', function(obj) {
+		/*
 		switch (obj.type) {
 			case "error": 
 				var msg = obj.message;
@@ -116,17 +122,22 @@ module.exports.init = function(app) {
 				var img = obj.image;
 				break;
 		}
+		*/
 		console.log(JSON.stringify(obj));
 	});
 
-	*/
 	
-	/*
-	app.on('visualizationSearchQueue.add', function(obj) {
-		var q = app.set('visualizationSearchQueue');
-		q.push(obj);
-		app.set('visualizationSearchQueue', q);
+	
+	
+	app.on('visualizationSearchQueue.add', function(term, ws) {
+		//var q = app.set('visualizationSearchQueue');
+		//q.push(term);
+		//app.set('visualizationSearchQueue', q);
+
+		searcher.process(ws, users, app);
+
+		
 	});
-	*/
+	
 	
 }

@@ -46,7 +46,7 @@ module.exports.init = function(app) {
 				if (!saveErr) {
 					q.push(term)
 					app.set('visualizationSearchQueue', q)
-					app.emit('visualizationSearchQueue.add', term, q);
+					app.emit('visualizationSearchQueue.add', term, savedObj);
 				}
 				else {
 					console.log(saveErr);
