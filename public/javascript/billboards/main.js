@@ -125,9 +125,9 @@ Viz.prototype.animate = function() {
 
 }
 
-Viz.prototype.tick = function(deltaTime) {
+Viz.prototype.tick = function(deltaTime, totalTime) {
 	if (this.currentSearch) {
-		this.currentSearch.tick(deltaTime);
+		this.currentSearch.tick(deltaTime, totalTime);
 	}
 }
 
@@ -139,7 +139,7 @@ Viz.prototype.tick = function(deltaTime) {
 //===================
 var Billboard = function(opts, onload) {
 	this.obj = new THREE.Object3D();
-	this.numBars = opts.divisions ? opts.divisions : 4;
+	this.numBars = opts.divisions ? opts.divisions : 1;
 	this.divisionSpacing = opts.divisionSpacing ? opts.divisionSpacing : 0;
 	this.height = opts.height ? opts.height : 1;
 	this.width = opts.width ? opts.width : 1;
@@ -179,17 +179,25 @@ Billboard.prototype._texture = function(onComplete) {
 	
 	var texWidth = 1/this.numBars;
 	for (var j=0; j<this.textureUrls.length; j++) {
+
+
+
 		for (var i=0; i<this.numBars; i++) {
 			var offset = texWidth*(-i - 1);
 			//offset = Math.random();
 
-			//console.log("BILLBOARD LOAD: " + this.textureUrls[j]);
+
+			//=============
+			var self = this;
 
 			var imgTex = THREE.ImageUtils.loadTexture(
 				this.textureUrls[j]
 				, THREE.UVMapping
 				, function(image) {
-					texturesLoaded++;
+					texturesLoaded += self.numBars;
+					//imgTex.image = null;
+					image = null;
+
 					//console.log("___LOADED TEXTURE " + texturesLoaded + "/" + texturesToLoad);
 					if (texturesLoaded >= texturesToLoad) {
 						onComplete();
@@ -202,11 +210,27 @@ Billboard.prototype._texture = function(onComplete) {
 			imgTex.offset.x = offset;
 			imgTex.needsUpdate = true;
 			imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
-			var imgMat = new THREE.MeshBasicMaterial( { color: 0xdddddd, map: imgTex } );
 			imgTex.minFilter = imgTex.magFilter = THREE.LinearFilter;
 
+
+			//=============
+			
+			
+
+			//console.log("BILLBOARD LOAD: " + this.textureUrls[j]);
+			var imgMat = new THREE.MeshBasicMaterial( { color: 0xdddddd, map: imgTex } );
 			var face = (j>=2) ? j+2 : j;
 			this.obj.children[i].geometry.materials[face] = imgMat;
+			
+			
+			//console.log(this.obj.children[i].geometry.materials);
+			
+
+			//this.obj.children[i].geometry.materials[face].map.offset.x = texWidth*(-i - 1.5);
+
+			//this.obj.children[i].geometry.materials[face].map.needsUpdate = true;
+			
+			
 		}
 	}
 
@@ -218,14 +242,59 @@ Billboard.prototype.isLoaded = function() {
 	}
 	return true;
 }
-Billboard.prototype.tick = function(deltaTime, rate) {
-	if (!rate) { rate = .1; }
+
+
+
+Billboard.prototype.tick = function(deltaTime, totalTime) {
+
+/*
+
+
+		var rate = 1;
+		
+		var period = .25; //rotations per second
+		var fullRotation = (Math.PI*2);
+		var halfPi = Math.PI/2;
+		
+		var amt = fullRotation * deltaTime; //one full rotation per second
+		//console.log(deltaTime);
+		var pause = (Math.cos(halfPi * totalTime * rate) > 0);
+		//pause = false;
+
+
+*/
+
+
+	var rate = .5;
 	
-	var period = .25; //rotations per second
+	var period = 1.0; //rotations per second
 	var fullRotation = (Math.PI*2);
+	var halfPi = (Math.PI/2);
 	var amt = (fullRotation * period * deltaTime) * rate;
-	for(var i=0; i<this.obj.children.length; i++) {
-		this.obj.children[i].rotation.y += amt;
+
+	//var texWidth = 1/this.numBars;
+
+//*** TODO: THIS IS A MESS!!! ***//
+
+	var pause = (Math.cos(fullRotation*2 * totalTime * rate + halfPi/2) > 0);
+
+	if (!pause) {
+		for(var i=0; i<this.obj.children.length; i++) {
+			var bar = this.obj.children[i];
+	
+			
+			//console.log(bar.geometry.materials);
+			for (var j=0; j<4; j++) {		
+				var face = (j>=2) ? j+2 : j;
+				
+				//bar.geometry.materials[face].map.offset.x = texWidth*(-i - 1);
+	
+				//bar.geometry.materials[face].map.needsUpdate = true;
+				
+			}
+			
+			bar.rotation.y += amt;
+		}
 	}
 }
 
@@ -239,6 +308,8 @@ var SearchResults = function(cfg, onload) {
 	//this.rawData = cfg.data;
 	this.rawData = cfg;
 	this.billboards = [];
+	this.bbHeight = 1.5;
+	this.bbWidth = 1.5;
 	//this.obj = new THREE.Object3D();
 	console.log('creating search results...');
 	this._load(onload ? onload : function() {});
@@ -250,7 +321,7 @@ SearchResults.prototype._load = function(onload) {
 	var numLoaded = 0;
 	for (var i=0; i<this.rawData.length; i++) {
 		//console.log(this.rawData[i]);
-		this.billboards.push(new Billboard({"textures":this.rawData[i]}, function() {
+		this.billboards.push(new Billboard({"textures":this.rawData[i], "width": this.bbWidth, "height": this.bbHeight }, function() {
 			numLoaded++;
 			console.log("loaded billboard " + numLoaded + "/" + numToLoad);
 			if (numLoaded >= numToLoad) {
@@ -264,20 +335,20 @@ SearchResults.prototype._destroy = function() {
 
 }
 
-SearchResults.prototype.tick = function(deltaTime) {
+SearchResults.prototype.tick = function(deltaTime, totalTime) {
 	for (var i=0; i<this.billboards.length; i++) {
-		this.billboards[i].tick(deltaTime);
+		this.billboards[i].tick(deltaTime, totalTime);
 	}
 }
 
 SearchResults.prototype.addTo = function(scn) {
-	var _width = 1;
-	var _height = 1;
+	var _width = this.bbWidth;
+	var _height = this.bbHeight;
 	
 	for (var i=0; i<this.billboards.length; i++) {
 		var bb = this.billboards[i].obj;
 		
-		bb.position.x = (Math.floor(i/2) - (_width/2)) - 2.5;
+		bb.position.x = (Math.floor(i/2)*_width - (_width/2)) - (_width * 2.5);
 		bb.position.y = (_height/2) * ((i % 2 == 0) ? 1 : -1);
 		scn.add(bb);
 	}
@@ -427,20 +498,9 @@ function init() {
 	function render() {
 		var now = Date.now() / 1000;
 		if (!lastFrameTime) { lastFrameTime = Date.now()/1000; }
-		var deltaTime = now - lastFrameTime;
+		var deltaTime = now - lastFrameTime; //change in seconds
 
-		var rate = .1;
-		
-		var period = .25; //rotations per second
-		var fullRotation = (Math.PI*2);
-		var amt = (fullRotation * period * deltaTime) * rate;
-		//console.log(deltaTime);
-		var pause = (Math.cos((totalTime * (Math.PI/period) * period) * rate)) > 0;
-		//pause = false;
-
-		if (!pause) {
-			app.tick(deltaTime);
-		}
+		app.tick(deltaTime, totalTime);
 		app.camera.lookAt( app.scene.position );
 		app.renderer.render( app.scene, app.camera );
 		lastFrameTime = now;
