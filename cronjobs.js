@@ -120,7 +120,7 @@ module.exports = {
 		
 		var job = new cronJob({
 			//cronTime: '0 0,10,20,30,40,50 * * * *',
-			cronTime: '0 40 * * * *',
+			cronTime: '0 0,20,40 * * * *',
 			onTick: function() {
 				
 			
