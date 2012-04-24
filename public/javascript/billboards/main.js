@@ -140,6 +140,7 @@ Viz.prototype.next = function() {
 			}
 		});
 	}
+	console.log(this.textureCache);
 }
 
 Viz.prototype.animate = function() {
@@ -161,21 +162,27 @@ var TextureCache = function() {
 }
 
 TextureCache.prototype.add = function(url, texture) {
-	this[url] = texture;
+	this.textures[url] = texture;
 }
 
 TextureCache.prototype.has = function(url) {
-	return !!(this[url]);
+	return !!(this.textures[url]);
 }
 
 TextureCache.prototype.get = function(url) {
-	return this[url];
+	return this.textures[url];
 }
 
 TextureCache.prototype.remove = function(url) {
+	console.log("Trying to remove texture " + url);
+	console.log("Trying to remove texture " + url);
 	if (this.textures[url]) {
-		app.renderer.deallocateTexture( this.textures[url] );
+		console.log('removing...');
+		var tex = this.textures[url];
+		this.textures[url] = null;
 		delete this.textures[url];
+		app.renderer.deallocateTexture( tex );
+		console.log('removed!');
 	}
 }
 
