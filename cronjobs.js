@@ -3,7 +3,11 @@ var cronJob = require('cron').CronJob
 	, searcher = require('./lib/searcher.js')
 	, users = require('./conf/users.js').users
 	, fs = require('fs');
+var imageProcessing = require('./lib/imageprocessing')
+	, utils = require('./lib/utils');
 
+
+var searcher = require('./lib/searcher');
 
 var ensureArray = function(a, b, n) {
 	if (arguments.length === 0) return [];            //no args, ret []
@@ -59,16 +63,34 @@ module.exports = {
 	, "createTextures": function(app) {
 		var files = [];
 		
+		var queue = [];
+		
+		app.on("texture.missing", function(url) {
+			console.log("CREATE TEXTURES: MISSING " + url);	
+			queue.push(url);
+			var q = app.set('textureGenerationQueue');
+			q.push(url);
+			app.set('textureGenerationQueue', q);
+			
+			console.log("ADDED MISSING TEXTURE TO QUEUE: " + q);
+			
+		});
+
+		
 		//listen for calls to add elements to queue
 		app.on('textures-queue-add', function(els) {
 			files.push.apply(files, ensureArray(els));
 		});
-		/*
-		var crawlFn = require('./cron-textures.js');
+		
+		//var crawlFn = require('./cron-textures.js');
 		var job = new cronJob({
-		  cronTime: '0 * * * * *',
+		  cronTime: '0 */2 * * * *',
 		  onTick: function() {
-		  	if (files.length > 0) {
+		  	if (queue.length > 0) {
+		  		var url = queue.pop();
+			  	imageProcessing.generateAndSaveTexture(app, url, function() {
+			  		console.log("genereated texture " + url);
+			  	});
 		  		//open image magick
 		  		//convert png to jpg
 		  		//app.emit(texture filename)
@@ -78,7 +100,7 @@ module.exports = {
 		  }
 		});
 		job.start();
-		*/
+		
 	}
 
 //	, "dbimport"

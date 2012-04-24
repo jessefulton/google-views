@@ -64,6 +64,9 @@ app.configure(function(){
 	
 	//TODO: set flag for images ready
 	app.set('visualizationSearchQueue', []);
+	app.set('textureGenerationQueue', [])
+	
+	
 	app.set('config', config);
 	app.use(express.favicon());
 	//app.use(stylus.middleware({ src: __dirname + '/public', compile: compile }))
@@ -139,7 +142,9 @@ listeners.init(app);
 
 cronjobs.crawl(app);
 
-//cronjobs.createTextures(app);
+cronjobs.createTextures(app);
+
+
 
 
 

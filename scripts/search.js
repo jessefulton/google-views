@@ -13,7 +13,7 @@ var links = [];
 
 function getLinks() {
     //var foundLinks = document.querySelectorAll('h3.r a');
-	var foundLinks = document.querySelectorAll("#ires li:not([class*=tpo]):not([id=newsbox]) h3.r a");
+	var foundLinks = document.querySelectorAll("#ires li:not([class*=tpo]):not([id=newsbox]):not([id=imagebox_bigimages]) .vsc > h3.r a");
  	
  	var links = [];
 	var dummyA = document.createElement('a');

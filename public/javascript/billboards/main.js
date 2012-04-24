@@ -159,7 +159,10 @@ var Billboard = function(opts, onload) {
 	this.textureUrls = opts.textures;
 	
 	this._build();
-	this._texture(onload ? onload : function() {});
+	var self = this;
+	this._texture(function() {
+		if (onload) { onload(); }	
+	});
 	
 	
 };
@@ -181,6 +184,24 @@ Billboard.prototype._build = function() {
 		bar.updateMatrix();
 		bar.translateX(i * (barWidth + this.divisionSpacing));
 		this.obj.add(bar);
+		
+		
+		var current	= { y: 0 };
+		var anim1 = anim2 = new TWEEN.Tween(current)
+			.to({y: Math.PI*2*10 }, 50000)
+			//.delay(userOpts.delay)
+			//.easing(TWEEN.Easing.Exponential.EaseOut)
+			.onUpdate(function() {
+				bar.rotation.y = current.y;
+			});
+	
+		
+		
+		anim1.chain(anim2);
+		anim2.chain(anim1);
+		anim1.start();
+		
+		
 	}
 }
 
@@ -199,6 +220,13 @@ Billboard.prototype._texture = function(onComplete) {
 			var offset = texWidth*(-i - 1);
 			//offset = Math.random();
 
+			if (!this.textureUrls[j]) {
+				texturesLoaded+= this.numBars;
+				if (texturesLoaded >= texturesToLoad) {
+						onComplete();
+					}
+				continue;
+			}
 
 			//=============
 			var self = this;
@@ -260,59 +288,7 @@ Billboard.prototype.isLoaded = function() {
 
 Billboard.prototype.tick = function(deltaTime, totalTime) {
 
-/*
 
-
-		var rate = 1;
-		
-		var period = .25; //rotations per second
-		var fullRotation = (Math.PI*2);
-		var halfPi = Math.PI/2;
-		
-		var amt = fullRotation * deltaTime; //one full rotation per second
-		//console.log(deltaTime);
-		var pause = (Math.cos(halfPi * totalTime * rate) > 0);
-		//pause = false;
-
-
-*/
-
-
-	
-	var period = .1; //rotations per second
-	var fullRotation = (Math.PI*2);
-	var halfPi = (Math.PI/2);
-	var amt = (fullRotation * period * deltaTime);
-
-
-
-
-	//var texWidth = 1/this.numBars;
-
-	//*** TODO: THIS IS A MESS!!! ***//
-
-	var pause = false; //(Math.cos(fullRotation*2 * totalTime + halfPi/2) > 0);
-
-	if (!pause) {
-		var rota = totalTime * fullRotation * period;
-		for(var i=0; i<this.obj.children.length; i++) {
-			var bar = this.obj.children[i];
-	
-			
-			//console.log(bar.geometry.materials);
-			for (var j=0; j<4; j++) {		
-				var face = (j>=2) ? j+2 : j;
-				
-				//bar.geometry.materials[face].map.offset.x = texWidth*(-i - 1);
-	
-				//bar.geometry.materials[face].map.needsUpdate = true;
-				
-			}
-			
-			//bar.rotation.y += amt;
-			bar.rotation.y = rota;
-		}
-	}
 }
 
 
@@ -330,6 +306,9 @@ var SearchResults = function(cfg, onload) {
 	this.bbWidth = 1.5;
 	//this.obj = new THREE.Object3D();
 	console.log('creating search results...');
+	
+	
+	//TODO: add anim to onload	
 	this._load(onload ? onload : function() {});
 }
 
@@ -382,11 +361,12 @@ SearchResults.prototype.addTo = function(scn) {
 		console.log('finished animating query term');
 		//scn.remove(current.obj);
 		//anim.stop();
-		TWEEN.remove(anim);
 	})
 	
+	
+	//anim.chain(rota);
 	anim.start();
-		
+	
 	
 	scn.add(this.obj);
 }
@@ -407,7 +387,6 @@ SearchResults.prototype.removeFrom = function(scn, cb) {
 
 	anim.onComplete(function() {
 		scn.remove(theGroup);
-		TWEEN.remove(anim);
 		if (cb) { cb(); }
 	})
 	
