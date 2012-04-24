@@ -55,7 +55,7 @@ Viz.prototype.initScene = function(onComplete) {
 	
 	this.scene = new THREE.Scene();
 	
-	this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+	this.camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 10000);
 	this.camera.position.z = -5;
 	this.camera.position.y = 0;
 	this.camera.position.x = 0;	
@@ -96,6 +96,9 @@ Viz.prototype.initScene = function(onComplete) {
 
 Viz.prototype.loadSearchResults = function(data) {
 	var _scene = this.scene;
+	if (this.currentSearch) {
+		this.currentSearch.removeFrom(_scene);
+	}
 	this.currentSearch = new SearchResults(data, function(sr) {
 		console.log("SEARCH LOADED FROM VIZ");
 		console.log(sr);
@@ -106,17 +109,23 @@ Viz.prototype.loadSearchResults = function(data) {
 
 Viz.prototype.getTextures = function(term, cb) {
 	console.log("ORIGINAL TERM " + term);
-	this.socket.emit('queryTextures', "wtf", cb);
+	this.socket.emit('queryTextures', term, cb);
 }
 
 Viz.prototype.next = function() {
-	console.log("inside viz.next... queue " + this.queue.isEmpty());
+	console.log("inside viz.next()");
 	if (!this.queue.isEmpty()) {
 		var term = this.queue.next();
+		console.log("looking up " + term);
 		var self = this;
 		this.getTextures(term, function(data) {
-			console.log(data);
-			self.loadSearchResults(data);
+			if (!data) {
+				self.next();
+			}
+			else {
+				console.log(data);
+				self.loadSearchResults(data);
+			}
 		});
 	}
 }
@@ -265,20 +274,23 @@ Billboard.prototype.tick = function(deltaTime, totalTime) {
 */
 
 
-	var rate = .5;
 	
-	var period = 1.0; //rotations per second
+	var period = .1; //rotations per second
 	var fullRotation = (Math.PI*2);
 	var halfPi = (Math.PI/2);
-	var amt = (fullRotation * period * deltaTime) * rate;
+	var amt = (fullRotation * period * deltaTime);
+
+
+
 
 	//var texWidth = 1/this.numBars;
 
-//*** TODO: THIS IS A MESS!!! ***//
+	//*** TODO: THIS IS A MESS!!! ***//
 
-	var pause = (Math.cos(fullRotation*2 * totalTime * rate + halfPi/2) > 0);
+	var pause = false; //(Math.cos(fullRotation*2 * totalTime + halfPi/2) > 0);
 
 	if (!pause) {
+		var rota = totalTime * fullRotation * period;
 		for(var i=0; i<this.obj.children.length; i++) {
 			var bar = this.obj.children[i];
 	
@@ -293,7 +305,8 @@ Billboard.prototype.tick = function(deltaTime, totalTime) {
 				
 			}
 			
-			bar.rotation.y += amt;
+			//bar.rotation.y += amt;
+			bar.rotation.y = rota;
 		}
 	}
 }
@@ -354,6 +367,33 @@ SearchResults.prototype.addTo = function(scn) {
 	}
 }
 
+SearchResults.prototype.removeFrom = function(scn) {	
+	//TWEEN.removeAll();
+	for (var i=0; i<this.billboards.length; i++) {
+		scn.remove(this.billboards[i].obj);
+		/*
+		var billboard = this.billboards[i];
+		var current	= { obj: billboard.obj, z: 0 };
+		var tweenOut = new TWEEN.Tween(current)
+			.to({z: 1000}, 5000)
+			//.delay(userOpts.delay)
+			//.easing(TWEEN.Easing['Quintic']['InOut'])
+			.onUpdate(function() {
+				current.obj.position.z = current.z;
+			});
+
+		tweenOut.onComplete(function() {
+			console.log('finished animating bb');
+			console.log(current);
+			scn.remove(current.obj);
+		})
+		
+		tweenOut.start();
+		*/
+		
+	}
+}
+
 //=====================
 //==== SearchQueue ====
 //=====================
@@ -385,6 +425,16 @@ SearchQueue.prototype.set = function(words, scene) {
 SearchQueue.prototype.next = function() {
 	var word = this.data.shift();
 	this.data.push(word);
+	
+	for (var i=0; i<this.data.length; i++) {
+		var theObj = this.objs[this.data[i]];
+		theObj.position.y = 1 * i* this.lineHeight;
+	}
+	
+	
+	
+	
+	
 	return word;
 }
 
@@ -402,12 +452,34 @@ SearchQueue.prototype.add = function(word, scene) {
 	
 		var obj = this.createTextObj(word);
 		
-		obj.position.y = -1 * this.data.length * this.lineHeight;
-		obj.position.x = 5;
+		obj.position.y = 1 * this.data.length * this.lineHeight;
+		obj.position.x = 0;
+		obj.position.z = -20;
 		this.objs[word] = obj;
 		
 		scene.add(obj);
-	}				
+		
+		
+		var current	= { x:-10, z: -10 };
+		var anim = new TWEEN.Tween(current)
+			.to({z: 0, x: 5 }, 5000)
+			//.delay(userOpts.delay)
+			//.easing(TWEEN.Easing['Quintic']['InOut'])
+			.onUpdate(function() {
+				obj.position.z = current.z;
+				obj.position.x = current.x;
+			});
+
+		anim.onComplete(function() {
+			console.log('finished animating query term');
+			//scn.remove(current.obj);
+			//anim.stop();
+		})
+		
+		anim.start();
+		
+		
+	}
 }
 
 SearchQueue.prototype.createTextObj = function(word) {
@@ -482,13 +554,14 @@ function init() {
 	});
 	
 
-
+window.setTimeout(function() { app.next(); }, 10000);
 	
 
 
 	function animate() {
 		requestAnimationFrame( animate );
 		render();
+		TWEEN.update();
 	}
 
 

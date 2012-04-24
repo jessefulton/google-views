@@ -48,7 +48,7 @@ module.exports.init = function(app) {
 			app.WebSearch.findOne({"query": term}, function(err, ws) {
 				if (!ws) {
 					console.log("no textures for query " + term);
-					callback(resp);
+					callback(null);
 				}
 				else {
 					async.forEach(ws.searches
