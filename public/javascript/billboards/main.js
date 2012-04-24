@@ -555,7 +555,7 @@ function init() {
 	});
 	
 
-window.setTimeout(function() { app.next(); }, 10000);
+window.setInterval(function() { app.next(); }, 15000);
 	
 
 
