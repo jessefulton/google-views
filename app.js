@@ -149,12 +149,12 @@ cronjobs.createTextures(app);
 
 
 // LOAD THE QUEUE FROM THE DB INTO MEMORY //
-app.WebSearchQueryQueue.find().sort("date", -1, "processed", 1).limit(20).execFind(function(err, results) {
+app.WebSearchQueryQueue.find().sort("date", -1, "processed", -1).limit(20).execFind(function(err, results) {
 //app.WebSearchQueryQueue.find({"processed": false}).sort("date", -1).execFind(function(err, results) {
 	if (!err) {
 		var sq = [];
 		results.forEach(function(el, idx, arr) {
-			sq.push(el.query);
+			sq.push({"term": el.query, "processed": el.processed});
 		});
 		console.log(sq);
 		app.set("visualizationSearchQueue", sq);
@@ -170,6 +170,8 @@ app.WebSearchQueryQueue.find().sort("date", -1, "processed", 1).limit(20).execFi
 //	app.emit('visualizationSearchQueue.processedOne', "romney");
 //});
 
+
+//TODO: UPDATE QUEUE... keep 2 separate queues
 app.on("visualizationSearchQueue.texturesGenerated", function(ws) {
 	console.log("GENERATED TEXTURES FOR : " + ws.query);
 });

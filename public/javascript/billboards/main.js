@@ -25,7 +25,7 @@ Viz.prototype.init = function(onComplete) {
 	self.initScene(function() {
 		console.log('initializing sockets');
 		self.initSockets(function() {
-			self.next();
+			//self.next();
 			onComplete();
 		});
 	});
@@ -38,6 +38,7 @@ Viz.prototype.initSockets = function (onComplete) {
 		onComplete();
 	});
 	this.socket.on('queue', function (newTerm, fullQueue) {
+		//trying to set full queue
 		if (!newTerm) {
 			if (self.queue.isEmpty()){
 				self.queue.set(fullQueue, self.scene);
@@ -191,6 +192,47 @@ TextureCache.prototype.clear = function() {
 		this.remove(this.textures[key]);
 	}
 }
+
+
+//~~~ TODO: create generic cache ~~~//
+//======================
+//==== MaterialCache ====
+//======================
+var MaterialCache = function() {
+	this.textures = {};
+}
+
+MaterialCache.prototype.add = function(url, texture) {
+	this.textures[url] = texture;
+}
+
+MaterialCache.prototype.has = function(url) {
+	return !!(this.textures[url]);
+}
+
+MaterialCache.prototype.get = function(url) {
+	return this.textures[url];
+}
+
+MaterialCache.prototype.remove = function(url) {
+	console.log("Trying to remove texture " + url);
+	console.log("Trying to remove texture " + url);
+	if (this.textures[url]) {
+		console.log('removing...');
+		var tex = this.textures[url];
+		this.textures[url] = null;
+		delete this.textures[url];
+		app.renderer.deallocateTexture( tex );
+		console.log('removed!');
+	}
+}
+
+MaterialCache.prototype.clear = function() {
+	for(var key in this.textures) {
+		this.remove(this.textures[key]);
+	}
+}
+
 
 //===================
 //==== Billboard ====
@@ -501,12 +543,15 @@ SearchQueue.prototype.set = function(words, scene) {
 }
 
 SearchQueue.prototype.next = function() {
-	var word = this.data.shift();
-	this.data.push(word);
+	var termInfo = this.data.shift();
+	this.data.push(termInfo);
+	var word = termInfo.term;
+	
+	console.log("Searchqueue.next() term: " + word);
 	
 	for (var i=0; i<this.data.length; i++) {
 		
-		var theObj = this.objs[this.data[i]];
+		var theObj = this.objs[this.data[i].term];
 
 		animatePosition(theObj, { y: (1 * i* this.lineHeight), z: -2, x: 5 }, 5000, function() {
 			console.log("ANIMATED POSITION");
@@ -539,18 +584,19 @@ function animatePosition(obj, to, duration, onComplete) {
 }
 
 
-SearchQueue.prototype.add = function(word, scene) {
+SearchQueue.prototype.add = function(termInfo, scene) {
+	var word = termInfo.term;
 	console.log("adding to queue: " + word);
 	//add to queue
 	//add to scene
-	
+
 	if(!this.objs[word]) {
-		this.data.push(word);
+		this.data.push(termInfo);
 		if (this.data.length > this.maxLength) {
 			console.log("TOO MANY!");
 		}
 	
-		var obj = this.createTextObj(word);
+		var obj = this.createTextObj(termInfo);
 		
 		obj.position.y = 1 * this.data.length * this.lineHeight;
 		obj.position.x = 0;
@@ -582,7 +628,10 @@ SearchQueue.prototype.add = function(word, scene) {
 	}
 }
 
-SearchQueue.prototype.createTextObj = function(word) {
+SearchQueue.prototype.createTextObj = function(termInfo) {
+	var word = termInfo.term;
+	var color = termInfo.processed ? 0xFF0078 : 0xC0C0C0;
+	
 		var text3d = new THREE.TextGeometry( word, {
 			size: this.fontSize,
 			height: .01,
@@ -593,7 +642,7 @@ SearchQueue.prototype.createTextObj = function(word) {
 		text3d.computeBoundingBox();
 		//var centerOffset = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
 
-		var textMaterial = new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, overdraw: true } );
+		var textMaterial = new THREE.MeshBasicMaterial( { "color": color, "overdraw": true } );
 		var text = new THREE.Mesh( text3d, textMaterial );
 
 		text.doubleSided = false;
@@ -609,7 +658,8 @@ SearchQueue.prototype.createTextObj = function(word) {
 		return text;
 }
 
-SearchQueue.prototype.remove = function(word, scene) {
+SearchQueue.prototype.remove = function(termInfo, scene) {
+	var word = termInfo.term;
 	//remove from queue
 	//remove from scene
 	var obj = this.objs[word];
@@ -617,7 +667,7 @@ SearchQueue.prototype.remove = function(word, scene) {
 		scene.remove(obj);
 		delete this.objs[word];
 		for (var i=0; i<this.data.length; i++) {
-			if (this.data[i] == word) {
+			if (this.data[i].term == word) {
 				this.data.splice(i,1);
 				return;
 			}

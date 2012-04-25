@@ -20,7 +20,7 @@ module.exports.init = function(app) {
 
 
 
-	app.on('visualizationSearchQueue.processedOne', function(query) {
+	app.on('visualizationSearchQueue.finishedSearch', function(query) {
 		app.WebSearch.findOne({"query": query}, function(err, ws) {
 			if (err) { console.log("ERROR finding websearch for " + query); return; }
 			console.log("found object for " + query);

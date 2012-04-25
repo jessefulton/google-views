@@ -38,7 +38,7 @@ module.exports.init = function(app) {
 
 		emitQueue(null, app.set('visualizationSearchQueue'));
 		
-		app.on('datastream', emitDataStream);
+		//app.on('datastream', emitDataStream);
 		app.on('visualizationSearchQueue.add', emitQueue);
 
 

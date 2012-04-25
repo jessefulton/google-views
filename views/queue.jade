@@ -7,5 +7,6 @@
 		h3 Queue
 		- if (typeof(error) != 'undefined' && error)
 			.alert.alert-error #{error}
-		- each term in queue
-			p #{term}
+		- each item in queue
+			- var classname = item.processed ? "processed" : "processing"
+			p(class=classname) #{item.term}
