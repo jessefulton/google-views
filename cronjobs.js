@@ -1,8 +1,10 @@
 var cronJob = require('cron').CronJob
 	, async = require('async')
-	, searcher = require('./lib/searcher.js')
+	, searcher = require('./lib/searcher')
+	, importer = require('./lib/import')
 	, users = require('./conf/users.js').users
 	, fs = require('fs');
+
 var imageProcessing = require('./lib/imageprocessing')
 	, utils = require('./lib/utils');
 
@@ -82,13 +84,14 @@ module.exports = {
 		
 		//var crawlFn = require('./cron-textures.js');
 		var job = new cronJob({
-		  cronTime: '0 */2 * * * *',
+		  cronTime: '0 * * * * *',
 		  onTick: function() {
   			var queue = app.set('textureGenerationQueue');
 		  	if (queue.length > 0) {
-		  		var url = queue.pop();
-			  	imageProcessing.generateAndSaveTexture(app, url, function() {
-			  		console.log("genereated texture " + url);
+		  		var url = queue.shift();
+			  	imageProcessing.generateAndSaveTexture(app, url, function(err) {
+			  		if (err) { console.log("Error generating texture "+ url); }
+			  		else { console.log("genereated texture " + url); }
 			  	});
 		  		//open image magick
 		  		//convert png to jpg
@@ -106,8 +109,23 @@ module.exports = {
 //	, "imageprocessUpload (make sure to update DB)
 
 	//inserts data into database
-	, "process": function(app) {
+	, "dbimport": function(app) {
+	
+		var dataDir = app.set('crawldatadir')
+			, renderDir = app.set('renderdir')
+			, model = app.CrawledPage;
+	
 		
+	
+		var job = new cronJob({
+		  cronTime: '0 10 * * * *',
+		  onTick: function() {
+		  		importer(dataDir, renderDir, model, function(obj, isLast) {
+		  			if (isLast) { console.log("finished dbimport"); }
+		  		});
+		  }
+		});
+		job.start();
 	}
 	
 	, "crawl": function(app) {

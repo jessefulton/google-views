@@ -61,7 +61,7 @@ module.exports.init = function(app) {
 		});
 
 		socket.on('queryTextures', function(term, callback) {
-			console.log("SOCKET.ON QUERYTEXTURES");
+			//console.log("SOCKET.ON QUERYTEXTURES");
 			
 			var q = app.set('visualizationSearchQueue');
 			for (var i=0; i<q.length; i++) { //q.forEach(el, idx, arr) {
@@ -106,7 +106,7 @@ module.exports.init = function(app) {
 									}
 									, function(innerErr) {
 										if (innerErr) { console.log("Error loading textures: " + innerErr); }
-										console.log("finished internal loop");
+										//console.log("finished internal loop");
 										cbOuter();
 									}
 								);
@@ -117,7 +117,7 @@ module.exports.init = function(app) {
 						
 						}
 						, function(outerErr) {
-							console.log("finished outer loop " + JSON.stringify(resp));
+							//console.log("finished outer loop " + JSON.stringify(resp));
 							
 							var arrayed = [];
 							for (var user in resp) {

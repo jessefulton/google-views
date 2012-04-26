@@ -59,7 +59,7 @@ Viz.prototype.initScene = function(onComplete) {
 	
 	this.scene = new THREE.Scene();
 	
-	this.camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 10000);
+	this.camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 1, 10000);
 	this.camera.position.z = -5;
 	this.camera.position.y = 0;
 	this.camera.position.x = 0;	
@@ -428,6 +428,7 @@ var SearchResults = function(cfg, onload) {
 	
 	//TODO: add anim to onload	
 	this._load(onload ? onload : function() {});
+	
 }
 
 SearchResults.prototype._load = function(onload) {
@@ -544,22 +545,43 @@ SearchQueue.prototype.set = function(words, scene) {
 }
 
 SearchQueue.prototype.next = function() {
-	var termInfo = this.data.shift();
-	this.data.push(termInfo);
-	var word = termInfo.term;
 	
-	console.log("Searchqueue.next() term: " + word);
+	/*
+	var oldObj = this.objs[this.data[this.data.length-1].term];
+	oldObj.scale.x = 1;
+	oldObj.scale.y = 1;
+	oldObj.scale.z = 1;
+
+	var nextObj = this.objs[this.data[0].term];
+	nextObj.scale.x = 2;
+	nextObj.scale.y = 2;
+	nextObj.scale.z = 2;
+
+	
+	console.log(oldObj);
+	*/
 	
 	for (var i=0; i<this.data.length; i++) {
 		
 		var theObj = this.objs[this.data[i].term];
 
-		animatePosition(theObj, { y: (1 * i* this.lineHeight), z: -2, x: 5 }, 5000, function() {
+
+		var toPosition = { y: (1 * (i-1)* this.lineHeight), z: -2, x: 3.2 };
+		if (i == 0) {
+			toPosition = { y: (1 * (i-1)* this.lineHeight), z: -3.9, x: 1.3 }
+		}
+
+		animatePosition(theObj, toPosition, 5000, function() {
 			//console.log("ANIMATED POSITION");
 		});
 		//theObj.position.y = 1 * i* this.lineHeight;
 	}
-		
+	var termInfo = this.data.shift();
+	this.data.push(termInfo);
+	var word = termInfo.term;
+	
+	console.log("Searchqueue.next() term: " + word);
+			
 	return word;
 }
 
@@ -649,7 +671,8 @@ SearchQueue.prototype.createTextObj = function(termInfo) {
 		text3d.computeBoundingBox();
 		//var centerOffset = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
 
-		var textMaterial = new THREE.MeshBasicMaterial( { "color": color, "overdraw": true } );
+		var textMaterial = //new THREE.MeshBasicMaterial( { "color": color, "overdraw": true } );
+			new THREE.MeshPhongMaterial( { ambient: color, color: color, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading, "overdraw": true });
 		var text = new THREE.Mesh( text3d, textMaterial );
 
 		text.doubleSided = false;
@@ -662,6 +685,9 @@ SearchQueue.prototype.createTextObj = function(termInfo) {
 		
 		
 		text.rotation.y = Math.PI;
+		
+		//text.lookAt(app.camera.position);
+		
 		return text;
 }
 

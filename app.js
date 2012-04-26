@@ -65,6 +65,8 @@ app.configure(function(){
 	//TODO: set flag for images ready
 	app.set('visualizationSearchQueue', []);
 	app.set('textureGenerationQueue', [])
+
+	app.set('visualizationSearchQueue.maxSize', 25);
 	
 	
 	app.set('config', config);
@@ -141,7 +143,7 @@ listeners.init(app);
 
 
 cronjobs.crawl(app);
-
+cronjobs.dbimport(app);
 cronjobs.createTextures(app);
 
 

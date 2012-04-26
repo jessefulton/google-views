@@ -77,7 +77,8 @@ module.exports.init = function(app) {
 	*/
 	app.get('/crawled/:pageId', function (req, res, next) {
 		app.CrawledPage.findById(req.params.pageId, function(err, result) {
-			if (!err) {
+			if (!err && result) {
+				console.log(result);
 				//TODO: if games empty, display message
 				res.render('crawled-view', {
 					layout: true
@@ -102,7 +103,8 @@ module.exports.init = function(app) {
 		//db.crawledpages.find({"user": "jesseinla2@gmail.com"}, {"title":1});
 		console.log("looking for user: " + req.params.userId);
 		app.CrawledPage.find({"user": req.params.userId}, {}).limit(10).sort("date", -1).execFind(function(err, results) {
-			if (!err) {
+			if (!err && results.length > 0) {
+				console.log(results);
 				res.render('crawled-list', {
 					layout: true
 					, locals: { 
@@ -112,8 +114,9 @@ module.exports.init = function(app) {
 				});
 			}
 			else {
-				console.log(err);
-				next();
+				res.send('couldn\'t find anthying', 404);
+				//console.log(err);
+				//next();
 	
 			}
 		});
