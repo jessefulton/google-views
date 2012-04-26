@@ -74,27 +74,37 @@ casper.renderJSON = function(what) {
  *
  *
  */
-function getLinksToFollow(theSelector, baseUrl) {
-	var mainDiv = document.querySelector(theSelector);
-	var foundLinks = mainDiv.querySelectorAll("a[href]:not([href^='javascript:']):not([href*=doubleclick]):not([href^='itpc://']):not([href^='zune://']):not([href^='#'])");
-	foundLinks = foundLinks ? foundLinks : [];
-	return Array.prototype.map.call(foundLinks, function(e) {
-		var s = e.getAttribute('href');
-		if (s) {
-			var n = s.indexOf('#');
-			s = s.substring(0, n != -1 ? n : s.length);
-			
-			//this will create fully qualified URLs
-			var a = document.createElement('a');
-	        a.href = s;
-    	    return a.href;
-			
-			//return s;
-		}
-		else {
-			return null;
-		}
-	});
+function getLinksToFollow(theSelector) {
+	//var mainDiv = document.querySelector(theSelector);
+	
+	var containers = document.querySelectorAll(theSelector);
+	var allLinks = [];
+	for (var i=0; i<containers.length; i++) {
+		var mainDiv = containers[i];
+		var foundLinks = mainDiv.querySelectorAll("a[href]:not([href^='javascript:']):not([href*=doubleclick]):not([href^='itpc://']):not([href^='zune://']):not([href^='#'])");
+		foundLinks = foundLinks ? foundLinks : [];
+		foundLinks = Array.prototype.map.call(foundLinks, function(e) {
+			var s = e.getAttribute('href');
+			if (s) {
+				var n = s.indexOf('#');
+				s = s.substring(0, n != -1 ? n : s.length);
+				
+				//this will create fully qualified URLs
+				var a = document.createElement('a');
+				a.href = s;
+				return a.href;
+				
+				//return s;
+			}
+			else {
+				return null;
+			}
+		});
+		allLinks = allLinks.concat(foundLinks);
+		
+	}
+	
+	return allLinks;
 }
 
 
@@ -123,7 +133,7 @@ var start = function(self, user) {
 			this.log("Logged in " + user.email + " successfully", "info");
 			this.thenOpen(seedUrl, function() {
 				var links = [];
-				var found = this.evaluate(getLinksToFollow, {"theSelector" : selector, "baseUrl" : this.getCurrentUrl()});
+				var found = this.evaluate(getLinksToFollow, {"theSelector" : selector});
 				this.echo(found.length + " links found on " + selector);
 				links = links.concat(found);
 				links = links.unique();
