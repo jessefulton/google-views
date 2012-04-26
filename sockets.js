@@ -44,10 +44,11 @@ module.exports.init = function(app) {
 
 		//TODO: UPDATE QUEUE... keep 2 separate queues
 		app.on("visualizationSearchQueue.texturesGenerated", function(ws) {
+			console.log("~~~~~ TEXTURES GENERATED [" + ws.term + "] ~~~~~~~");
 			var q = app.set('visualizationSearchQueue');
 			for (var i=0; i<q.length; i++) { //q.forEach(el, idx, arr) {
 				if (q[i].term == ws.query) {
-					q[i].processed = true;
+					q[i].processState = ws.processState;
 					app.set('visualizationSearchQueue', q);
 					emitQueue(ws.query, q);
 					break;
@@ -66,8 +67,8 @@ module.exports.init = function(app) {
 			var q = app.set('visualizationSearchQueue');
 			for (var i=0; i<q.length; i++) { //q.forEach(el, idx, arr) {
 				if (q[i].term == term) {
-					if (!(q[i].processed)) {
-						console.log("Still generating textures for query " + term);
+					if (!(q[i].processState) || !(q[i].processState == "complete")) {
+						console.log("Still generating textures for query " + term + " [" + q[i].processState + "]");
 						callback(null);
 					}
 					break;

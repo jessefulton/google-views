@@ -131,10 +131,11 @@ Viz.prototype.next = function() {
 		console.log("Viz.next: looking up " + term);
 		var self = this;
 		this.getTextures(term, function(data) {
-			if (!data) {
+			if (!data || data.length == 0) {
 				self.next();
 			}
 			else {
+				console.log("data for " + term);
 				console.log(data);
 				self.loadSearchResults(data);
 			}
@@ -424,7 +425,7 @@ var SearchResults = function(cfg, onload) {
 	this.bbWidth = 1.5;
 	//this.obj = new THREE.Object3D();
 	console.log('creating search results...');
-	
+	console.log(cfg);
 	
 	//TODO: add anim to onload	
 	this._load(onload ? onload : function() {});
@@ -563,7 +564,7 @@ SearchQueue.prototype.next = function() {
 	
 	for (var i=0; i<this.data.length; i++) {
 		
-		var theObj = this.objs[this.data[i].term];
+		var theObj = this.objs[this.data[i].query];
 
 
 		var toPosition = { y: (1 * (i-1)* this.lineHeight), z: -2, x: 3.2 };
@@ -578,7 +579,7 @@ SearchQueue.prototype.next = function() {
 	}
 	var termInfo = this.data.shift();
 	this.data.push(termInfo);
-	var word = termInfo.term;
+	var word = termInfo.query;
 	
 	console.log("Searchqueue.next() term: " + word);
 			
@@ -608,7 +609,7 @@ function animatePosition(obj, to, duration, onComplete) {
 
 
 SearchQueue.prototype.add = function(termInfo, scene) {
-	var word = termInfo.term;
+	var word = termInfo.query;
 	console.log("adding to queue: " + word);
 	//add to queue
 	//add to scene
@@ -649,7 +650,7 @@ SearchQueue.prototype.add = function(termInfo, scene) {
 	}
 	else {
 		for (var i=0; i<this.data.length; i++) {
-			if (this.data[i].term == termInfo.term) {
+			if (this.data[i].query == termInfo.query) {
 				this.data[i] = termInfo;
 				break;
 			}
@@ -658,8 +659,12 @@ SearchQueue.prototype.add = function(termInfo, scene) {
 }
 
 SearchQueue.prototype.createTextObj = function(termInfo) {
-	var word = termInfo.term;
-	var color = termInfo.processed ? 0xFF0078 : 0xC0C0C0;
+
+	//console.log(termInfo);
+
+	var word = termInfo.query;
+	var color = (termInfo.processState == "complete") ? 0xC0C0C0 : 0xFF0078;
+	var scolor = (termInfo.processState == "complete") ? 0xFF0078 : 0xC0C0C0;
 	
 		var text3d = new THREE.TextGeometry( word, {
 			size: this.fontSize,
@@ -672,7 +677,7 @@ SearchQueue.prototype.createTextObj = function(termInfo) {
 		//var centerOffset = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
 
 		var textMaterial = //new THREE.MeshBasicMaterial( { "color": color, "overdraw": true } );
-			new THREE.MeshPhongMaterial( { ambient: color, color: color, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading, "overdraw": true });
+			new THREE.MeshPhongMaterial( { ambient: scolor, color: color, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading, "overdraw": true });
 		var text = new THREE.Mesh( text3d, textMaterial );
 
 		text.doubleSided = false;
@@ -692,7 +697,7 @@ SearchQueue.prototype.createTextObj = function(termInfo) {
 }
 
 SearchQueue.prototype.remove = function(termInfo, scene) {
-	var word = termInfo.term;
+	var word = termInfo.query;
 	//remove from queue
 	//remove from scene
 	var obj = this.objs[word];
@@ -700,7 +705,7 @@ SearchQueue.prototype.remove = function(termInfo, scene) {
 		scene.remove(obj);
 		delete this.objs[word];
 		for (var i=0; i<this.data.length; i++) {
-			if (this.data[i].term == word) {
+			if (this.data[i].query == word) {
 				this.data.splice(i,1);
 				return;
 			}

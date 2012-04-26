@@ -8,5 +8,5 @@
 		- if (typeof(error) != 'undefined' && error)
 			.alert.alert-error #{error}
 		- each item in queue
-			- var classname = item.processed ? "processed" : "processing"
+			- var classname = item.processState
 			p(class=classname) #{item.term}

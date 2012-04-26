@@ -44,11 +44,13 @@ module.exports.init = function(app) {
 				var err = null;
 				var q = app.set('visualizationSearchQueue');
 				if (!saveErr) {
-					q.push({"term": term, "processed":false})
+					q.push({"term": savedObj.query, "processState": savedObj.processState })
 					app.set('visualizationSearchQueue', q)
-					app.emit('visualizationSearchQueue.add', {"term":term, "processed":false}, savedObj);
+					app.emit('visualizationSearchQueue.add', savedObj, q);
 				}
 				else {
+					//TODO: if not in queue, let's add it...
+				
 					console.log(saveErr);
 					err = "Term " + term + " is already queued";
 				}

@@ -31,7 +31,7 @@ function defineModels(mongoose, fn) {
 	var WebSearchQueryQueue = new Schema({
 		created: {type: Date, default: Date.now}
 		, query: String
-		, processed: {type: Boolean, default: false }
+		, processState: {type: String, default: "waiting" } // "waiting", "searching", "texturing", "error", "complete"
 	});
 	WebSearchQueryQueue.virtual('id')
 		.get(function() { return this._id.toHexString(); });

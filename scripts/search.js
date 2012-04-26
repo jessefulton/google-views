@@ -7,10 +7,6 @@ var casper = require('casper').create();
 
 var links = [];
 
-
-//TODO: REWRITE URLS TO BE ABSOLUTE!!!!
-//TODO: IGNORE ALL NEWS, BLOGS, ETC. LINKS!!!! (see everybody's google plugin)
-
 function getLinks() {
     //var foundLinks = document.querySelectorAll('h3.r a');
 	var foundLinks = document.querySelectorAll("#ires li:not([class*=tpo]):not([id=newsbox]):not([id=imagebox_bigimages]) .vsc > h3.r a");

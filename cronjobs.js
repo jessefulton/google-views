@@ -46,10 +46,13 @@ module.exports = {
 		var job = new cronJob({
 			"cronTime": cronTime ? cronTime : '0 * * * * *',
 			"onTick": function() {
-
-				app.WebSearchQueryQueue.findOne({"processed": false }, {}, {"sort": {"date": -1}}, function(err, result) {
+				app.WebSearchQueryQueue.findOne({"processState": "waiting" }, {}, {"sort": {"date": -1}}, function(err, result) {
 					if (!err && result) {
-						searcher.process(result, users);
+						console.log("processing search queue item from cron");
+						searcher.process(result, users, app);
+					}
+					else {
+						console.log('nothing in search queue');
 					}
 				});
 
@@ -62,6 +65,8 @@ module.exports = {
 	}
 	
 	
+	
+	//TODO: add callback (or something) in order to fix "error" state of associated wsq
 	, "createTextures": function(app) {
 
 		app.on("texture.missing", function(url) {

@@ -20,31 +20,46 @@ module.exports.init = function(app) {
 
 
 
-	app.on('visualizationSearchQueue.finishedSearch', function(query) {
-		app.WebSearch.findOne({"query": query}, function(err, ws) {
-			if (err) { console.log("ERROR finding websearch for " + query); return; }
-			console.log("found object for " + query);
-			console.log(ws);
-		
-			var urls = [];
-			//ClientSearch objects
-			ws.searches.forEach(function(cs, csIdx, csArr) {
-				cs.results.forEach(function(url, idx, arr) {
-					urls.push(url);
+	app.on('visualizationSearchQueue.finishedSearch', function(wsq) {
+
+		wsq.processState = "texturing";
+		wsq.save(function(err1, ws) {
+			
+			
+			app.WebSearch.findOne({"query": ws.query}, function(err, webSearch) {
+	
+	
+				var urls = [];
+				//ClientSearch objects
+				webSearch.searches.forEach(function(cs, csIdx, csArr) {
+					cs.results.forEach(function(url, idx, arr) {
+						urls.push(url);
+					});
 				});
-			});
+			
+				console.log("About to generate textures for " + JSON.stringify(urls));
 			
 			
-			async.forEachSeries(
-				urls
-				, function(url, cb) {
-					imageProcessing.generateAndSaveTexture(app, url, cb);
-				}
-				, function(err) {
-					app.emit("visualizationSearchQueue.texturesGenerated", {"term": ws.term, "processed": ws.processed});
-				}
-			); // end async
-		}); // end WebSearch findOne
+				async.forEachSeries(
+					urls
+					, function(url, cb) {
+						imageProcessing.generateAndSaveTexture(app, url, cb);
+					}
+					, function(err) {
+						if (!err) {
+							ws.processState = "complete";
+						}
+						else {
+							console.log(err);
+							ws.processState = "error";
+						}
+						ws.save(function(innerErr, savedObj) {
+							app.emit("visualizationSearchQueue.texturesGenerated", savedObj); //{"term": ws.term, "processState": ws.processState});
+						});
+					}
+				); // end async
+			}); //end websearch.findOne
+		}); //end webSearchQuery save
 	});
 
 	/*
@@ -83,13 +98,11 @@ module.exports.init = function(app) {
 	});
 
 	
-	app.on('visualizationSearchQueue.add', function(term, ws) {
+	app.on('visualizationSearchQueue.add', function(ws, queue) {
 		//var q = app.set('visualizationSearchQueue');
 		//q.push(term);
 		//app.set('visualizationSearchQueue', q);
-
 		searcher.process(ws, users, app);
-
 		
 	});
 	
