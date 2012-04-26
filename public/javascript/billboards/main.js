@@ -51,6 +51,10 @@ Viz.prototype.initSockets = function (onComplete) {
 			self.next();
 		}
 	});
+	
+	this.socket.on('progress', function(obj, numProcessed, total) {
+		console.log(obj.query + ": " + numProcessed + "/" + total);
+	});
 }
 
 Viz.prototype.initScene = function(onComplete) {

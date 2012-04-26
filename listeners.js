@@ -37,13 +37,23 @@ module.exports.init = function(app) {
 					});
 				});
 			
+				urls = utils.unique(urls);
+			
 				console.log("About to generate textures for " + JSON.stringify(urls));
 			
+			
+				var amt = urls.length;
+				var curnum = 0;
 			
 				async.forEachSeries(
 					urls
 					, function(url, cb) {
-						imageProcessing.generateAndSaveTexture(app, url, cb);
+						imageProcessing.generateAndSaveTexture(app, url, function() {
+							curnum++;
+							console.log(curnum + "/" + amt + ": " + (curnum/amt) + "%");
+							app.emit("visualizationSearchQueue.texturesProcessing", webSearch, curnum, amt);
+							cb();
+						});
 					}
 					, function(err) {
 						if (!err) {

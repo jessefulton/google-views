@@ -8,13 +8,32 @@ var casper = require('casper').create();
 var links = [];
 
 function getLinks() {
+	var l = [];
     //var foundLinks = document.querySelectorAll('h3.r a');
 	var foundLinks = document.querySelectorAll("#ires li:not([class*=tpo]):not([id=newsbox]):not([id=imagebox_bigimages]) .vsc > h3.r a");
+ 	//var foundLinks = document.querySelectorAll("#ires li:not([class*=tpo]):not([id=newsbox]):not([id=imagebox_bigimages]) .vsc h3.r a");
+	console.log("FOUND LINKS: " + foundLinks.length); 	
+	
+	for (var i=0; i<foundLinks.length; i++) {
+		l.push(foundLinks[i]);
+	}
+	
+	
+	
+ 	var diff = 10 - l.length
+ 	if (diff > 0) {
+ 		var newsLinks = document.querySelectorAll("#ires li#newsbox .vsc a");
+		for (var i=0; i< newsLinks.length; i++) {
+ 			if (i > (diff-1)) { break; }
+ 			l.push(newsLinks[i]);
+			console.log("ADDING ONE: " + l.length);
+ 		}
+ 	}
  	
  	var links = [];
 	var dummyA = document.createElement('a');
-	for(var i=0; i<foundLinks.length; i++) {
-		var el = foundLinks[i];
+	for(var i=0; i<l.length; i++) {
+		var el = l[i];
 		dummyA.href = el.href
 		el.href = dummyA.href;
 		links.push(el.href);

@@ -35,6 +35,10 @@ module.exports.init = function(app) {
 			io.sockets.emit('queue', element, newQueue);
 		};
 
+		var emitProgress = function(obj, numProcessed, total) {
+			io.sockets.emit('progress', obj, numProcessed, total);
+		}
+
 
 		emitQueue(null, app.set('visualizationSearchQueue'));
 		
@@ -59,6 +63,11 @@ module.exports.init = function(app) {
 			
 
 			//console.log("GENERATED TEXTURES FOR : " + ws.query);
+		});
+
+
+		app.on("visualizationSearchQueue.texturesProcessing", function(webSearch, curnum, amt) {
+			emitProgress(webSearch, curnum, amt);
 		});
 
 		socket.on('queryTextures', function(term, callback) {
