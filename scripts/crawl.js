@@ -157,11 +157,11 @@ var visitLinks = function(self, user, links) {
 	
 	for (var i=0; i<links.length; i++) {
 		self.thenOpen(links[i], function() {
-			this.log("Opened Page! \n");
+			//this.log("Opened Page! \n");
 		
 			var theUrl = this.getCurrentUrl();
 			var theTitle = this.getTitle();
-			this.log("\tFollowed link to " + theUrl + " (" + theTitle + ")", "INFO");	
+			//this.log("\tFollowed link to " + theUrl + " (" + theTitle + ")", "INFO");	
 
 			/*
 			var theHtml = this.evaluate(function() {
@@ -177,20 +177,13 @@ var visitLinks = function(self, user, links) {
 			var theText = this.evaluate(function() { return document.body.innerText; });
 			//this.log("Got the text! \n" + theText);
 			
-			var filenameRoot = guidGenerator();
-			var screenshotNamePng = filenameRoot + '.png';
-			this.capture(renderFolder + screenshotNamePng);
-			/*
-			this.capture(renderFolder + "textures/" + screenshotNamePng, {
-				top: 0,
-				left: 0,
-				width: 1024,
-				height: 1024
-			});
-			*/
-
 			
-			this.log("Writing JSON file...");
+			
+			//var filenameRoot = guidGenerator();
+			//var screenshotNamePng = filenameRoot + '.png';
+			//this.capture(renderFolder + screenshotNamePng);
+
+			//this.log("Writing JSON file...");
 
 			//fs - see http://code.google.com/p/phantomjs/wiki/Interface#Filesystem_Module
 			fs.write(jsonFolder + filenameRoot + ".json"
@@ -202,13 +195,13 @@ var visitLinks = function(self, user, links) {
 					, "date": Date.now()
 					//, "html" : theHtml
 					, "text" : theText
-					, "png" : screenshotNamePng
+					//, "png" : screenshotNamePng
 					//, "pdf" : screenshotNamePdf
 				})
 				, "w"
 			); 
 			
-			this.echo("CMD" + "\t" + this.getCurrentUrl() + "\t" + this.getTitle() + "\t" + screenshotNamePng);
+			this.echo("CMD" + "\t" + this.getCurrentUrl() + "\t" + this.getTitle()); // + "\t" + screenshotNamePng);
 		});		
 	}
 

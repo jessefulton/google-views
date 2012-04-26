@@ -8,6 +8,7 @@ html(lang="en")
 		title Everybody's Google
 		link(rel='stylesheet', href='/bootstrap-ui/css/bootstrap.css')
 		link(rel='stylesheet', href='/bootstrap-ui/css/bootstrap-responsive.css')
+		link(rel='stylesheet', href='/stylesheets/overrides.css')
 		style(type="text/css")
 			.meta {
 				background-color: #ffd;
@@ -49,11 +50,13 @@ html(lang="en")
 				.hero-unit { background-color: #090909; }
 			
 	body
-		#wrapper
-			#header.container
-				.hero-unit
-					h1: a(href="/") Everybody's Google
-					p.form-inline.form-search See what others see.
+		#wrapper.container
+			header.jumbotron.masthead
+				.inner
+					#header.container
+						.hero-unit
+							h1: a(href="/") Everybody's Google
+							p.form-inline.form-search See what others see.
 
 			#content.container!= body
 			#footer.container
