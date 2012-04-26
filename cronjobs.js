@@ -115,8 +115,13 @@ module.exports = {
 		var crawlFn = require('./lib/crawl.js');
 		var RENDER_DIR = app.set('renderdir');
 		var CRAWL_DATA_DIR = app.set('crawldatadir');
-		var userIdx = 0;
-		var seedIdx = 0;
+		
+		var now = new Date();
+		
+		var userIdx = Math.floor(Math.random() * users.length);
+		var seedIdx = Math.floor(Math.random() * users[userIdx].seeds.length);
+		
+		console.log("USER INDEX: " + userIdx + "; SEED INDEX: " + seedIdx);
 		
 		var onStdout = function(data) {
 			var str = data.toString(), regex = /\r?\n/g;

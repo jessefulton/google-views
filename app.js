@@ -171,11 +171,6 @@ app.WebSearchQueryQueue.find().sort("date", -1, "processed", -1).limit(20).execF
 //});
 
 
-//TODO: UPDATE QUEUE... keep 2 separate queues
-app.on("visualizationSearchQueue.texturesGenerated", function(ws) {
-	console.log("GENERATED TEXTURES FOR : " + ws.query);
-});
-
 
 /**
  * Start it.

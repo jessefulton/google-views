@@ -41,7 +41,7 @@ module.exports.init = function(app) {
 					imageProcessing.generateAndSaveTexture(app, url, cb);
 				}
 				, function(err) {
-					app.emit("visualizationSearchQueue.texturesGenerated", ws);
+					app.emit("visualizationSearchQueue.texturesGenerated", {"term": ws.term, "processed": ws.processed});
 				}
 			); // end async
 		}); // end WebSearch findOne

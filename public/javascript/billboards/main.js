@@ -47,7 +47,7 @@ Viz.prototype.initSockets = function (onComplete) {
 		else {
 			self.queue.add(newTerm, self.scene);
 		}
-		if (this.currentSearch == null) {
+		if (self.currentSearch == null) {
 			self.next();
 		}
 	});
@@ -126,10 +126,9 @@ Viz.prototype.getTextures = function(term, cb) {
 }
 
 Viz.prototype.next = function() {
-	console.log("inside viz.next()");
 	if (!this.queue.isEmpty()) {
 		var term = this.queue.next();
-		console.log("looking up " + term);
+		console.log("Viz.next: looking up " + term);
 		var self = this;
 		this.getTextures(term, function(data) {
 			if (!data) {
@@ -141,7 +140,6 @@ Viz.prototype.next = function() {
 			}
 		});
 	}
-	console.log(this.textureCache);
 }
 
 Viz.prototype.animate = function() {
@@ -175,15 +173,15 @@ TextureCache.prototype.get = function(url) {
 }
 
 TextureCache.prototype.remove = function(url) {
-	console.log("Trying to remove texture " + url);
-	console.log("Trying to remove texture " + url);
+	//console.log("Trying to remove texture " + url);
+	//console.log("Trying to remove texture " + url);
 	if (this.textures[url]) {
-		console.log('removing...');
+		//console.log('removing...');
 		var tex = this.textures[url];
 		this.textures[url] = null;
 		delete this.textures[url];
 		app.renderer.deallocateTexture( tex );
-		console.log('removed!');
+		//console.log('removed!');
 	}
 }
 
@@ -215,15 +213,15 @@ MaterialCache.prototype.get = function(url) {
 }
 
 MaterialCache.prototype.remove = function(url) {
-	console.log("Trying to remove texture " + url);
-	console.log("Trying to remove texture " + url);
+	//console.log("Trying to remove texture " + url);
+	//console.log("Trying to remove texture " + url);
 	if (this.textures[url]) {
-		console.log('removing...');
+		//console.log('removing...');
 		var tex = this.textures[url];
 		this.textures[url] = null;
 		delete this.textures[url];
 		app.renderer.deallocateTexture( tex );
-		console.log('removed!');
+		//console.log('removed!');
 	}
 }
 
@@ -317,7 +315,7 @@ Billboard.prototype._texture = function(onComplete) {
 			
 			var imgTex;
 			if (app.textureCache.has(this.textureUrls[j])) {
-				console.log('loading texture from cache...');
+				//console.log('loading texture from cache...');
 				imgTex = app.textureCache.get(this.textureUrls[j]);
 				texturesLoaded+= this.numBars;
 				if (texturesLoaded >= texturesToLoad) {
@@ -397,7 +395,10 @@ Billboard.prototype.deallocate = function() {
 				//console.log("deallocated " + mat.map);
 				app.renderer.deallocateTexture( mat.map )
 			}
-			else { console.log("No texture on material"); console.log(mat); }
+			else { 
+				//console.log("No texture on material");
+				//console.log(mat); 
+			}
 		}
 		app.renderer.deallocateObject(mesh);
 	}
@@ -439,7 +440,7 @@ SearchResults.prototype._load = function(onload) {
 		//console.log(this.rawData[i]);
 		var bb = new Billboard({"textures":this.rawData[i], "width": this.bbWidth, "height": this.bbHeight }, function() {
 			numLoaded++;
-			console.log("loaded billboard " + numLoaded + "/" + numToLoad);
+			//console.log("loaded billboard " + numLoaded + "/" + numToLoad);
 			if (numLoaded >= numToLoad) {
 				onload(_self);
 			}
@@ -554,7 +555,7 @@ SearchQueue.prototype.next = function() {
 		var theObj = this.objs[this.data[i].term];
 
 		animatePosition(theObj, { y: (1 * i* this.lineHeight), z: -2, x: 5 }, 5000, function() {
-			console.log("ANIMATED POSITION");
+			//console.log("ANIMATED POSITION");
 		});
 		//theObj.position.y = 1 * i* this.lineHeight;
 	}
@@ -623,8 +624,14 @@ SearchQueue.prototype.add = function(termInfo, scene) {
 		})
 		
 		anim.start();
-		
-		
+	}
+	else {
+		for (var i=0; i<this.data.length; i++) {
+			if (this.data[i].term == termInfo.term) {
+				this.data[i] = termInfo;
+				break;
+			}
+		}
 	}
 }
 
@@ -732,12 +739,3 @@ function init() {
 
 
 }
-
-/*
-function onDocumentMouseMove(event) {
-
-	mouseX = ( event.clientX - (window.innerWidth/2) );
-	mouseY = ( event.clientY - (window.innerHeight/2) );
-
-}
-*/

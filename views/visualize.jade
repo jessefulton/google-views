@@ -48,9 +48,6 @@ html(lang="en")
 				.hero-unit { background-color: #090909; }
 			
 	body
-
-		.meta(style="position:absolute;z-index:1000;")
-			a(href="#", id="fullscreen") Full Screen
 		script(src="/socket.io/socket.io.js")
 		script(src="/javascript/three/build/Three.js")
 		script(src="http://mrdoob.github.com/three.js/examples/fonts/helvetiker_regular.typeface.js")
@@ -60,11 +57,14 @@ html(lang="en")
 		script(src="/THREEx.WindowResize.js")
 		script(src="/javascript/billboards/main.js")
 		script
-			document.getElementById("fullscreen").onclick = function() {
-				if( THREEx.FullScreen.activated() ){
-					THREEx.FullScreen.cancel();
-				}else{
-					THREEx.FullScreen.request();
+
+			window.onkeydown = function(evt) {
+				if (evt.keyCode == 70) {
+					if( THREEx.FullScreen.activated() ){
+						THREEx.FullScreen.cancel();
+					}else{
+						THREEx.FullScreen.request();
+					}
+					return false;
 				}
-				return false;
-			};
+			}
