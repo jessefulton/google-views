@@ -151,7 +151,8 @@ cronjobs.createTextures(app);
 
 
 // LOAD THE QUEUE FROM THE DB INTO MEMORY //
-app.WebSearchQueryQueue.find({"processState": "complete"}).sort("date", -1, "processState", -1).limit(20).execFind(function(err, results) {
+//app.WebSearchQueryQueue.find({"processState": "complete"}).sort("date", -1, "processState", -1).limit(20).execFind(function(err, results) {
+app.WebSearchQueryQueue.find({}).sort("created", -1, "processState", -1).limit(20).execFind(function(err, results) {
 	if (!err) {
 		var sq = [];
 		results.forEach(function(el, idx, arr) {

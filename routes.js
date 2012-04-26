@@ -50,7 +50,16 @@ module.exports.init = function(app) {
 				}
 				else {
 					//TODO: if not in queue, let's add it...
-				
+					//not savedObj - findOne()
+					if (savedObj) {
+						savedObj.created = new Date();
+						savedObj.save();
+						for (var i=0; i<q.length; i++) {
+							if (i.query == savedObj.query) {
+								//push add to front;
+							}
+						}
+					}
 					console.log(saveErr);
 					err = "Term " + term + " is already queued";
 				}
@@ -70,6 +79,7 @@ module.exports.init = function(app) {
 	app.get('/queue', function (req, res) {
 		console.log('showing queue');
 		var q = app.set('visualizationSearchQueue');
+		console.log(q);
 		res.render('queue', { layout: true, queue: q });
 	});
 

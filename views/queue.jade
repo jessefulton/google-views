@@ -3,10 +3,11 @@
 		form.form-inline(method="get")
 			input(type="text", name="add")
 			input.btn.btn-inverse(type="submit") Add
-	.span4
+	.span4.queue
 		h3 Queue
 		- if (typeof(error) != 'undefined' && error)
 			.alert.alert-error #{error}
+		ul
 		- each item in queue
 			- var classname = item.processState
-			p(class=classname) #{item.term}
+			li(class=classname): span #{item.query}

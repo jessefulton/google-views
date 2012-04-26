@@ -38,7 +38,6 @@ html(lang="en")
 					font-size: 16px;
 					line-height: 24px;
 					margin: 0px;
-					overflow: hidden;
 					}
 				h1, h2, h3, h4, h5, h6 { color: #FF0078; }
 				.meta { color: #0590A9; }
@@ -48,6 +47,11 @@ html(lang="en")
 				a:active {}
 
 				.hero-unit { background-color: #090909; }
+				
+				.queue ul, .queue li { list-style-type: none; margin:0; padding: 0; color: #FF0078; }
+				.queue .error { text-decoration: line-through; }
+				.queue .error span { color: #c0c0c0; }
+				.queue .searching span { color: #c0c0c0; }
 			
 	body
 		#wrapper.container
