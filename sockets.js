@@ -44,13 +44,13 @@ module.exports.init = function(app) {
 
 		//TODO: UPDATE QUEUE... keep 2 separate queues
 		app.on("visualizationSearchQueue.texturesGenerated", function(ws) {
-			console.log("~~~~~ TEXTURES GENERATED [" + ws.term + "] ~~~~~~~");
+			console.log("~~~~~ TEXTURES GENERATED [" + ws.query + "] ~~~~~~~");
 			var q = app.set('visualizationSearchQueue');
 			for (var i=0; i<q.length; i++) { //q.forEach(el, idx, arr) {
 				if (q[i].term == ws.query) {
 					q[i].processState = ws.processState;
 					app.set('visualizationSearchQueue', q);
-					emitQueue(ws.query, q);
+					emitQueue(ws, q);
 					break;
 				}
 			} //do we add if not already in there...??? Prob not

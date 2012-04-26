@@ -166,6 +166,9 @@ app.WebSearchQueryQueue.find({"processState": "complete"}).sort("date", -1, "pro
 });
 
 
+//TODO: on load, add all error images into generation queue...
+
+
 
 
 /**
