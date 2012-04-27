@@ -573,7 +573,7 @@ SearchQueue.prototype.next = function() {
 
 		var toPosition = { y: (1 * (i-1)* this.lineHeight), z: -2, x: 3.2 };
 		if (i == 0) {
-			toPosition = { y: (1 * (i-1)* this.lineHeight), z: -3.9, x: 1.3 }
+			toPosition = { y: (1 * (i-1)* this.lineHeight), z: -3.9, x: 1.15 }
 		}
 
 		animatePosition(theObj, toPosition, 5000, function() {
@@ -662,6 +662,19 @@ SearchQueue.prototype.add = function(termInfo, scene) {
 	}
 }
 
+
+SearchQueue.prototype.colorize = function (word) {
+	if (typeof(word) == "object") {
+		word = termInfo.query;
+	}
+	
+	//get word from object collection
+	
+	//mesh.material.ambient | mesh.material.color
+	//THREE.Color (.r .g .b)
+	
+}
+
 SearchQueue.prototype.createTextObj = function(termInfo) {
 
 	//console.log(termInfo);
@@ -696,6 +709,8 @@ SearchQueue.prototype.createTextObj = function(termInfo) {
 		text.rotation.y = Math.PI;
 		
 		//text.lookAt(app.camera.position);
+		
+		console.log(text);
 		
 		return text;
 }
