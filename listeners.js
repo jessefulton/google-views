@@ -64,7 +64,7 @@ module.exports.init = function(app) {
 							ws.processState = "error";
 						}
 						ws.save(function(innerErr, savedObj) {
-							app.emit("visualizationSearchQueue.texturesGenerated", savedObj); //{"term": ws.term, "processState": ws.processState});
+							app.emit("visualizationSearchQueue.texturesGenerated", savedObj);
 						});
 					}
 				); // end async
@@ -110,7 +110,6 @@ module.exports.init = function(app) {
 	
 	app.on('visualizationSearchQueue.add', function(ws, queue) {
 		//var q = app.set('visualizationSearchQueue');
-		//q.push(term);
 		//app.set('visualizationSearchQueue', q);
 		searcher.process(ws, users, app);
 		

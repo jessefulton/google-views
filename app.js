@@ -156,7 +156,7 @@ app.WebSearchQueryQueue.find({}).sort("created", -1, "processState", -1).limit(2
 	if (!err) {
 		var sq = [];
 		results.forEach(function(el, idx, arr) {
-			sq.push(el); //{"term": el.query, "processState": el.processState});
+			sq.push(el);
 		});
 		console.log(sq);
 		app.set("visualizationSearchQueue", sq);

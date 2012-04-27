@@ -1,3 +1,8 @@
+//
+// 1. TODO: when one item in queue, textures are deleted after loaded (same query is "current" AND "next")
+//
+//
+
 
 //==================
 //==== Main App ====

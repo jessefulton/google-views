@@ -75,7 +75,7 @@ module.exports.init = function(app) {
 			
 			var q = app.set('visualizationSearchQueue');
 			for (var i=0; i<q.length; i++) { //q.forEach(el, idx, arr) {
-				if (q[i].term == term) {
+				if (q[i].query == term) {
 					if (!(q[i].processState) || !(q[i].processState == "complete")) {
 						console.log("Still generating textures for query " + term + " [" + q[i].processState + "]");
 						callback(null);
