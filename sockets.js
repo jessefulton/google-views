@@ -100,7 +100,7 @@ module.exports.init = function(app) {
 								resp[search.clientId] = [];
 								async.forEach(search.results
 									, function(url, cbInner) {
-										app.CrawledPage.findOne({"url": url}, function(err, cp) {
+										app.CrawledPage.findOne({"url": url, "tex": {"$exists":true}}, function(err, cp) {
 											if (!err && cp) {
 												//console.log("found tex for " + url);
 												resp[search.clientId].push(RENDER_DIR + cp.tex);
