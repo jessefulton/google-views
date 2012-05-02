@@ -122,7 +122,7 @@ Viz.prototype.loadSearchResults = function(data) {
 		if (oldSearch) {
 			oldSearch.removeFrom(_scene, function() {
 				sr.addTo(_scene, function() {
-					window.setTimeout(function() {self.next();}, 10000);
+					window.setTimeout(function() {self.next();}, 20000);
 				});
 				oldSearch = null;
 			});
@@ -829,6 +829,10 @@ function init() {
 		lastFrameTime = now;
 		totalTime += deltaTime;
 	}
+
+
+	window.setTimeout(function(){ window.location.reload(); }, 6*60*60*1000);
+
 
 
 }
