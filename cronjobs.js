@@ -44,7 +44,7 @@ module.exports = {
 	
 	, "search": function(app, cronTime) {
 		var job = new cronJob({
-			"cronTime": cronTime ? cronTime : '0 * * * * *',
+			"cronTime": cronTime ? cronTime : '0 */2 * * * *',
 			"onTick": function() {
 				app.WebSearchQueryQueue.findOne({"processState": "waiting" }, {}, {"sort": {"date": -1}}, function(err, result) {
 					if (!err && result) {

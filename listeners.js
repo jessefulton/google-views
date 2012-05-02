@@ -111,7 +111,7 @@ module.exports.init = function(app) {
 	app.on('visualizationSearchQueue.add', function(ws, queue) {
 		//var q = app.set('visualizationSearchQueue');
 		//app.set('visualizationSearchQueue', q);
-		searcher.process(ws, users, app);
+		//searcher.process(ws, users, app);
 		
 	});
 	
