@@ -1,7 +1,35 @@
-.row
-	.span6
-		h2.hidden-phone
-			a(href="/visualize") visualize
-	.span6
-		h2
-			a(href="/queue") queue
+.logo
+	img(src='/images/logo-large-centered.jpg', width='495x', height='204px', alt="Everybody's Google")
+
+.description
+	form(action="/queue", method="post")
+		input(type="hidden", name="mobile", id="mobile", value="false")
+		div: input#searchBox(type="text", name="q")
+		p
+			input.button(type="submit", value="See What Others See")
+			//a.button(href='/visualize') Visualize
+		
+
+	//
+		a(id="searchbox", href='/searches')
+	
+		p: a(href='/searches')
+			img(src='/images/button-home-page.png', alt="What did others see?")
+//
+	.row
+		.span6
+			h2.hidden-phone
+				a(href="/visualize") visualize
+		.span6
+			h2
+				a(href="/queue") queue
+script
+	if( navigator.userAgent.match(/Android/i)
+		|| navigator.userAgent.match(/webOS/i)
+		|| navigator.userAgent.match(/iPhone/i)
+		|| navigator.userAgent.match(/iPad/i)
+		|| navigator.userAgent.match(/iPod/i)
+		|| navigator.userAgent.match(/BlackBerry/i)
+		){
+			document.getElementById("mobile").value = "true";
+	}

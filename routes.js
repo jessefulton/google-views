@@ -32,17 +32,22 @@ module.exports.init = function(app) {
 	/** 
 	* Adds an item to the search queue. If item already exists, error printed to page.
 	*/
-	app.get('/queue', function (req, res, next) {
-		if (req.query.add) {
+	app.post('/queue', function (req, res) {
 			console.log('adding to queue');
-			var term = req.query.add;
+			var term = req.body.q;
 			term = term.toLowerCase().trim();
+
+			var q = app.set('visualizationSearchQueue');			
+
+			if (!term || term == '') {
+				res.render('queue', { layout: true, "term": term, queue: q, error: "can't search empty query" });
+				return;
+			}
 			
 
 			var wsqq = new app.WebSearchQueryQueue({"query": term});
 			wsqq.save(function(saveErr, savedObj) {
 				var err = null;
-				var q = app.set('visualizationSearchQueue');
 				if (!saveErr) {
 					q.push(savedObj); //{"term": savedObj.query, "processState": savedObj.processState })
 					app.set('visualizationSearchQueue', q)
@@ -63,13 +68,19 @@ module.exports.init = function(app) {
 					console.log(saveErr);
 					err = "Term " + term + " is already queued";
 				}
-				res.render('queue', { layout: true, "term": term, queue: q, error: err });
+				
+				
+				if (req.body.mobile == "true") {
+					res.render('queue', { layout: true, "term": term, queue: q, error: err });
+				}
+				else {
+					res.redirect('/visualize');
+				}
+				
 			});
 
-		}
-		else{
-			next();
-		}
+		
+
 	});
 
 

@@ -58,7 +58,8 @@ Viz.prototype.initSockets = function (onComplete) {
 	});
 	
 	this.socket.on('progress', function(obj, numProcessed, total) {
-		console.log(obj.query + ": " + numProcessed + "/" + total);
+		self.queue.markProgress(obj.query, (numProcessed / total));
+		//console.log(obj.query + ": " + numProcessed + "/" + total);
 	});
 }
 
@@ -67,34 +68,38 @@ Viz.prototype.initScene = function(onComplete) {
 	document.body.appendChild( this.container );
 	
 	this.scene = new THREE.Scene();
+	//this.scene.fog = new THREE.Fog( 0xffffff, 0.00025 );
+	//this.scene.fog = new THREE.FogExp2( 0xefd1b5, 0.0025 );
+	//this.scene.fog = new THREE.Fog( 0xffffff, 10, 1000 );
 	
 	this.camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 1, 10000);
 	this.camera.position.z = -5;
 	this.camera.position.y = 0;
 	this.camera.position.x = 0;	
+	this.camera.lookAt( this.scene.position );
 	this.scene.add( this.camera );
-		
 
 	
-	this.scene.add(new THREE.AmbientLight(0xFFFFFF));
+	this.scene.add(new THREE.AmbientLight(0x333333));
 
 	// create a point light
-	var pointLight = new THREE.PointLight( 0xFF0000);
-	pointLight.position.x = -30;
-	pointLight.position.y = -20;
-	pointLight.position.z = 0;
+	var pointLight = new THREE.PointLight( 0xCCCCCC);
+	pointLight.position.x = 0;
+	pointLight.position.y = -10;
+	pointLight.position.z = -10;
 	this.scene.add(pointLight);
-
-
+/*
 	var light = new THREE.SpotLight();
 	light.position.set( 17, 33, 16 );
 	this.scene.add(light);
+*/
+
 	
 	
 	
 	this.renderer = new THREE.WebGLRenderer( { antialias: true } );
 	this.renderer.setSize( window.innerWidth, window.innerHeight);
-	this.renderer.setClearColor( 0x666666, 1 );
+	this.renderer.setClearColor( 0x222222, 1 );
 	this.renderer.autoClear = false;
 
 	this.renderer.domElement.style.position = "relative";
@@ -104,6 +109,7 @@ Viz.prototype.initScene = function(onComplete) {
 
 	THREEx.WindowResize(this.renderer, this.camera, this.container);
 	console.log('finished scene');
+	console.log(this.scene.fog);
 	onComplete();
 }
 
@@ -283,7 +289,7 @@ Billboard.prototype._build = function() {
 		
 		var current	= { y: 0 };
 		var anim1 = anim2 = new TWEEN.Tween(current)
-			.to({y: Math.PI*2*10 }, 50000)
+			.to({y: Math.PI*2*10 }, 100000)
 			//.delay(userOpts.delay)
 			//.easing(TWEEN.Easing.Exponential.EaseOut)
 			.onUpdate(function() {
@@ -475,9 +481,9 @@ SearchResults.prototype.tick = function(deltaTime, totalTime) {
 
 SearchResults.prototype.addTo = function(scn, onComplete) {
 	var theGroup = this.obj;
-	theGroup.position.z = 1000;
+	theGroup.position.z = 500;
 	
-	var current	= { z: 1000 };
+	var current	= { z: 500 };
 	var anim = new TWEEN.Tween(current)
 		.to({z: 0 }, 5000)
 		//.delay(userOpts.delay)
@@ -504,7 +510,7 @@ SearchResults.prototype.removeFrom = function(scn, cb) {
 	
 	var current	= { z: 0 };
 	var anim = new TWEEN.Tween(current)
-		.to({z: 1000 }, 5000)
+		.to({z: 500 }, 5000)
 		//.delay(userOpts.delay)
 		.easing(TWEEN.Easing.Exponential.EaseIn)
 		.onUpdate(function() {
@@ -552,6 +558,16 @@ SearchQueue.prototype.set = function(words, scene) {
 			this.add(words[i], scene);
 		}
 	}
+}
+SearchQueue.prototype.markProgress = function(term, pct) {
+
+	//get color, adjust alpha
+	var theObj;
+	console.log("setting " + term + " text to opacity " + pct);
+	if ( !!(theObj=this.objs[term]) ) {
+		theObj.material.opacity = pct;
+	}
+
 }
 
 SearchQueue.prototype.next = function() {
@@ -680,26 +696,48 @@ SearchQueue.prototype.colorize = function (word) {
 	
 }
 
+var TEXT_MATERIALS = [
+	new THREE.MeshLambertMaterial( { color: 0xFF0000 })
+	, new THREE.MeshLambertMaterial( { color: 0xFFFF00 })
+	, new THREE.MeshLambertMaterial( { color: 0x00FF00 })
+	, new THREE.MeshLambertMaterial( { color: 0x0000FF })
+];
+
+var INACTIVE_MATERIAL = 	new THREE.MeshPhongMaterial( { ambient: 0xC0C0C0, color: 0x000000, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading, "overdraw": true });
+
 SearchQueue.prototype.createTextObj = function(termInfo) {
 
 	//console.log(termInfo);
 
 	var word = termInfo.query;
-	var color = (termInfo.processState == "complete") ? 0xC0C0C0 : 0xFF0078;
-	var scolor = (termInfo.processState == "complete") ? 0xFF0078 : 0xC0C0C0;
+	
+	var colors = [0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00];
+	var c = colors[Math.floor(Math.random()*colors.length)];
+
+	var color = (termInfo.processState == "complete") ? 0xC0C0C0 : c;
+	var scolor = (termInfo.processState == "complete") ? c : 0xC0C0C0;
 	
 		var text3d = new THREE.TextGeometry( word, {
 			size: this.fontSize,
 			height: .01,
 			curveSegments: 2,
-			font: "helvetiker"
+			font: "catulli",
+			
+			bevelThickness: .002,
+			bevelSize: .0015,
+			bevelEnabled: true
 		});
 		
 		text3d.computeBoundingBox();
 		//var centerOffset = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
 
-		var textMaterial = //new THREE.MeshBasicMaterial( { "color": color, "overdraw": true } );
-			new THREE.MeshPhongMaterial( { ambient: scolor, color: color, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading, "overdraw": true });
+		var textMaterial = (termInfo.processState == "complete") ? TEXT_MATERIALS[Math.floor(Math.random()*TEXT_MATERIALS.length)] : new THREE.MeshLambertMaterial( { color: (colors[Math.floor(Math.random()*colors.length)]) } ) ;
+
+	if (termInfo.processState != "complete") {
+		console.log("adjusting opacity for term " + word );
+		textMaterial.opacity = 0.1;
+	}
+
 		var text = new THREE.Mesh( text3d, textMaterial );
 
 		text.doubleSided = false;
@@ -785,8 +823,8 @@ function init() {
 		if (!lastFrameTime) { lastFrameTime = Date.now()/1000; }
 		var deltaTime = now - lastFrameTime; //change in seconds
 
-		app.tick(deltaTime, totalTime);
-		app.camera.lookAt( app.scene.position );
+		//app.tick(deltaTime, totalTime);
+		//app.camera.lookAt( app.scene.position );
 		app.renderer.render( app.scene, app.camera );
 		lastFrameTime = now;
 		totalTime += deltaTime;

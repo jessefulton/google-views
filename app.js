@@ -42,6 +42,7 @@ var app = express.createServer();
 
 
 app.configure(function(){
+	app.use(express.bodyParser());
 	//app.db = redis.createClient();
 	app.set('views', __dirname + '/views');
 	app.set('view engine', 'jade');
