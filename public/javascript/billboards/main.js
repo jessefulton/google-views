@@ -1,6 +1,7 @@
+var MAX_QUEUE_SIZE = 15;
+
 //
 // 1. TODO: when one item in queue, textures are deleted after loaded (same query is "current" AND "next")
-//
 //
 
 
@@ -122,14 +123,14 @@ Viz.prototype.loadSearchResults = function(data) {
 		if (oldSearch) {
 			oldSearch.removeFrom(_scene, function() {
 				sr.addTo(_scene, function() {
-					window.setTimeout(function() {self.next();}, 20000);
+					window.setTimeout(function() {self.next();}, 30000);
 				});
 				oldSearch = null;
 			});
 		}
 		else {
 			sr.addTo(_scene, function() {
-				window.setTimeout(function() {self.next();}, 10000);
+				window.setTimeout(function() {self.next();}, 20000);
 			});
 		}
 	});
@@ -150,8 +151,8 @@ Viz.prototype.next = function() {
 				self.next();
 			}
 			else {
-				console.log("data for " + term);
-				console.log(data);
+				//console.log("data for " + term);
+				//console.log(data);
 				self.loadSearchResults(data);
 			}
 		});
@@ -289,7 +290,7 @@ Billboard.prototype._build = function() {
 		
 		var current	= { y: 0 };
 		var anim1 = anim2 = new TWEEN.Tween(current)
-			.to({y: Math.PI*2*10 }, 100000)
+			.to({y: Math.PI*2*10 }, 150000)
 			//.delay(userOpts.delay)
 			//.easing(TWEEN.Easing.Exponential.EaseOut)
 			.onUpdate(function() {
@@ -570,6 +571,8 @@ SearchQueue.prototype.markProgress = function(term, pct) {
 
 }
 
+var QUEUE_OFFSET_Y = -0.25;
+
 SearchQueue.prototype.next = function() {
 	
 	/*
@@ -592,9 +595,9 @@ SearchQueue.prototype.next = function() {
 		var theObj = this.objs[this.data[i].query];
 
 
-		var toPosition = { y: (1 * (i-1)* this.lineHeight), z: -2, x: 3.2 };
+		var toPosition = { y: (1 * (i-1)* this.lineHeight)+QUEUE_OFFSET_Y, z: -2, x: 3.2 };
 		if (i == 0) {
-			toPosition = { y: (1 * (i-1)* this.lineHeight), z: -3.9, x: 1.15 }
+			toPosition = { y: (1 * (i-1)* this.lineHeight)+(QUEUE_OFFSET_Y/4), z: -3.9, x: 1.15 }
 		}
 
 		animatePosition(theObj, toPosition, 5000, function() {
@@ -647,7 +650,7 @@ SearchQueue.prototype.add = function(termInfo, scene) {
 	
 		var obj = this.createTextObj(termInfo);
 		
-		obj.position.y = 1 * this.data.length * this.lineHeight;
+		obj.position.y = (1 * this.data.length * this.lineHeight)+QUEUE_OFFSET_Y;
 		obj.position.x = 0;
 		obj.position.z = -20;
 		this.objs[word] = obj;
@@ -681,6 +684,15 @@ SearchQueue.prototype.add = function(termInfo, scene) {
 			}
 		}
 	}
+	
+	
+	if (this.data.length > MAX_QUEUE_SIZE) {
+		//remove the third item in the queue, not the last
+		var removing = 	this.data.splice(2,1);
+		//var removing = this.data.shift();
+		this.remove(removing[0], app.scene);
+	}
+	
 }
 
 

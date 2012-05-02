@@ -103,14 +103,15 @@ module.exports.init = function(app) {
 										app.CrawledPage.findOne({"url": url, "tex": {"$exists":true}}, function(err, cp) {
 											if (!err && cp && cp.tex) {
 											
-												//console.log("found tex for " + url);
+												console.log("found tex for " + url);
+												console.log("\t" + cp.tex);
 												//console.log(cp);
 												resp[search.clientId].push(RENDER_DIR + cp.tex);
 											}
 											else {
 												resp[search.clientId].push("/loading.jpg");
 												app.emit("texture.missing", url);
-												//console.log("couldn't find tex for " + url);
+												console.log("couldn't find tex for " + url);
 											}
 
 											cbInner();

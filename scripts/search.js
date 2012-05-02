@@ -75,7 +75,10 @@ casper.thenOpen("https://accounts.google.com/Login?continue=http://www.google.co
 casper.thenOpen('https://www.google.com/search?q=' + query, function() {
 	//this.echo("user " + email + " searched for " + query);
     links = links.concat(this.evaluate(getLinks));
-    this.capture("test.png");
+    if (links.length < 10) {
+    	var ts = Date.now() + "";
+	    this.capture(ts + ".png");
+	}
 });
 
 

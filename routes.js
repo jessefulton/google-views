@@ -52,7 +52,7 @@ module.exports.init = function(app) {
 				var err = null;
 				if (!saveErr) {
 					q.push(savedObj); //{"term": savedObj.query, "processState": savedObj.processState })
-					if (q.length > 20) {
+					if (q.length > app.set('visualizationSearchQueue.maxSize')) {
 						q.shift();
 					}
 					app.set('visualizationSearchQueue', q)
@@ -61,17 +61,27 @@ module.exports.init = function(app) {
 				else {
 					//TODO: if not in queue, let's add it...
 					//not savedObj - findOne()
+					var worked = false;
 					if (savedObj) {
 						savedObj.created = new Date();
 						savedObj.save();
 						for (var i=0; i<q.length; i++) {
 							if (i.query == savedObj.query) {
-								//push add to front;
+								q.push(savedObj);
+								if (q.length > 20) {
+									q.shift();
+								}
+								app.set('visualizationSearchQueue', q)
+								//app.emit('visualizationSearchQueue.add', savedObj, q);
+								worked = true;
+								break;
 							}
 						}
 					}
-					console.log(saveErr);
-					err = "'" + term + "' is already queued";
+					if (!worked) {
+						console.log(saveErr);
+						err = "'" + term + "' is already queued";
+					}
 				}
 				
 				
