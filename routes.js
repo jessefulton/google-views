@@ -42,7 +42,7 @@ module.exports.init = function(app) {
 			var q = app.set('visualizationSearchQueue');			
 
 			if (!term || term == '') {
-				res.render('queue', { layout: true, "term": term, queue: q, error: "can't search empty query" });
+				res.render('index', { layout: true, "term": term, queue: q, error: "can't search empty query" });
 				return;
 			}
 			
