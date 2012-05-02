@@ -9,7 +9,9 @@ module.exports.init = function(app) {
 	 * App routes.
 	 */
 	app.get('/', function (req, res) {
-		res.render('index', { layout: true });
+		var q = app.set('visualizationSearchQueue');			
+
+		res.render('index', { layout: true, queue: q });
 	});
 	app.get('/about', function (req, res) {
 		res.render('about', { layout: true });
@@ -32,7 +34,7 @@ module.exports.init = function(app) {
 	/** 
 	* Adds an item to the search queue. If item already exists, error printed to page.
 	*/
-	app.post('/queue', function (req, res) {
+	app.post('/', function (req, res) {
 			console.log('adding to queue');
 			var term = req.body.q;
 			term = term.toLowerCase().trim();
@@ -66,12 +68,12 @@ module.exports.init = function(app) {
 						}
 					}
 					console.log(saveErr);
-					err = "Term " + term + " is already queued";
+					err = "'" + term + "' is already queued";
 				}
 				
 				
-				if (req.body.mobile == "true") {
-					res.render('queue', { layout: true, "term": term, queue: q, error: err });
+				if (err || req.body.mobile == "true") {
+					res.render('index', { layout: true, "term": term, queue: q, error: err });
 				}
 				else {
 					res.redirect('/visualize');

@@ -95,9 +95,56 @@ html(lang="en")
 				padding:0 8px;
 			}
 			a.button { text-decoration: none; }
+			.alert-error {
+				padding: 8px 35px 8px 14px;
+				margin-bottom: 18px;
+				text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+				background-color: #FCF8E3;
+				border: 1px solid #FBEED5;
+				-webkit-border-radius: 4px;
+				-moz-border-radius: 4px;
+				border-radius: 4px;
+				color: #C09853;
+				background-color: #f2dede;
+				border-color: #eed3d7;
+				color: #b94a48;
+				width:480px;
+				text-align:center;
+				margin: 4px auto;
+			}
 			
-			
-			
+			.queue {
+				color: #666;
+				height: 200px;
+				width: 800px;
+				position: absolute;
+				bottom:0;
+				left: 50%;
+				margin-left: -400px;
+				overflow:hidden;
+			}
+			.queue h3 {
+				color: acacac;
+				border-top: 2px solid #CCC;
+				padding-top:16px;
+				margin-top: 32px;
+			}
+			.queue ul, .queue li {
+				display: inline-block;
+				list-style-type: none;
+			}
+			.queue li {
+				padding: 8px;
+				border: 1px solid #FBEED5;
+				-webkit-border-radius: 4px;
+				-moz-border-radius: 4px;
+				border-radius: 4px;
+				background-color: #FCF8E3;
+				border: 1px solid #FBEED5;
+				color: #C09853;
+				margin: 4px;
+			}
+
 			@media (max-width: 480px) {
 				body #content { width: 100%; max-width: 480px; }
 				.logo img { width: 250px; height: 103px; }

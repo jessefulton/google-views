@@ -22,6 +22,7 @@ Set up
 ### Set up Proxies (optional)
 
 First set up squid proxy on AWS EC2 instance.
+
 	yum -y install squid
 	sudo /etc/init.d/squid start
 

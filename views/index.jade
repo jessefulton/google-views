@@ -2,27 +2,25 @@
 	img(src='/images/logo-large-centered.jpg', width='495x', height='204px', alt="Everybody's Google")
 
 .description
-	form(action="/queue", method="post")
+	form(action="/", method="post")
 		input(type="hidden", name="mobile", id="mobile", value="false")
 		div: input#searchBox(type="text", name="q")
+		- if (typeof(error) != 'undefined' && error)
+			.alert.alert-error #{error}
 		p
 			input.button(type="submit", value="See What Others See")
 			//a.button(href='/visualize') Visualize
 		
 
-	//
-		a(id="searchbox", href='/searches')
-	
-		p: a(href='/searches')
-			img(src='/images/button-home-page.png', alt="What did others see?")
-//
-	.row
-		.span6
-			h2.hidden-phone
-				a(href="/visualize") visualize
-		.span6
-			h2
-				a(href="/queue") queue
+				
+				
+.queue
+	h3 Currently being searched for:
+	ul
+	- each item in queue
+		- var classname = item.processState
+		li(class=classname): span #{item.query}
+				
 script
 	if( navigator.userAgent.match(/Android/i)
 		|| navigator.userAgent.match(/webOS/i)
