@@ -1,22 +1,22 @@
 module.exports = {
 	users: [
 		{
-			email: "foo@bar.com"
-			, password: "baz"
-			, seed: {
-				"url": "http://www.mysite.com/some_page
-				, "selector": "#main_content"				
-			}
-			, tor : ["--proxy=127.0.0.1:54597", "--proxy-type=socks5"]
+			email: "user1@gmail.com"
+			, password: "user1pass"
+			, seeds: [
+				{ "url": "http://blah.com/", "selector": "#container" }
+				, { "url": "http://www.blah2.com", "selector": "#container2" }
+			]
+			, proxy: {url: "localhost:3128", type: "HTTP"}
+			, "description": "optional"
 		}
-		, {
-			email: "asdf@1234.com"
-			, password: "password"
-			, seed: {
-				"url": "http://www.myothersite.com/another_page"
-				, "selector": "#content"
-			}
-			, tor : []
+		, {		{
+			email: "user2@yahoo.com"
+			, password: "user2pass"
+			, seeds: [
+				{ "url": "http://bleh.com/", "selector": "#container" }
+				, { "url": "http://www.bleh2.com", "selector": "#container2" }
+			]
 		}
 	]
 };
