@@ -19,9 +19,11 @@ Set up
 2. Update `conf/users.js` with appropriate information: username; password; proxy configuration; "seed" URLs & CSS selectors for main content DOM elements.
 
 
-### Set up Proxies (optional)
+#### Set up Proxies (optional)
 
-First set up squid proxy on AWS EC2 instance.
+If you don't want all of your Google behavior to come from the same IP (a *lot* of information is inferred simply from IP), then set up web proxies in appropriate geographic regions. I've been using Amazon EC2 (US West, US East, EU West.) Note that if using a non-US IP address, Google will often try to force/redirect you to other domains or services.
+
+First set up squid proxy on each AWS EC2 instance.
 
 	yum -y install squid
 	sudo /etc/init.d/squid start
