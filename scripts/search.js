@@ -61,8 +61,7 @@ var query = casper.cli.get("query");
 
 
 casper.start("https://accounts.google.com/Logout");
-
-casper.thenOpen("https://accounts.google.com/Login", function() {
+casper.thenOpen("https://accounts.google.com/Login?continue=http://www.google.com/ncr", function() {
 	//this.echo("opened login page");
     this.fill('form#gaia_loginform', {
     	'Email': email

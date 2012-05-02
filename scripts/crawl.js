@@ -108,6 +108,17 @@ function getLinksToFollow(theSelector) {
 }
 
 
+function getInnerText(theSelector) {
+	var containers = document.querySelectorAll(theSelector);
+	var allText = "";
+	for (var i=0; i<containers.length; i++) {
+		var c = containers[i];
+		allText += c.innerText;
+	}
+	return allText;
+}
+
+
 
 
 var start = function(self, user) {
@@ -154,6 +165,7 @@ var visitLinks = function(self, user, links) {
 
 	var theUserEmail = user.email;
 	var seedUrl = user.seed.url;
+	var selector = user.seed.selector;
 	
 	for (var i=0; i<links.length; i++) {
 		self.thenOpen(links[i], function() {
@@ -174,12 +186,14 @@ var visitLinks = function(self, user, links) {
 			});
 			this.log("Got the HTML! \n" + theHtml);
 			*/
-			var theText = this.evaluate(function() { return document.body.innerText; });
+
+			//var theText = this.evaluate(function() { return document.body.innerText; });
+			var theText = this.evaluate(getInnerText, {"theSelector" : selector});
 			//this.log("Got the text! \n" + theText);
 			
+
 			
-			
-			//var filenameRoot = guidGenerator();
+			var filenameRoot = guidGenerator();
 			//var screenshotNamePng = filenameRoot + '.png';
 			//this.capture(renderFolder + screenshotNamePng);
 

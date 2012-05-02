@@ -103,8 +103,8 @@ module.exports.init = function(app) {
 										app.CrawledPage.findOne({"url": url, "tex": {"$exists":true}}, function(err, cp) {
 											if (!err && cp && cp.tex) {
 											
-												console.log("found tex for " + url);
-												console.log(cp);
+												//console.log("found tex for " + url);
+												//console.log(cp);
 												resp[search.clientId].push(RENDER_DIR + cp.tex);
 											}
 											else {
