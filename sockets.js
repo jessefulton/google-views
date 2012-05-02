@@ -108,7 +108,7 @@ module.exports.init = function(app) {
 												resp[search.clientId].push(RENDER_DIR + cp.tex);
 											}
 											else {
-												resp[search.clientId].push(null);
+												resp[search.clientId].push("/loading.jpg");
 												app.emit("texture.missing", url);
 												//console.log("couldn't find tex for " + url);
 											}
@@ -137,6 +137,14 @@ module.exports.init = function(app) {
 								for (var i=0; i<userResults.length; i++) {
 									if (!arrayed[i]) { arrayed[i] = []; }								
 									arrayed[i].push(userResults[i]);
+								}
+							}
+							
+							for (var i=0; i<arrayed.length; i++) {
+								if (arrayed[i].length < 4) {
+									while (arrayed[i].length < 4) {
+										arrayed[i].push("/loading.jpg");
+									}
 								}
 							}
 							
