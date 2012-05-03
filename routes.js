@@ -55,6 +55,9 @@ module.exports.init = function(app) {
 	*/
 	app.post('/', function (req, res) {
 			console.log('adding to queue');
+			
+			
+			//TODO: sanitize - limit length and num words
 			var term = req.body.q;
 			var err = null;
 			term = term.toLowerCase().trim();
@@ -66,6 +69,24 @@ module.exports.init = function(app) {
 				return;
 			}
 			
+			
+			var getSubmissions = function() {
+				var rateLimitTable = app.set('rateLimitTable');
+				var userIp = getNewXForwardedForHeader(req);
+				try {	
+					var submissions = rateLimitTable[userIp].submissions;
+					if (submissions) { return submissions; }
+					else { return 0; }
+				}
+				catch(e) { return 0; }
+			}
+			
+			
+			if (getSubmissions() > 1) {
+					err = "Too many queries submitted";
+					res.render('index', { layout: true, "term": term, queue: q, error: err });
+					return false
+			}
 			
 			var addTerm = function(savedObj) {
 			
