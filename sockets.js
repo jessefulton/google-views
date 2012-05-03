@@ -72,17 +72,14 @@ module.exports.init = function(app) {
 
 		socket.on('queryTextures', function(term, callback) {
 			//console.log("SOCKET.ON QUERYTEXTURES");
-			
-			var q = app.set('visualizationSearchQueue');
-			for (var i=0; i<q.length; i++) { //q.forEach(el, idx, arr) {
-				if (q[i].query == term) {
+			/*
+			app.WebSearchQueryQueue.findOne({"query": term}, function(err, q) {
 					if (!(q[i].processState) || !(q[i].processState == "complete")) {
 						console.log("Still generating textures for query " + term + " [" + q[i].processState + "]");
 						callback(null);
 					}
-					break;
-				}
-			} //do we add if not already in there...??? Prob not
+			});
+			*/
 			//	q.push({"term": term, "processed":false})
 			
 			

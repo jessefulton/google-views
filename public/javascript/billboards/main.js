@@ -117,9 +117,15 @@ Viz.prototype.initScene = function(onComplete) {
 Viz.prototype.loadSearchResults = function(data) {
 	var self = this;
 	var _scene = this.scene;
-	var oldSearch = this.currentSearch;
-	this.currentSearch = new SearchResults(data, function(sr) {
 	
+
+	var oldSearch = this.currentSearch;
+	console.log("old search");
+	console.log(oldSearch);
+	
+	this.currentSearch = new SearchResults(data, function(sr) {
+		console.log("Creating search results");
+		console.log(sr);
 		if (oldSearch) {
 			oldSearch.removeFrom(_scene, function() {
 				sr.addTo(_scene, function() {
@@ -288,6 +294,9 @@ Billboard.prototype._build = function() {
 		this.obj.add(bar);
 		
 		
+		//console.log("setting up animation for bar");
+		//console.log(bar);
+		
 		var current	= { y: 0 };
 		var anim1 = anim2 = new TWEEN.Tween(current)
 			.to({y: Math.PI*2*5 }, 150000)
@@ -299,8 +308,8 @@ Billboard.prototype._build = function() {
 	
 		
 		
-		anim1.chain(anim2);
-		anim2.chain();
+		//anim1.chain(anim2);
+		//anim2.chain();
 		anim1.start();
 		
 		
@@ -440,8 +449,8 @@ var SearchResults = function(cfg, onload) {
 	this.bbHeight = 1.5;
 	this.bbWidth = 1.5;
 	//this.obj = new THREE.Object3D();
-	console.log('creating search results...');
-	console.log(cfg);
+	//console.log('creating search results...');
+	//console.log(cfg);
 	
 	//TODO: add anim to onload	
 	this._load(onload ? onload : function() {});
@@ -484,6 +493,9 @@ SearchResults.prototype.addTo = function(scn, onComplete) {
 	var theGroup = this.obj;
 	theGroup.position.z = 500;
 	
+	//console.log("Animating search results");
+	//console.log(theGroup);
+	
 	var current	= { z: 500 };
 	var anim = new TWEEN.Tween(current)
 		.to({z: 0 }, 5000)
@@ -508,6 +520,9 @@ SearchResults.prototype.removeFrom = function(scn, cb) {
 	var theGroup = this.obj;
 	var self = this;
 	theGroup.position.z = 0;
+	
+	//console.log("Animating removal of search results");
+	//console.log(theGroup);
 	
 	var current	= { z: 0 };
 	var anim = new TWEEN.Tween(current)
@@ -546,7 +561,7 @@ SearchQueue = function(app) {
 }
 
 SearchQueue.prototype.isEmpty = function() { 
-	console.log(this.data);
+	//console.log(this.data);
 	return this.data.length == 0; 
 }
 
@@ -618,6 +633,9 @@ function animatePosition(obj, to, duration, onComplete) {
 	
 	var current = {x: obj.position.x, y: obj.position.y, z: obj.position.z};
 	
+	//console.log("animatePosition");
+	//console.log(obj);
+	
 	var anim = new TWEEN.Tween(current)
 		.to(to, duration)
 		//.delay(userOpts.delay)
@@ -657,7 +675,7 @@ SearchQueue.prototype.add = function(termInfo, scene) {
 		
 		scene.add(obj);
 		
-		
+
 		var current	= { x:-10, z: -10 };
 		var anim = new TWEEN.Tween(current)
 			.to({z: -2, x: 5 }, 5000)
@@ -765,7 +783,7 @@ SearchQueue.prototype.createTextObj = function(termInfo) {
 		
 		//text.lookAt(app.camera.position);
 		
-		console.log(text);
+		//console.log(text);
 		
 		return text;
 }
