@@ -1,3 +1,14 @@
+//via https://github.com/joshdevins/node-rate-limiter-proxy/blob/master/utils.js
+var getNewXForwardedForHeader = function(request) {
+	var value = request.headers['x-forwarded-for'];
+	if (value != null) {
+		return value + ", " + request.socket.remoteAddress;
+	} else {
+		return request.socket.remoteAddress;
+	}
+}
+
+
 module.exports.init = function(app) {
 
 	var config = app.set('config')
@@ -10,8 +21,9 @@ module.exports.init = function(app) {
 	 */
 	app.get('/', function (req, res) {
 		var q = app.set('visualizationSearchQueue');			
-
+		//console.log("# Submitted: " + req.session.submitted);
 		res.render('index', { layout: true, queue: q });
+		
 	});
 	app.get('/about', function (req, res) {
 		res.render('about', { layout: true });
@@ -37,6 +49,7 @@ module.exports.init = function(app) {
 	app.post('/', function (req, res) {
 			console.log('adding to queue');
 			var term = req.body.q;
+			var err = null;
 			term = term.toLowerCase().trim();
 
 			var q = app.set('visualizationSearchQueue');			
@@ -46,20 +59,59 @@ module.exports.init = function(app) {
 				return;
 			}
 			
-
-			var wsqq = new app.WebSearchQueryQueue({"query": term});
-			wsqq.save(function(saveErr, savedObj) {
-				var err = null;
-				if (!saveErr) {
+			
+			var addTerm = function(savedObj) {
+			
+				var rateLimitTable = app.set('rateLimitTable');
+				var userIp = getNewXForwardedForHeader(req);
+				if (!rateLimitTable[userIp]) {
+					rateLimitTable[userIp] = {};
+				}
+	
+				var submissions = rateLimitTable[userIp].submissions;
+				if (!submissions) { submissions = 0; }
+			
+				//if (req.session.submitted && req.session.submitted > 1) {
+				if (submissions > 1) {
+					err = "Too many queries submitted";
+					return false
+				}
+				else {
 					q.push(savedObj); //{"term": savedObj.query, "processState": savedObj.processState })
 					if (q.length > app.set('visualizationSearchQueue.maxSize')) {
 						q.shift();
 					}
 					app.set('visualizationSearchQueue', q)
-					app.emit('visualizationSearchQueue.add', savedObj, q);
+					
+					
+
+					submissions++;
+					rateLimitTable[userIp].submissions = submissions;
+					app.set('rateLimitTable', rateLimitTable);
+					console.log(rateLimitTable);
+					return true;					
+					
+					//req.session.submitted = req.session.submitted ? (req.session.submitted + 1) : 1;
+					//return true;
+				}
+				
+			}
+			
+
+			var wsqq = new app.WebSearchQueryQueue({"query": term});
+			wsqq.save(function(saveErr, savedObj) {
+
+				if (!saveErr) {
+					if (addTerm(savedObj)) {
+						app.emit('visualizationSearchQueue.add', savedObj, q);
+					}
 				}
 				else {
 					//TODO: if not in queue, let's add it...
+					
+					//TODO: This should findOne from DB
+					
+					
 					//not savedObj - findOne()
 					var worked = false;
 					if (savedObj) {
@@ -67,11 +119,7 @@ module.exports.init = function(app) {
 						savedObj.save();
 						for (var i=0; i<q.length; i++) {
 							if (i.query == savedObj.query) {
-								q.push(savedObj);
-								if (q.length > 20) {
-									q.shift();
-								}
-								app.set('visualizationSearchQueue', q)
+								addTerm(savedObj);
 								//app.emit('visualizationSearchQueue.add', savedObj, q);
 								worked = true;
 								break;

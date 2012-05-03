@@ -94,6 +94,8 @@ module.exports = {
   			var queue = app.set('textureGenerationQueue');
 		  	if (queue.length > 0) {
 		  		var url = queue.shift();
+		  		
+		  		//TODO: track count of errors, if over thresh, insert dummy tex
 			  	imageProcessing.generateAndSaveTexture(app, url, function(err) {
 			  		if (err) { console.log("Error generating texture "+ url); }
 			  		else { console.log("genereated texture " + url); }

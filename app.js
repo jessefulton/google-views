@@ -43,6 +43,11 @@ var app = express.createServer();
 
 app.configure(function(){
 	app.use(express.bodyParser());
+	app.use(express.cookieParser());
+	app.use(express.session({ secret: "pleasedontspamme" }));
+	
+	app.set('rateLimitTable', {});
+
 	//app.db = redis.createClient();
 	app.set('views', __dirname + '/views');
 	app.set('view engine', 'jade');

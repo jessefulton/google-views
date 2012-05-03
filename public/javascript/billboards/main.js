@@ -123,14 +123,14 @@ Viz.prototype.loadSearchResults = function(data) {
 		if (oldSearch) {
 			oldSearch.removeFrom(_scene, function() {
 				sr.addTo(_scene, function() {
-					window.setTimeout(function() {self.next();}, 30000);
+					window.setTimeout(function() {self.next();}, 50000);
 				});
 				oldSearch = null;
 			});
 		}
 		else {
 			sr.addTo(_scene, function() {
-				window.setTimeout(function() {self.next();}, 20000);
+				window.setTimeout(function() {self.next();}, 50000);
 			});
 		}
 	});
@@ -290,7 +290,7 @@ Billboard.prototype._build = function() {
 		
 		var current	= { y: 0 };
 		var anim1 = anim2 = new TWEEN.Tween(current)
-			.to({y: Math.PI*2*10 }, 150000)
+			.to({y: Math.PI*2*5 }, 150000)
 			//.delay(userOpts.delay)
 			//.easing(TWEEN.Easing.Exponential.EaseOut)
 			.onUpdate(function() {
@@ -300,7 +300,7 @@ Billboard.prototype._build = function() {
 		
 		
 		anim1.chain(anim2);
-		anim2.chain(anim1);
+		anim2.chain();
 		anim1.start();
 		
 		
