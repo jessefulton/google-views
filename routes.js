@@ -93,7 +93,7 @@ module.exports.init = function(app) {
 				console.log("INSIDE ADDTERM");
 				var existing = false;
 				for (var i=0; i<q.length; i++) {
-					console.log(q[i]);
+					//console.log(q[i]);
 					if (q[i].query == savedObj.query) {
 						var moving = q.splice(i,1)[0];
 						q.unshift(moving);
