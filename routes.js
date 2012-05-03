@@ -131,11 +131,11 @@ module.exports.init = function(app) {
 			catch(e) {}
 			
 			if (term.length > 30 || term.indexOf("!") != -1 || numSpaces > 3) {
-				return doError("Don't be so \"spammy\" please");
+				return doError("Please simplify your query");
 			}
 			
 			if (getSubmissions() > 1) {
-				return doError("Too many queries submitted");
+				return doError("Sorry, but you've submitted too many queries. Tell a friend to enter some in!");
 			}
 			
 
@@ -282,7 +282,7 @@ module.exports.init = function(app) {
 			}
 			else {
 				console.log(err);
-				res.send('couldn\'t find anthying', 404);
+				res.send('couldn\'t find anything', 404);
 			}
 		});
 	});
