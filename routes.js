@@ -20,9 +20,16 @@ module.exports.init = function(app) {
 	 * App routes.
 	 */
 	app.get('/', function (req, res) {
+		var ref = (req.headers.referer);
+		var KYM = false;
+		if (ref && ref.toLowerCase().indexOf("knowyourmeme.com") != -1) {
+			KYM = true;
+		}
+		
 		var q = app.set('visualizationSearchQueue');			
 		//console.log("# Submitted: " + req.session.submitted);
-		res.render('index', { layout: true, queue: q });
+		res.render('index', { layout: true, queue: q, kym: KYM });
+		
 		
 	});
 	app.get('/about', function (req, res) {
