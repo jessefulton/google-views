@@ -46,6 +46,8 @@ module.exports = {
 		var job = new cronJob({
 			"cronTime": cronTime ? cronTime : '0 */2 * * * *',
 			"onTick": function() {
+			
+				//TODO: What if search (not search queueu) already exists?
 				app.WebSearchQueryQueue.findOne({"processState": "waiting" }, {}, {"sort": {"date": -1}}, function(err, result) {
 					if (!err && result) {
 						console.log("processing search queue item from cron");

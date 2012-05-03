@@ -73,7 +73,7 @@ Viz.prototype.initScene = function(onComplete) {
 	//this.scene.fog = new THREE.FogExp2( 0xefd1b5, 0.0025 );
 	//this.scene.fog = new THREE.Fog( 0xffffff, 10, 1000 );
 	
-	this.camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 1, 10000);
+	this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
 	this.camera.position.z = -5;
 	this.camera.position.y = 0;
 	this.camera.position.x = 0;	
@@ -95,6 +95,43 @@ Viz.prototype.initScene = function(onComplete) {
 	this.scene.add(light);
 */
 
+	
+	
+	
+	
+	var text3d = new THREE.TextGeometry( "submitted queries", {
+		size: .15,
+		height: .01,
+		curveSegments: 2,
+		font: "helvetiker",
+		bevelThickness: .002,
+		bevelSize: .0015,
+		bevelEnabled: true
+	});
+	
+	text3d.computeBoundingBox();
+	//var centerOffset = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
+
+	//var textMaterial = new THREE.MeshLambertMaterial( { color: 0xFF0078 } ) ;
+	
+	var textMaterial = 
+			new THREE.MeshPhongMaterial( { ambient: 0xC0C0C0, color: 0x29e8ff, specular: 0xffffff, shininess: 50, shading: THREE.SmoothShading, "overdraw": true });
+	
+	var text = new THREE.Mesh( text3d, textMaterial );
+
+	text.doubleSided = false;
+
+	text.position.x = 3.5;
+	
+	text.position.z = -2;
+
+	//text.rotation.x = Math.PI/10;
+	
+	
+	text.rotation.y = Math.PI;
+	text.rotation.z = Math.PI/2;
+	
+	this.scene.add(text);
 	
 	
 	

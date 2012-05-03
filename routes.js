@@ -26,7 +26,9 @@ module.exports.init = function(app) {
 			KYM = true;
 		}
 		
-		var q = app.set('visualizationSearchQueue');			
+		var q = app.set('visualizationSearchQueue');	
+		
+		
 		//console.log("# Submitted: " + req.session.submitted);
 		res.render('index', { layout: true, queue: q, kym: KYM });
 		
@@ -54,19 +56,24 @@ module.exports.init = function(app) {
 	* Adds an item to the search queue. If item already exists, error printed to page.
 	*/
 	app.post('/', function (req, res) {
-			console.log('adding to queue');
-			
-			
-			//TODO: sanitize - limit length and num words
-			var term = req.body.q;
-			var err = null;
-			term = term.toLowerCase().trim();
-
-			var q = app.set('visualizationSearchQueue');			
-
-			if (!term || term == '') {
-				res.render('index', { layout: true, "term": term, queue: q, error: "can't search empty query" });
+			var doError = function (e) {
+				res.render('index', { layout: true, "term": term, queue: q, error: e });
 				return;
+			}
+			
+			var incSubmissions = function() {
+				var rateLimitTable = app.set('rateLimitTable');
+				var userIp = getNewXForwardedForHeader(req);
+				if (!rateLimitTable[userIp]) {
+					rateLimitTable[userIp] = {};
+				}
+	
+				var submissions = rateLimitTable[userIp].submissions;
+				if (!submissions) { submissions = 0; }
+				submissions++;
+				rateLimitTable[userIp].submissions = submissions;
+				app.set('rateLimitTable', rateLimitTable);
+				return submissions;
 			}
 			
 			
@@ -82,85 +89,75 @@ module.exports.init = function(app) {
 			}
 			
 			
-			if (getSubmissions() > 1) {
-					err = "Too many queries submitted";
-					res.render('index', { layout: true, "term": term, queue: q, error: err });
-					return false
-			}
-			
 			var addTerm = function(savedObj) {
-			
-				var rateLimitTable = app.set('rateLimitTable');
-				var userIp = getNewXForwardedForHeader(req);
-				if (!rateLimitTable[userIp]) {
-					rateLimitTable[userIp] = {};
+				console.log("INSIDE ADDTERM");
+				var existing = false;
+				for (var i=0; i<q.length; i++) {
+					console.log(q[i]);
+					if (q[i].query == savedObj.query) {
+						var moving = q.splice(i,1)[0];
+						q.unshift(moving);
+						existing = true;
+						break;
+					}
 				}
-	
-				var submissions = rateLimitTable[userIp].submissions;
-				if (!submissions) { submissions = 0; }
-			
-				//if (req.session.submitted && req.session.submitted > 1) {
-				if (submissions > 1) {
-					err = "Too many queries submitted";
-					return false
-				}
-				else {
+				if (!existing) {
 					q.push(savedObj); //{"term": savedObj.query, "processState": savedObj.processState })
 					if (q.length > app.set('visualizationSearchQueue.maxSize')) {
 						q.shift();
 					}
-					app.set('visualizationSearchQueue', q)
-					
-					
-
-					submissions++;
-					rateLimitTable[userIp].submissions = submissions;
-					app.set('rateLimitTable', rateLimitTable);
-					console.log(rateLimitTable);
-					return true;					
-					
-					//req.session.submitted = req.session.submitted ? (req.session.submitted + 1) : 1;
-					//return true;
 				}
-				
+				app.set('visualizationSearchQueue', q)
+				incSubmissions();			
+				return true;					
+			}
+			
+			
+			var term = req.body.q;
+			var err = null;
+			term = term.toLowerCase().trim();
+
+			var q = app.set('visualizationSearchQueue');			
+
+			if (!term || term == '') {
+				return doError("Search term cannot be empty");
+			}
+			
+			var numSpaces = 0;
+			try {
+				var spaces = term.match(/ /g);  
+				numSpaces = spaces.length;
+			}
+			catch(e) {}
+			
+			if (term.length > 30 || term.indexOf("!") != -1 || numSpaces > 3) {
+				return doError("Don't be so \"spammy\" please");
+			}
+			
+			if (getSubmissions() > 1) {
+				return doError("Too many queries submitted");
 			}
 			
 
+			console.log('adding to queue');
 			var wsqq = new app.WebSearchQueryQueue({"query": term});
 			wsqq.save(function(saveErr, savedObj) {
-
 				if (!saveErr) {
-					if (addTerm(savedObj)) {
-						app.emit('visualizationSearchQueue.add', savedObj, q);
-					}
+					addTerm(savedObj);
+					app.emit('visualizationSearchQueue.add', savedObj, q);
 				}
 				else {
-					//TODO: if not in queue, let's add it...
-					
-					//TODO: This should findOne from DB
-					
-					
-					//not savedObj - findOne()
-					var worked = false;
-					if (savedObj) {
-						savedObj.created = new Date();
-						savedObj.save();
-						for (var i=0; i<q.length; i++) {
-							if (i.query == savedObj.query) {
-								addTerm(savedObj);
-								//app.emit('visualizationSearchQueue.add', savedObj, q);
-								worked = true;
-								break;
-							}
-						}
-					}
-					if (!worked) {
-						console.log(saveErr);
-						err = "'" + term + "' is already queued";
-					}
+					app.WebSearchQueryQueue.findOne({"query": term}, function(err, foundObj) {
+						foundObj.created = new Date();
+						foundObj.save(function(err, savedObj2) {
+							if (err) { console.log(err); }
+							addTerm(savedObj2);
+							app.emit('visualizationSearchQueue.add', savedObj2, q);						
+						});
+					});
 				}
 				
-				
+				//todo: switch this to "hasWebGL"
 				if (err || req.body.mobile == "true") {
 					res.render('index', { layout: true, "term": term, queue: q, error: err });
 				}
