@@ -747,45 +747,45 @@ SearchQueue.prototype.createTextObj = function(termInfo) {
 	var color = (termInfo.processState == "complete") ? 0xC0C0C0 : c;
 	var scolor = (termInfo.processState == "complete") ? c : 0xC0C0C0;
 	
-		var text3d = new THREE.TextGeometry( word, {
-			size: this.fontSize,
-			height: .01,
-			curveSegments: 2,
-			font: "catulli",
-			
-			bevelThickness: .002,
-			bevelSize: .0015,
-			bevelEnabled: true
-		});
+	var text3d = new THREE.TextGeometry( word, {
+		size: this.fontSize,
+		height: .01,
+		curveSegments: 2,
+		font: "catulli",
 		
-		text3d.computeBoundingBox();
-		//var centerOffset = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
+		bevelThickness: .002,
+		bevelSize: .0015,
+		bevelEnabled: true
+	});
+	
+	text3d.computeBoundingBox();
+	//var centerOffset = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
 
-		var textMaterial = (termInfo.processState == "complete") ? TEXT_MATERIALS[Math.floor(Math.random()*TEXT_MATERIALS.length)] : new THREE.MeshLambertMaterial( { color: (colors[Math.floor(Math.random()*colors.length)]) } ) ;
+	var textMaterial = (termInfo.processState == "complete") ? TEXT_MATERIALS[Math.floor(Math.random()*TEXT_MATERIALS.length)] : new THREE.MeshLambertMaterial( { color: (colors[Math.floor(Math.random()*colors.length)]) } ) ;
 
 	if (termInfo.processState != "complete") {
 		console.log("adjusting opacity for term " + word );
 		textMaterial.opacity = 0.1;
 	}
 
-		var text = new THREE.Mesh( text3d, textMaterial );
+	var text = new THREE.Mesh( text3d, textMaterial );
 
-		text.doubleSided = false;
+	text.doubleSided = false;
 
-		//text.position.x = centerOffset;
-		//text.position.y = 100;
-		//text.position.z = 0;
+	//text.position.x = centerOffset;
+	//text.position.y = 100;
+	//text.position.z = 0;
 
-		//text.rotation.x = 0;
-		
-		
-		text.rotation.y = Math.PI;
-		
-		//text.lookAt(app.camera.position);
-		
-		//console.log(text);
-		
-		return text;
+	//text.rotation.x = 0;
+	
+	
+	text.rotation.y = Math.PI;
+	
+	//text.lookAt(app.camera.position);
+	
+	//console.log(text);
+	
+	return text;
 }
 
 SearchQueue.prototype.remove = function(termInfo, scene) {

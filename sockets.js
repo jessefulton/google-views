@@ -51,7 +51,7 @@ module.exports.init = function(app) {
 			console.log("~~~~~ TEXTURES GENERATED [" + ws.query + "] ~~~~~~~");
 			var q = app.set('visualizationSearchQueue');
 			for (var i=0; i<q.length; i++) { //q.forEach(el, idx, arr) {
-				if (q[i].term == ws.query) {
+				if (q[i].query == ws.query) {
 					q[i].processState = ws.processState;
 					app.set('visualizationSearchQueue', q);
 					emitQueue(ws, q);
