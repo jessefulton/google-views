@@ -149,8 +149,8 @@ listeners.init(app);
 
 cronjobs.search(app, '15 * * * * *');
 
-cronjobs.crawl(app);
-cronjobs.dbimport(app);
+//cronjobs.crawl(app);
+//cronjobs.dbimport(app);
 cronjobs.createTextures(app);
 
 
