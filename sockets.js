@@ -11,13 +11,20 @@ module.exports.init = function(app) {
 	io.set('log level', 1);
 	
 	
-	io.set('transports', [
-		'websocket'
-		, 'flashsocket'
-		, 'htmlfile'
-		, 'xhr-polling'
-		, 'jsonp-polling'
-	]);
+	if (process.NODE_ENV == "production") {
+		io.set("transports", ["xhr-polling"]); 
+		io.set("polling duration", 10); 
+	}
+	else {
+		io.set('transports', [
+			'websocket'
+			, 'flashsocket'
+			, 'htmlfile'
+			, 'xhr-polling'
+			, 'jsonp-polling'
+		]);
+	}
+	
 	
 	
 	io.sockets.on('connection', function (socket) {
