@@ -6,7 +6,7 @@ Everybody's Google/Google Views
 Requirements
 ------------
 
-node.js, phantomjs, casperjs, mongodb
+node.js, casperjs, mongodb
 
 
 Set up
