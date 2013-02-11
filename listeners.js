@@ -12,9 +12,9 @@ var searcher = require('./lib/searcher');
 */
 module.exports.init = function(app) {
 
-	var users = app.set('config').users;
-	var RENDER_DIR = app.set('renderdir');
-	var TEXTURE_SIZE = app.set('textureSize');
+	var users = app.get('config').users;
+	var RENDER_DIR = app.get('renderdir');
+	var TEXTURE_SIZE = app.get('textureSize');
 
 
 
@@ -74,7 +74,7 @@ module.exports.init = function(app) {
 
 	/*
 	app.on('crontick', function(el) {
-		var datastream = app.set('datastream');
+		var datastream = app.get('datastream');
 		datastream.push(el);
 		if(datastream.length > 10) {
 			datastream.shift();
@@ -109,7 +109,7 @@ module.exports.init = function(app) {
 
 	
 	app.on('visualizationSearchQueue.add', function(ws, queue) {
-		//var q = app.set('visualizationSearchQueue');
+		//var q = app.get('visualizationSearchQueue');
 		//app.set('visualizationSearchQueue', q);
 		//searcher.process(ws, users, app);
 		

@@ -11,7 +11,7 @@ var getNewXForwardedForHeader = function(request) {
 
 module.exports.init = function(app) {
 
-	var config = app.set('config')
+	var config = app.get('config')
 		, spawn = require('child_process').spawn
 		, fs = require('fs');
 	
@@ -26,7 +26,7 @@ module.exports.init = function(app) {
 			KYM = true;
 		}
 		
-		var q = app.set('visualizationSearchQueue');	
+		var q = app.get('visualizationSearchQueue');	
 		
 		
 		//console.log("# Submitted: " + req.session.submitted);
@@ -62,7 +62,7 @@ module.exports.init = function(app) {
 			}
 			
 			var incSubmissions = function() {
-				var rateLimitTable = app.set('rateLimitTable');
+				var rateLimitTable = app.get('rateLimitTable');
 				var userIp = getNewXForwardedForHeader(req);
 				if (!rateLimitTable[userIp]) {
 					rateLimitTable[userIp] = {};
@@ -78,7 +78,7 @@ module.exports.init = function(app) {
 			
 			
 			var getSubmissions = function() {
-				var rateLimitTable = app.set('rateLimitTable');
+				var rateLimitTable = app.get('rateLimitTable');
 				var userIp = getNewXForwardedForHeader(req);
 				try {	
 					var submissions = rateLimitTable[userIp].submissions;
@@ -103,7 +103,7 @@ module.exports.init = function(app) {
 				}
 				if (!existing) {
 					q.push(savedObj); //{"term": savedObj.query, "processState": savedObj.processState })
-					if (q.length > app.set('visualizationSearchQueue.maxSize')) {
+					if (q.length > app.get('visualizationSearchQueue.maxSize')) {
 						q.shift();
 					}
 				}
@@ -117,7 +117,7 @@ module.exports.init = function(app) {
 			var err = null;
 			term = term.toLowerCase().trim();
 
-			var q = app.set('visualizationSearchQueue');			
+			var q = app.get('visualizationSearchQueue');			
 
 			if (!term || term == '') {
 				return doError("Search term cannot be empty");
@@ -177,7 +177,7 @@ module.exports.init = function(app) {
 	*/
 	app.get('/queue', function (req, res) {
 		console.log('showing queue');
-		var q = app.set('visualizationSearchQueue');
+		var q = app.get('visualizationSearchQueue');
 		console.log(q);
 		res.render('queue', { layout: true, queue: q });
 	});

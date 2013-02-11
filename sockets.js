@@ -1,13 +1,13 @@
 var sio = require('socket.io'),
 	async = require('async');
-
-module.exports.init = function(app) {
-	var RENDER_DIR = app.set('publicrenderdir');
+  
+module.exports.init = function(server, app) {
+	var RENDER_DIR = app.get('publicrenderdir');
 	
 	/**
 	 * Socket.IO server (single process only)
 	 */
-	var io = sio.listen(app);
+	var io = sio.listen(server);
 	io.set('log level', 1);
 	
 	
@@ -29,7 +29,7 @@ module.exports.init = function(app) {
 	
 	io.sockets.on('connection', function (socket) {
 		//on first run, send out the whole stream
-		socket.emit('datastream', null, app.set('datastream'));
+		socket.emit('datastream', null, app.get('datastream'));
 	
 		var emitDataStream = function(el, stream) {
 			console.log("sending out " + el);
@@ -47,7 +47,7 @@ module.exports.init = function(app) {
 		}
 
 
-		emitQueue(null, app.set('visualizationSearchQueue'));
+		emitQueue(null, app.get('visualizationSearchQueue'));
 		
 		//app.on('datastream', emitDataStream);
 		app.on('visualizationSearchQueue.add', emitQueue);
@@ -56,7 +56,7 @@ module.exports.init = function(app) {
 		//TODO: UPDATE QUEUE... keep 2 separate queues
 		app.on("visualizationSearchQueue.texturesGenerated", function(ws) {
 			console.log("~~~~~ TEXTURES GENERATED [" + ws.query + "] ~~~~~~~");
-			var q = app.set('visualizationSearchQueue');
+			var q = app.get('visualizationSearchQueue');
 			for (var i=0; i<q.length; i++) { //q.forEach(el, idx, arr) {
 				if (q[i].query == ws.query) {
 					q[i].processState = ws.processState;

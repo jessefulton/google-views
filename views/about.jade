@@ -1,32 +1,35 @@
-.row
-	.container.span4.description
-		h1 What is this?
-		p
-			| As digital technologies become increasingly ubiquitous and accessible, digital resources are quickly becoming the primary resources for information and knowledge gathering.
-			| While the Internet is largely viewed as embracing democratic ideals and guaranteeing equal access for all, to all, the fact that our Internet experience is mediated almost exclusively through privatized companies, is inherently undemocratic. In order to provide "relevant" information to individual users (and increase revenues), companies like Google and Amazon filter content and information through black box algorithms. End users have little to no control over which items or information are shown to them, or in what order; and because these algorithms are trade secrets, users also cannot have an understanding of the filtering and selection process.
+extends layout
 
-		p
-			strong Everybody's Google
-			|  explores these ideas and systems by programmatically controlling a set of Google user accounts. In an effort to hyper-personalize their Google Search results, these accounts have been scripted to navigate the web biased towards specific cultural interests or political orientations. The 
-			a(href="/visualize") visualization
-			|  shows each account's top 10 results for particular Google Search queries.
-
-
-		p
-			strong Everybody's Google
-			|  is part of 
-			a(href="http://danm.ucsc.edu/~jesse") Jesse Fulton
-			| 's MFA thesis at the 
-			a(href="http://danm.ucsc.edu/") Digital Arts + New Media program at UC Santa Cruz
-			| .
-
-		p.note.warn
-			| (This website is currently experimental and slightly unstable. The WebGL visualization has only been tested in Safari browser on OSX 10.6)
-			
-			
-		p Also, thanks to KnowYourMeme for the traffic and causing me to fix a handful of the larger bugs on little to no sleep :) No, seriously.
-.container
-	.meta
-		i.icon-question-sign.icon-white 
-		| interested in the tech? check out 
-		a(href="https://github.com/jessefulton/google-views") the code
+block content
+	.row
+		.container.span4.description
+			h1 What is this?
+			p
+				| As digital technologies become increasingly ubiquitous and accessible, digital resources are quickly becoming the primary resources for information and knowledge gathering.
+				| While the Internet is largely viewed as embracing democratic ideals and guaranteeing equal access for all, to all, the fact that our Internet experience is mediated almost exclusively through privatized companies, is inherently undemocratic. In order to provide "relevant" information to individual users (and increase revenues), companies like Google and Amazon filter content and information through black box algorithms. End users have little to no control over which items or information are shown to them, or in what order; and because these algorithms are trade secrets, users also cannot have an understanding of the filtering and selection process.
+	
+			p
+				strong Everybody's Google
+				|  explores these ideas and systems by programmatically controlling a set of Google user accounts. In an effort to hyper-personalize their Google Search results, these accounts have been scripted to navigate the web biased towards specific cultural interests or political orientations. The 
+				a(href="/visualize") visualization
+				|  shows each account's top 10 results for particular Google Search queries.
+	
+	
+			p
+				strong Everybody's Google
+				|  is part of 
+				a(href="http://danm.ucsc.edu/~jesse") Jesse Fulton
+				| 's MFA thesis at the 
+				a(href="http://danm.ucsc.edu/") Digital Arts + New Media program at UC Santa Cruz
+				| .
+	
+			p.note.warn
+				| (This website is currently experimental and slightly unstable. The WebGL visualization has only been tested in Safari browser on OSX 10.6)
+				
+				
+			p Also, thanks to KnowYourMeme for the traffic and causing me to fix a handful of the larger bugs on little to no sleep :) No, seriously.
+	.container
+		.meta
+			i.icon-question-sign.icon-white 
+			| interested in the tech? check out 
+			a(href="https://github.com/jessefulton/google-views") the code

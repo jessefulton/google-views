@@ -72,7 +72,7 @@ module.exports = {
 	, "createTextures": function(app) {
 
 		app.on("texture.missing", function(url) {
-			var q = app.set('textureGenerationQueue');
+			var q = app.get('textureGenerationQueue');
 			q.push(url);
 			q = utils.unique(q);
 			app.set('textureGenerationQueue', q);
@@ -93,7 +93,7 @@ module.exports = {
 		var job = new cronJob({
 		  cronTime: '0 * * * * *',
 		  onTick: function() {
-  			var queue = app.set('textureGenerationQueue');
+  			var queue = app.get('textureGenerationQueue');
 		  	if (queue.length > 0) {
 		  		var url = queue.shift();
 		  		
@@ -120,8 +120,8 @@ module.exports = {
 	//inserts data into database
 	, "dbimport": function(app) {
 	
-		var dataDir = app.set('crawldatadir')
-			, renderDir = app.set('renderdir')
+		var dataDir = app.get('crawldatadir')
+			, renderDir = app.get('renderdir')
 			, model = app.CrawledPage;
 	
 		
@@ -140,8 +140,8 @@ module.exports = {
 	, "crawl": function(app) {
 
 		var crawlFn = require('./lib/crawl.js');
-		var RENDER_DIR = app.set('renderdir');
-		var CRAWL_DATA_DIR = app.set('crawldatadir');
+		var RENDER_DIR = app.get('renderdir');
+		var CRAWL_DATA_DIR = app.get('crawldatadir');
 		
 		var now = new Date();
 		

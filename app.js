@@ -37,7 +37,8 @@ u.upload("/test/file2.png", "./tor.png", function(err) { console.log(err); });
 */
 
 
-var app = express.createServer();
+var app = express();
+var server = http.createServer(app);
 
 
 
@@ -114,35 +115,40 @@ models.defineModels(mongoose, function() {
 routes.init(app);
 
 
+// Template helpers
+// ----------------
+app.locals.dateFormat = function(dateObj){ 
+	return dateObj.getMonth() + "/" + dateObj.getDate() + "/" + dateObj.getFullYear();
+};
 
-app.helpers({
-		"dateFormat": function(dateObj){ 
-			return dateObj.getMonth() + "/" + dateObj.getDate() + "/" + dateObj.getFullYear();
-		}
-		, "dateTimeFormat": function(dateObj){ 
+app.locals.dateTimeFormat = function(dateObj){ 
 			//TODO: clean up time to 12 hour clock?
 			return dateObj.getMonth() + "/" + dateObj.getDate() + "/" + dateObj.getFullYear() + " " + dateObj.getHours() + ":" + dateObj.getMinutes();
-		}
-		, "percentage": function(num) {
-			return Math.round(num * 100) + "%";
-		}
-		, "isNumber": function(num) {
-			return (typeof(num) == "number") && !isNaN(num);
-		}
-		//via http://beardscratchers.com/journal/using-javascript-to-get-the-hostname-of-a-url
-		, "hostname": function(str) {
-			var re = new RegExp('^(?:f|ht)tp(?:s)?\://([^/]+)', 'im');
-			return str.match(re)[1].toString();
-		}
-});
+};
+
+app.locals.percentage = function(num) {
+	return Math.round(num * 100) + "%";
+};
+
+app.locals.isNumber = function(num) {
+	return (typeof(num) == "number") && !isNaN(num);
+};
+		
+//via http://beardscratchers.com/journal/using-javascript-to-get-the-hostname-of-a-url
+app.locals.hostname = function(str) {
+	var re = new RegExp('^(?:f|ht)tp(?:s)?\://([^/]+)', 'im');
+	return str.match(re)[1].toString();
+};
 
 
+// Misc. Initialization
+// --------------------
   
 var sox = require('./sockets'),
 	listeners = require('./listeners'),
 	cronjobs = require('./cronjobs');
 
-sox.init(app);
+sox.init(server, app);
 listeners.init(app);
 
 
@@ -156,9 +162,10 @@ cronjobs.createTextures(app);
 
 
 
+
 // LOAD THE QUEUE FROM THE DB INTO MEMORY //
 //app.WebSearchQueryQueue.find({"processState": "complete"}).sort("date", -1, "processState", -1).limit(20).execFind(function(err, results) {
-app.WebSearchQueryQueue.find({}).sort("created", -1, "processState", -1).limit(app.set('visualizationSearchQueue.maxSize')).execFind(function(err, results) {
+app.WebSearchQueryQueue.find({}).sort("-created -processState").limit(app.get('visualizationSearchQueue.maxSize')).execFind(function(err, results) {
 	if (!err) {
 		var sq = [];
 		results.forEach(function(el, idx, arr) {
@@ -182,9 +189,9 @@ app.WebSearchQueryQueue.find({}).sort("created", -1, "processState", -1).limit(a
  * Start it.
  */
 var port = process.env.PORT || 3000;
-app.listen(port, function () {
-    var addr = app.address();
+server.listen(port, function () {
+    var addr = server.address();
     app.set("basedomain", 'http://' + addr.address + ':' + addr.port);
-	console.log('    app listening on ' + app.set("basedomain"));
+	console.log('    app listening on ' + app.get("basedomain"));
     console.log('    NODE_ENV = ' + process.env.NODE_ENV);
 });
