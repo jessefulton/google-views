@@ -4,7 +4,8 @@ if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
  * Module dependencies.
  */
 var express = require('express')
-	, http = require('http');
+	, http = require('http')
+	, winston = require('winston');
 	
 var models = require('./models')
 	, routes = require('./routes');
@@ -21,7 +22,7 @@ var config = require('./config');
 
 models.GoogleUser.find({}, function(err, users) {
 	if (err) {
-		console.log("Error finding google users");
+		winston.warn("Error finding google users");
 	}
 	/*
 	if (!users || users.length == 0) {
@@ -29,15 +30,15 @@ models.GoogleUser.find({}, function(err, users) {
 		users.forEach(function(user) {
 			var dbUser = new models.GoogleUser(user);
 			dbUser.save(function(saveErr) {
-				console.log("saved user " + user.email);
+				winston.debug("saved user " + user.email);
 			})
 		});
 
 	}
 	*/
 	config.set("users", users);
-	console.log("Configured " + users.length + " google users");
-	//console.log(users);
+	winston.debug("Configured " + users.length + " google users");
+	//winston.debug(users);
 });
 
 
@@ -48,7 +49,7 @@ var uploader = require('./lib/uploader');
 var u = new uploader();
 u.init(config.site);
 //https://s3.amazonaws.com/everybodysgoogle/test/file2.png
-u.upload("/test/file2.png", "./tor.png", function(err) { console.log(err); });
+u.upload("/test/file2.png", "./tor.png", function(err) { winston.debug(err); });
 */
 
 
@@ -182,15 +183,16 @@ cronjobs.createTextures(app);
 //app.WebSearchQueryQueue.find({"processState": "complete"}).sort("date", -1, "processState", -1).limit(20).execFind(function(err, results) {
 app.WebSearchQueryQueue.find({}).sort("-created -processState").limit(app.get('visualizationSearchQueue.maxSize')).execFind(function(err, results) {
 	if (!err) {
+		winston.debug("Web Search Query Queue");
 		var sq = [];
 		results.forEach(function(el, idx, arr) {
 			sq.push(el);
+			winston.debug(JSON.stringify(el.toJSON()));
 		});
-		console.log(sq);
 		app.set("visualizationSearchQueue", sq);
 	}
 	else {
-		console.log(err);
+		winston.warn(err);
 	}
 });
 
@@ -207,6 +209,6 @@ var port = process.env.PORT || 3000;
 server.listen(port, function () {
     var addr = server.address();
     app.set("basedomain", 'http://' + addr.address + ':' + addr.port);
-	console.log('    app listening on ' + app.get("basedomain"));
-    console.log('    NODE_ENV = ' + process.env.NODE_ENV);
+	winston.info('    app listening on ' + app.get("basedomain"));
+    winston.info('    NODE_ENV = ' + process.env.NODE_ENV);
 });
