@@ -9,8 +9,16 @@ var fs    = require('fs'),
 //
 nconf.argv()
 	.env()
-	.file('site', { file: './conf/site.json' })
-	.file('users', { file: './conf/users.json' });
+	.file('site', { file: './conf/site.json' });
+//	.file('users', { file: './conf/users.json' });
+
+
+// TODO: move users to DB and set explicitly
+
+if (nconf.get("MONGOHQ_URL")) {
+	nconf.set("MONGODB_URI", nconf.get("MONGOHQ_URL"));
+}
+
 
 module.exports = nconf;
 

@@ -1,4 +1,5 @@
-function defineModels(mongoose, fn) {
+var mongoose = require("mongoose");
+
 	var Schema = mongoose.Schema,
 		ObjectId = Schema.ObjectId;
 
@@ -76,13 +77,47 @@ function defineModels(mongoose, fn) {
 		.get(function() { return this._id.toHexString(); });
 
 
-	mongoose.model('crawledpage', CrawledPage);
-	//mongoose.model('websearchresult', WebSearchResult);
-	mongoose.model('websearch', WebSearch);
-	mongoose.model('clientwebsearch', ClientWebSearch);
-	mongoose.model('websearchqueryqueue', WebSearchQueryQueue);
-	
-	fn();
-}
 
-exports.defineModels = defineModels; 
+
+
+
+
+	var GoogleUserSeed = new Schema({
+		url: String,
+		selector: String
+	});
+
+	/**
+	 * Search query and affiliated client searches
+	 */
+	var GoogleUser = new Schema({
+		email: String
+		, password: String
+		, description: String
+		, seeds: [GoogleUserSeed]
+		, proxy: {
+			url: String,
+			type: String
+		}
+	});
+
+	GoogleUser.virtual('id')
+		.get(function() { return this._id.toHexString(); });
+
+
+
+
+
+// Initialize
+// ----------
+// 
+// Open the DB connection and set the model to the module exports
+
+var db = require("./db").getConnection();
+
+module.exports.CrawledPage = db.model('crawledpage', CrawledPage);
+
+module.exports.WebSearch = db.model('websearch', WebSearch);
+module.exports.ClientWebSearch = db.model('clientwebsearch', ClientWebSearch);
+module.exports.WebSearchQueryQueue = db.model('websearchqueryqueue', WebSearchQueryQueue);
+module.exports.GoogleUser = db.model('googleuser', GoogleUser);

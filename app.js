@@ -19,6 +19,28 @@ var mongoose = require('mongoose')
 
 var config = require('./config');
 
+models.GoogleUser.find({}, function(err, users) {
+	if (err) {
+		console.log("Error finding google users");
+	}
+	/*
+	if (!users || users.length == 0) {
+		users = require("./conf/users.json").users;
+		users.forEach(function(user) {
+			var dbUser = new models.GoogleUser(user);
+			dbUser.save(function(saveErr) {
+				console.log("saved user " + user.email);
+			})
+		});
+
+	}
+	*/
+	config.set("users", users);
+	console.log("Configured " + users.length + " google users");
+	//console.log(users);
+});
+
+
 
 /*
 var uploader = require('./lib/uploader');
@@ -95,33 +117,13 @@ app.configure('development', function(){
 });
 
 
-models.defineModels(mongoose, function() {
-	app.CrawledPage = mongoose.model('crawledpage');
-	app.WebSearch = mongoose.model('websearch');
-	app.ClientWebSearch = mongoose.model('clientwebsearch');
-	app.WebSearchQueryQueue = mongoose.model('websearchqueryqueue');
 
-	console.log("connecting to database at " + config.get("MONGODB_URI"));
-	mongoose.connect(config.get("MONGODB_URI"));
-    mongoose.connection.on("open", function() {
-        console.log("opened connection to database!");
-        
-        
-			app.WebSearch.findOne({"query": "cray"}, function(err, webSearch) {
-				if (err) {
-					console.warn(err);
-				}
-				if (!webSearch) {
-					console.warn("Could not find WebSearch for cray");
-				}
-				
-				console.log("Found cray");
-				console.log(webSearch);
-				
-			});
-        
-    });
-});
+app.CrawledPage = models.CrawledPage; //mongoose.model('crawledpage');
+app.WebSearch = models.WebSearch; //mongoose.model('websearch');
+app.ClientWebSearch = models.ClientWebSearch; //mongoose.model('clientwebsearch');
+app.WebSearchQueryQueue = models.WebSearchQueryQueue; //mongoose.model('websearchqueryqueue');
+
+
 
 
 
