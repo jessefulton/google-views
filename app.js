@@ -39,10 +39,6 @@ models.GoogleUser.find({}, function(err, users) {
 	config.set("users", users);
 	winston.debug("Configured " + users.length + " google users");
 	
-	
-	
-	winston.debug(require('./config').get("users"));
-	
 	//winston.debug(users);
 });
 
@@ -82,7 +78,6 @@ app.configure(function(){
 	
 	
 	//TODO: trailing slash?
-	app.set('renderdir', __dirname + "/public/rendered/");
 	app.set('publicrenderdir', "/rendered/");
 	
 	app.set('crawldatadir', __dirname + "/data/");
@@ -113,11 +108,14 @@ app.configure(function(){
 			.use(nib());
 	};
 	*/
-
-
-
 });
+
+app.configure('production', function() {
+	app.set('renderdir', "/tmp");
+	app.use('/rendered', express.static(__dirname + '/tmp'));
+})
 app.configure('development', function(){
+	app.set('renderdir', __dirname + "/public/rendered/");
 	app.use(express.logger('dev'));
     app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
