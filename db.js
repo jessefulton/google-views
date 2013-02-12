@@ -10,7 +10,7 @@ var db = mongoose.createConnection(config.get("MONGODB_URI"));
 
 
 db.once('open', function () {
-    console.log("Application connected to db %s", config.get("MONGO_CONNECTION"));
+    console.log("Application connected to db %s", config.get("MONGODB_URI"));
 });
 
 db.on("disconnected", function() {

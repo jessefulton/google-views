@@ -8,14 +8,17 @@ module.exports.init = function(server, app) {
 	 * Socket.IO server (single process only)
 	 */
 	var io = sio.listen(server);
-	io.set('log level', 1);
 	
-	
-	if (process.NODE_ENV == "production") {
+	io.configure('production', function(){
+		io.enable('browser client etag');
+		io.set('log level', 1);
+		
 		io.set("transports", ["xhr-polling"]); 
 		io.set("polling duration", 10); 
-	}
-	else {
+		
+	});
+	
+	io.configure('development', function(){
 		io.set('transports', [
 			'websocket'
 			, 'flashsocket'
@@ -23,7 +26,7 @@ module.exports.init = function(server, app) {
 			, 'xhr-polling'
 			, 'jsonp-polling'
 		]);
-	}
+	});
 	
 	
 	
