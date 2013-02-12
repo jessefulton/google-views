@@ -69,11 +69,11 @@ casper.thenOpen("https://accounts.google.com/Login?continue=http://www.google.co
     }, true);
 });
 
-
+/*
 casper.then(function() {
 	this.debugHTML();
 });
-
+*/
 
 
 casper.thenOpen('https://www.google.com/search?q=' + query, function() {
