@@ -12,7 +12,7 @@ var searcher = require('./lib/searcher');
 */
 module.exports.init = function(app) {
 
-	var users = app.get('config').users;
+	var users = require("./config").get('users');
 	var RENDER_DIR = app.get('renderdir');
 	var TEXTURE_SIZE = app.get('textureSize');
 
@@ -25,9 +25,21 @@ module.exports.init = function(app) {
 		wsq.processState = "texturing";
 		wsq.save(function(err1, ws) {
 			
+			if (err1) { 
+				console.warn(err1); 
+			}
+			
+			console.log("finished search for " + ws.query);
 			
 			app.WebSearch.findOne({"query": ws.query}, function(err, webSearch) {
 	
+				if (err) {
+					console.warn(err);
+				}
+				if (!webSearch) {
+					console.warn("Could not find WebSearch for query " + ws.query);
+				}
+				
 	
 				var urls = [];
 				//ClientSearch objects

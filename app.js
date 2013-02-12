@@ -17,14 +17,7 @@ var mongoose = require('mongoose')
 
 
 
-var config = {};
-config.site = require('./config').init([
-	"MONGODB_URI","LOGGLY_SUBDOMAIN","LOGGLY_INPUT_KEY",
-	"AWS_ACCESSKEYID", "AWS_SECRETACCESSKEY",
-	"AWS_BUCKET", "MEDIA_BASE_URL"
-], "./conf/site.js");
-
-config.users = require("./conf/users.js").users;
+var config = require('./config');
 
 
 /*
@@ -76,7 +69,10 @@ app.configure(function(){
 	app.set('visualizationSearchQueue.maxSize', 15);
 	
 	
-	app.set('config', config);
+	//app.set('config', config);
+	
+	
+	
 	app.use(express.favicon());
 	//app.use(stylus.middleware({ src: __dirname + '/public', compile: compile }))
 	app.use(express.static(__dirname + '/public'));
@@ -104,12 +100,29 @@ models.defineModels(mongoose, function() {
 	app.WebSearch = mongoose.model('websearch');
 	app.ClientWebSearch = mongoose.model('clientwebsearch');
 	app.WebSearchQueryQueue = mongoose.model('websearchqueryqueue');
-	
-	mongoose.connect(config.site.MONGODB_URI);
+
+	console.log("connecting to database at " + config.get("MONGODB_URI"));
+	mongoose.connect(config.get("MONGODB_URI"));
     mongoose.connection.on("open", function() {
         console.log("opened connection to database!");
+        
+        
+			app.WebSearch.findOne({"query": "cray"}, function(err, webSearch) {
+				if (err) {
+					console.warn(err);
+				}
+				if (!webSearch) {
+					console.warn("Could not find WebSearch for cray");
+				}
+				
+				console.log("Found cray");
+				console.log(webSearch);
+				
+			});
+        
     });
 });
+
 
 
 routes.init(app);

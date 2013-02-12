@@ -2,7 +2,7 @@ var cronJob = require('cron').CronJob
 	, async = require('async')
 	, searcher = require('./lib/searcher')
 	, importer = require('./lib/import')
-	, users = require('./conf/users.js').users
+	, users = require('./config').get("users")
 	, fs = require('fs');
 
 var imageProcessing = require('./lib/imageprocessing')

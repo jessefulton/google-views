@@ -11,7 +11,7 @@ var getNewXForwardedForHeader = function(request) {
 
 module.exports.init = function(app) {
 
-	var config = app.get('config')
+	var config = require('./config')
 		, spawn = require('child_process').spawn
 		, fs = require('fs');
 	
@@ -40,7 +40,7 @@ module.exports.init = function(app) {
 	
 	/*
 	app.get('/personas', function (req, res) {
-		res.render('personas', { layout: true, personas: config.users });
+		res.render('personas', { layout: true, personas: config.get("users") });
 	});
 	app.get('/stream', function (req, res) {
 		res.render('stream', { layout: true });
@@ -250,7 +250,7 @@ module.exports.init = function(app) {
 	
 		var userEmails = (function() {
 			var ret = [];
-			config.users.forEach(function(el, idx, arr) {
+			config.get("users").forEach(function(el, idx, arr) {
 				ret.push(el.email);
 			});
 			return ret;
@@ -293,7 +293,7 @@ module.exports.init = function(app) {
 	*/
 	app.get('/search/:query', function (req, res) {
 		var u = [];
-		config.users.forEach(function(el, idx, arr) {
+		config.get("users").forEach(function(el, idx, arr) {
 			u.push(el.email.toLowerCase());
 		});
 		res.render('search-view', { layout: true, "users":u, "query": req.params.query });
@@ -318,7 +318,7 @@ module.exports.init = function(app) {
 		}
 		var userEmail = req.params.username;
 		var userPass = "";
-		config.users.forEach(function(el, idx, arr) {
+		config.get("users").forEach(function(el, idx, arr) {
 			if (el.email.toLowerCase() == userEmail.toLowerCase()) {
 				userPass = el.password;
 			}
@@ -427,7 +427,7 @@ module.exports.init = function(app) {
 	
 		var userEmail = req.params.username;
 		var userPass = "";
-		config.users.forEach(function(el, idx, arr) {
+		config.get("users").forEach(function(el, idx, arr) {
 			if (el.email.toLowerCase() == userEmail.toLowerCase()) {
 				userPass = el.password;
 			}
