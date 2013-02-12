@@ -63,6 +63,7 @@ var query = casper.cli.get("query");
 casper.start("https://accounts.google.com/Logout");
 casper.thenOpen("https://accounts.google.com/Login?continue=http://www.google.com/ncr", function() {
 	//this.echo("opened login page");
+	this.debugHTML();
     this.fill('form#gaia_loginform', {
     	'Email': email
     	, 'Passwd': password
@@ -75,10 +76,12 @@ casper.thenOpen("https://accounts.google.com/Login?continue=http://www.google.co
 casper.thenOpen('https://www.google.com/search?q=' + query, function() {
 	//this.echo("user " + email + " searched for " + query);
     links = links.concat(this.evaluate(getLinks));
+    /*
     if (links.length < 10) {
     	var ts = Date.now() + "";
 	    this.capture(ts + ".png");
 	}
+	*/
 });
 
 
