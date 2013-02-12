@@ -19,6 +19,7 @@ module.exports.init = function(server, app) {
 	});
 	
 	io.configure('development', function(){
+		io.set('log level', 1);
 		io.set('transports', [
 			'websocket'
 			, 'flashsocket'

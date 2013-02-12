@@ -38,6 +38,11 @@ models.GoogleUser.find({}, function(err, users) {
 	*/
 	config.set("users", users);
 	winston.debug("Configured " + users.length + " google users");
+	
+	
+	
+	winston.debug(require('./config').get("users"));
+	
 	//winston.debug(users);
 });
 

@@ -2,7 +2,7 @@ var cronJob = require('cron').CronJob
 	, async = require('async')
 	, searcher = require('./lib/searcher')
 	, importer = require('./lib/import')
-	, users = require('./config').get("users")
+	, config = require('./config')
 	, fs = require('fs');
 
 var imageProcessing = require('./lib/imageprocessing')
@@ -51,7 +51,7 @@ module.exports = {
 				app.WebSearchQueryQueue.findOne({"processState": "waiting" }, {}, {"sort": {"date": -1}}, function(err, result) {
 					if (!err && result) {
 						console.log("processing search queue item from cron");
-						searcher.process(result, users, app);
+						searcher.process(result, config.get("users"), app);
 					}
 					else {
 						console.log('nothing in search queue');
@@ -142,6 +142,7 @@ module.exports = {
 		var crawlFn = require('./lib/crawl.js');
 		var RENDER_DIR = app.get('renderdir');
 		var CRAWL_DATA_DIR = app.get('crawldatadir');
+		var users = config.get("users");
 		
 		var now = new Date();
 		
